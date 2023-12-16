@@ -1,0 +1,22 @@
+2023-12-16 17:22:52.530 | INFO     | __mp_main__:jisho_parse_single_line:33 - Trying to parse line 0
+2023-12-16 17:22:53.200 | INFO     | __mp_main__:jisho_parse_single_line:33 - Trying to parse line 0
+2023-12-16 17:22:53.269 | INFO     | __mp_main__:jisho_parse_single_line:33 - Trying to parse line 0
+2023-12-16 17:22:53.302 | INFO     | __mp_main__:jisho_parse_single_line:33 - Trying to parse line 0
+2023-12-16 17:22:53.946 | INFO     | __mp_main__:jisho_parse_single_line:33 - Trying to parse line 0
+2023-12-16 17:23:30.004 | INFO     | __mp_main__:jisho_parse_single_line:34 - Trying to parse line 0
+2023-12-16 17:23:30.279 | INFO     | __mp_main__:jisho_parse_single_line:34 - Trying to parse line 0
+2023-12-16 17:23:30.545 | INFO     | __mp_main__:jisho_parse_single_line:34 - Trying to parse line 0
+2023-12-16 17:23:30.622 | INFO     | __mp_main__:jisho_parse_single_line:34 - Trying to parse line 0
+2023-12-16 17:23:31.193 | INFO     | __mp_main__:jisho_parse_single_line:34 - Trying to parse line 0
+2023-12-16 18:07:43.940 | INFO     | rekai_multiprocessed:jisho_parse:61 - JISHO AutoParse initialized
+2023-12-16 18:07:52.622 | INFO     | rekai_multiprocessed:jisho_parse_string:35 - Trying to parse line 4
+2023-12-16 18:07:52.754 | INFO     | rekai_multiprocessed:jisho_parse_string:35 - Trying to parse line 5
+2023-12-16 18:07:52.849 | INFO     | rekai_multiprocessed:jisho_parse_string:35 - Trying to parse line 0
+2023-12-16 18:07:52.935 | INFO     | rekai_multiprocessed:jisho_parse_string:35 - Trying to parse line 3
+2023-12-16 18:07:53.394 | INFO     | rekai_multiprocessed:jisho_parse_string:35 - Trying to parse line 1
+2023-12-16 18:07:54.921 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 3 - Webdriver instance Started
+2023-12-16 18:07:54.921 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 4 - Webdriver instance Started
+2023-12-16 18:07:54.934 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 1 - Webdriver instance Started
+2023-12-16 18:07:55.048 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 0 - Webdriver instance Started
+2023-12-16 18:07:55.089 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 5 - Webdriver instance Started
+2023-12-16 18:08:02.382 | INFO     | rekai_multiprocessed:jisho_parse:69 - JISHO AutoParse: All lines parsed

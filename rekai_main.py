@@ -13,13 +13,19 @@ Features:
 - Incorporate Kudasai Preprocessor
 -
 
-There should be a central DB for all the lines that have been run and processed.
+Todo
 
+- There should be a central DB for all the lines that have been run and sucessfully processed.
+- Add check for internet connectivity
+-
 
 """
 
+
+
 import gradio as gr
-from rekai_multiprocessed import test_list as test_list, test_list_2 as test_list_2, threaded_function
+from rekai_multiprocessed import test_list as test_list, test_list_2 as test_list_2
+import rekai_multiprocessed
 
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
@@ -36,7 +42,7 @@ class RekaiUI:
     def gradio_web_ui(self):
 
         def t_function():
-            threaded_function(test_list, test_list_2)
+            rekai_multiprocessed.Transform.jisho_parse(test_list)
             return print('function complete')
 
         # Frontend

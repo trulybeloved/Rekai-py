@@ -1,5 +1,5 @@
 import concurrent.futures
-import threading
+
 from loguru import logger
 
 from selenium import webdriver
@@ -7,25 +7,29 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-
-
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
+from time import sleep
 
 from nlp_modules.basic_nlp import TextSplitter
 from nlp_modules.japanese_nlp import Classifier
+from nlp_modules.basic_nlp import test_text as test_lines
+from nlp_modules.basic_nlp import test_text_2 as test_lines_2
 
 logger.add(sink='log.log')
 
+
 class Transform:
+
     @staticmethod
-    def jisho_parse_string(line, index: str = 0):
+    def jisho_parse_string(line: str, index: str = 0):
 
         driver = webdriver.Chrome()
-
+        #
         jisho_parsed_html_element = str()
 
-
         if Classifier.contains_no_parsable_text(line):
-            jisho_parsed_html_element += 'unparsable'
+            jisho_parsed_html_element += 'un-parsable'
 
         else:
             url = f'https://jisho.org/search/{line}'
@@ -64,7 +68,8 @@ class Transform:
 
             with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
                 index_list = [index for index, line in enumerate(list_of_lines)]
-                list_of_jisho_parsed_html_elements = list(executor.map(Transform.jisho_parse_string, list_of_lines, index_list))
+                list_of_jisho_parsed_html_elements = list(
+                    executor.map(Transform.jisho_parse_string, list_of_lines, index_list))
                 print(list_of_jisho_parsed_html_elements)
             logger.info("JISHO AutoParse: All lines parsed")
 
@@ -84,9 +89,80 @@ class Transform:
 
         return list_of_jisho_parsed_html_elements
 
+    @staticmethod
+    def translate_string_with_deepl_web(line: str, index: str = 0) -> str:
 
-from nlp_modules.basic_nlp import test_text as test_lines
-from nlp_modules.basic_nlp import test_text_2 as test_lines_2
+        driver = webdriver.Chrome()
+
+        deepl_translated_text = str()
+
+        if Classifier.contains_no_parsable_text(line):
+            deepl_translated_text += 'un-parsable'
+
+        else:
+            logger.info(f'Trying to translate line {index}')
+
+            driver.get(f'https://deepl.com/translator#ja/en/{line}')
+            logger.info('Webdriver initiated')
+
+            try:
+
+                input_div_element = WebDriverWait(driver, 10).until(
+                    ec.visibility_of_element_located(
+                        (By.CSS_SELECTOR,
+                         "div[contenteditable='true'][role='textbox'][aria-labelledby='translation-source-heading']")))
+
+                # Clear input <div> from previous input
+                input_div_element.clear()
+
+                # Send the current sentence to be translated to DeepL
+                input_div_element.send_keys(line)
+
+                # logging
+                logger.info(f'Input text sent: {line}')
+
+                # Wait for output to be generated
+                sleep(5)
+
+                # Identify the output <div> using CSS tag
+                output_div_element = WebDriverWait(driver, 10).until(
+                    ec.visibility_of_element_located(
+                        (By.CSS_SELECTOR,
+                         "div[contenteditable='true'][role='textbox'][aria-labelledby='translation-target-heading']")))
+
+                deepl_translated_text = output_div_element.find_element(By.TAG_NAME, "p").text
+
+                logger.info(f'Translated text extracted: {deepl_translated_text}')
+
+                deepl_translated_text = deepl_translated_text.strip()
+
+                return deepl_translated_text
+
+            except (NoSuchElementException, TimeoutException, Exception) as e:
+
+                deepl_translated_text = f'Translation failed as {str(e)}'
+                logger.error(f'{str(e)}')
+                return deepl_translated_text
+
+    @staticmethod
+    def translate_with_deepl_web(list_of_lines: list) -> list:
+
+        logger.info('DeepL web translator function initialized')
+
+        if isinstance(list_of_lines, list):
+            with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+                index_list = [index for index, line in enumerate(list_of_lines)]
+                list_of_deepl_translated_lines = list(
+                    executor.map(Transform.translate_string_with_deepl_web, list_of_lines, index_list))
+
+            logger.info("All lines translated with DeepL web")
+
+        else:
+            logger.error(f"JISHO AUTOPARSE:Type ERROR: argument was not a list but {str(type(list_of_lines))}")
+            raise TypeError(f"JISHO AutoParse: argument was not a list but {str(type(list_of_lines))}")
+
+        return list_of_deepl_translated_lines
+
 
 test_list = TextSplitter.splitlines_to_list(input_text=test_lines, strip_each_line=True, trim_list=True)
 test_list_2 = TextSplitter.splitlines_to_list(input_text=test_lines_2, strip_each_line=True, trim_list=True)
@@ -99,7 +175,5 @@ test_list_2 = TextSplitter.splitlines_to_list(input_text=test_lines_2, strip_eac
 #     th1.join()
 #     th2.join()
 
-# if __name__ == '__main__':
-
-    # Transform.jisho_parse(list_of_lines=test_list)
-
+if __name__ == '__main__':
+    Transform.translate_with_deepl_web(list_of_lines=test_list)

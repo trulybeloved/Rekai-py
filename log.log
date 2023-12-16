@@ -20,3 +20,47 @@
 2023-12-16 18:07:55.048 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 0 - Webdriver instance Started
 2023-12-16 18:07:55.089 | INFO     | rekai_multiprocessed:jisho_parse_string:38 - 5 - Webdriver instance Started
 2023-12-16 18:08:02.382 | INFO     | rekai_multiprocessed:jisho_parse:69 - JISHO AutoParse: All lines parsed
+2023-12-16 21:56:46.114 | INFO     | __main__:translate_with_deepl_web:148 - DeepL web translator function initialized
+2023-12-16 21:56:48.408 | INFO     | __mp_main__:translate_string_with_deepl_web:101 - Trying to translate line 3
+2023-12-16 21:56:48.903 | INFO     | __mp_main__:translate_string_with_deepl_web:101 - Trying to translate line 4
+2023-12-16 21:56:48.906 | INFO     | __mp_main__:translate_string_with_deepl_web:101 - Trying to translate line 5
+2023-12-16 21:56:48.986 | INFO     | __mp_main__:translate_string_with_deepl_web:101 - Trying to translate line 1
+2023-12-16 21:56:49.070 | INFO     | __mp_main__:translate_string_with_deepl_web:101 - Trying to translate line 0
+2023-12-16 21:56:49.788 | INFO     | __mp_main__:translate_string_with_deepl_web:104 - Webdriver initiated
+2023-12-16 21:56:50.205 | INFO     | __mp_main__:translate_string_with_deepl_web:104 - Webdriver initiated
+2023-12-16 21:56:50.562 | INFO     | __mp_main__:translate_string_with_deepl_web:104 - Webdriver initiated
+2023-12-16 21:56:50.780 | INFO     | __mp_main__:translate_string_with_deepl_web:104 - Webdriver initiated
+2023-12-16 21:56:51.558 | INFO     | __mp_main__:translate_string_with_deepl_web:104 - Webdriver initiated
+2023-12-16 21:56:51.726 | INFO     | __mp_main__:translate_string_with_deepl_web:120 - Input text sent: 「やっぱ、貨幣価値とかって全然違うんだよな……」
+2023-12-16 21:56:51.798 | INFO     | __mp_main__:translate_string_with_deepl_web:120 - Input text sent: 一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。
+2023-12-16 21:56:52.062 | INFO     | __mp_main__:translate_string_with_deepl_web:120 - Input text sent: ――これは本気でマズイことになった。
+2023-12-16 21:56:52.094 | INFO     | __mp_main__:translate_string_with_deepl_web:120 - Input text sent: が、そんな彼を見る人々の視線には『珍奇』なものでも見るような不可解な色が濃い。
+2023-12-16 21:56:52.151 | INFO     | __mp_main__:translate_string_with_deepl_web:120 - Input text sent: 群衆に紛れれば一瞬で見失いそうなほど凡庸な見た目だ。
+2023-12-16 21:56:56.764 | INFO     | __mp_main__:translate_string_with_deepl_web:133 - Translated text extracted: I knew that monetary values and such were totally different. ......
+2023-12-16 21:56:56.859 | INFO     | __mp_main__:translate_string_with_deepl_web:133 - Translated text extracted: Penniless and at a loss, his mind was filled with one word.
+2023-12-16 21:56:57.102 | INFO     | __mp_main__:translate_string_with_deepl_web:133 - Translated text extracted: -This was a seriously bad idea.
+2023-12-16 21:56:57.191 | INFO     | __mp_main__:translate_string_with_deepl_web:133 - Translated text extracted: However, the gazes of the people who look at him have a deep and puzzling color, as if they are looking at a "rare" thing.
+2023-12-16 21:56:57.228 | INFO     | __mp_main__:translate_string_with_deepl_web:133 - Translated text extracted: It is so ordinary looking that if it were lost in the crowd, it would be lost in an instant.
+2023-12-16 21:56:59.376 | INFO     | __main__:translate_with_deepl_web:157 - All lines translated with DeepL web
+2023-12-16 22:04:53.699 | INFO     | __main__:translate_with_deepl_web:150 - DeepL web translator function initialized
+2023-12-16 22:04:55.884 | INFO     | __mp_main__:translate_string_with_deepl_web:103 - Trying to translate line 1
+2023-12-16 22:04:56.064 | INFO     | __mp_main__:translate_string_with_deepl_web:103 - Trying to translate line 5
+2023-12-16 22:04:56.784 | INFO     | __mp_main__:translate_string_with_deepl_web:103 - Trying to translate line 0
+2023-12-16 22:04:56.851 | INFO     | __mp_main__:translate_string_with_deepl_web:103 - Trying to translate line 3
+2023-12-16 22:04:56.904 | INFO     | __mp_main__:translate_string_with_deepl_web:103 - Trying to translate line 4
+2023-12-16 22:04:56.920 | INFO     | __mp_main__:translate_string_with_deepl_web:106 - Webdriver initiated
+2023-12-16 22:04:57.047 | INFO     | __mp_main__:translate_string_with_deepl_web:106 - Webdriver initiated
+2023-12-16 22:04:59.070 | INFO     | __mp_main__:translate_string_with_deepl_web:106 - Webdriver initiated
+2023-12-16 22:04:59.081 | INFO     | __mp_main__:translate_string_with_deepl_web:106 - Webdriver initiated
+2023-12-16 22:04:59.127 | INFO     | __mp_main__:translate_string_with_deepl_web:106 - Webdriver initiated
+2023-12-16 22:04:59.234 | INFO     | __mp_main__:translate_string_with_deepl_web:122 - Input text sent: が、そんな彼を見る人々の視線には『珍奇』なものでも見るような不可解な色が濃い。
+2023-12-16 22:04:59.409 | INFO     | __mp_main__:translate_string_with_deepl_web:122 - Input text sent: 一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。
+2023-12-16 22:04:59.629 | INFO     | __mp_main__:translate_string_with_deepl_web:122 - Input text sent: 「やっぱ、貨幣価値とかって全然違うんだよな……」
+2023-12-16 22:04:59.667 | INFO     | __mp_main__:translate_string_with_deepl_web:122 - Input text sent: ――これは本気でマズイことになった。
+2023-12-16 22:04:59.761 | INFO     | __mp_main__:translate_string_with_deepl_web:122 - Input text sent: 群衆に紛れれば一瞬で見失いそうなほど凡庸な見た目だ。
+2023-12-16 22:05:04.279 | INFO     | __mp_main__:translate_string_with_deepl_web:135 - Translated text extracted: However, the gazes of the people who look at him have a deep and puzzling color, as if they are looking at a "rare" thing.
+2023-12-16 22:05:04.491 | INFO     | __mp_main__:translate_string_with_deepl_web:135 - Translated text extracted: Penniless and at a loss, his mind was filled with one word.
+2023-12-16 22:05:04.668 | INFO     | __mp_main__:translate_string_with_deepl_web:135 - Translated text extracted: I knew that monetary values and such were totally different. ......
+2023-12-16 22:05:04.726 | INFO     | __mp_main__:translate_string_with_deepl_web:135 - Translated text extracted: -This was a seriously bad idea.
+2023-12-16 22:05:04.814 | INFO     | __mp_main__:translate_string_with_deepl_web:135 - Translated text extracted: It is so ordinary looking that if it were lost in the crowd, it would be lost in an instant.
+2023-12-16 22:05:06.941 | INFO     | __main__:translate_with_deepl_web:159 - All lines translated with DeepL web

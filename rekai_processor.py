@@ -23,12 +23,7 @@ class Transform:
 
         if isinstance(list_of_lines, list):
 
-            # try:
-            #     driver = webdriver.Chrome()
-            # except Exception as e:
-            #     print('Webdriver initialization failed')
-            #     print(e)
-
+            #try-except block may be needed
             driver = webdriver.Chrome()
 
             for i, line in enumerate(list_of_lines):

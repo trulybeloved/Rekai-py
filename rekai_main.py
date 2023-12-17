@@ -15,7 +15,7 @@ Features:
 
 Todo
 
-- There should be a central DB for all the lines that have been run and sucessfully processed.
+- There should be a central DB for all the lines that have been run and sucessfully processed. - sqlite will work
 - Add check for internet connectivity
 -
 

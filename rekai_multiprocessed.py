@@ -51,7 +51,7 @@ class Transform:
 
             except Exception as e:
                 print('Element not found: ', e)
-                # jishoLog += "An Exception occurred:" + str(e) + "\n\n"
+                logger.error(f'An exception occured in jisho parse - f{str(e)}')
                 zen_html = f'<p>((Text is not parsable or could not be parsed))</p>'
                 jisho_parsed_html_element += zen_html
 

@@ -15,10 +15,6 @@ class Transform:
     @staticmethod
     async def jisho_parse(list_of_lines: list, *, sleep: bool = False) -> list:
 
-        # logging needs to be added
-
-        # core functionality
-
         list_of_jisho_parsed_html_elements = []
 
         if isinstance(list_of_lines, list):

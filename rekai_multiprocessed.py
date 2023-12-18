@@ -175,5 +175,5 @@ test_list_2 = TextSplitter.splitlines_to_list(input_text=test_lines_2, strip_eac
 #     th1.join()
 #     th2.join()
 
-if __name__ == '__main__':
-    Transform.translate_with_deepl_web(list_of_lines=test_list)
+# if __name__ == '__main__':
+#     Transform.translate_with_deepl_web(list_of_lines=test_list)

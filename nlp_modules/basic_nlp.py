@@ -73,7 +73,7 @@ class TextSplitter:
 
     @staticmethod
     def splitlines_to_list(input_text: str, *, prefix: [str, None] = None, suffix: [str, None] = None,
-                           keepends: bool = False, strip_each_line: bool = False, trim_list: bool = False) -> list:
+                           keepends: bool = False, strip_each_line: bool = True, trim_list: bool = True) -> list:
 
         """
         Converts a block of text into a list of strings using \n or \r as delimiters
@@ -83,6 +83,7 @@ class TextSplitter:
             removing whitespace from the start and ends of a string
 
             trim_list: If true, will remove list elements that are purely whitespace.
+            It will remove the \u3000 whitespace from start of paragraphs
 
             Post strip and trim:
             prefix: adds a string at the start of every line in the list
@@ -103,5 +104,6 @@ class TextSplitter:
         return list_of_lines
 
 
-# print(TextSplitter.splitlines_to_list(input_text=test_text, keepends=True, trim_list=True, suffix='suffix'))
+
+# print(TextSplitter.splitlines_to_list(input_text=test_text, keepends=False, trim_list=True, strip_each_line=False))
 

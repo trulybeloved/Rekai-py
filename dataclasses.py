@@ -91,26 +91,20 @@ class ReZeroChapter:
             )
             self.number_of_paragraphs = len(paragraphs)
             self.list_of_paragraphs = paragraphs
-            self.list_of_index_para_tuples = [(index, para) for index, para in enumerate(paragraphs)]
-            self.list_of_index_para_line_tuples = []
-            for (index, para) in self.list_of_index_para_tuples:
+            self.list_of_para_paratext_tuples = [(index+1, paratext) for index, paratext in enumerate(paragraphs)]
+            self.list_of_para_line_linetext_tuples = []
+            for (para, paratext) in self.list_of_para_paratext_tuples:
                 lines = JNLP.TextSplitter.split_para_to_list_of_lines(
-                    para,
+                    paratext,
                     strip_each_line=False,
                     trim_list=True  # IF FALSE AN EMPTY STRING IS ADDED TO THE END OF THE LIST BY THE SPLIT FUNCTION
                 )
-                for line in lines:
-                    self.list_of_index_para_line_tuples.append((index, para, line))
+                for line_index, line in enumerate(lines):
+                    para_line_linetext_tuple = (para, line_index+1, line)
+                    self.list_of_para_line_linetext_tuples.append(para_line_linetext_tuple)
 
         else:
             logger.error('Paragraphs could not be extracted as raw_text is empty')
-
-    @classmethod
-    def get_attribute_value(cls, attribute_name: str):
-        if hasattr(cls, attribute_name):
-            return getattr(cls, attribute_name)
-        else:
-            raise AttributeError(f"{cls.__name__} has no attribute '{attribute_name}'")
 
 
 chapter = ReZeroChapter(raw_text_chapter_arc, raw_text_chapter_number, raw_text_chapter_name,
@@ -118,10 +112,10 @@ chapter = ReZeroChapter(raw_text_chapter_arc, raw_text_chapter_number, raw_text_
 
 chapter.extract_paragraphs()
 
-list_of_paragraphs = chapter.get_attribute_value('list_of_paragraphs')
-list_of_index_para_tuples = chapter.get_attribute_value('list_of_index_para_tuples')
-list_of_index_para_line_tuples = chapter.get_attribute_value('list_of_index_para_line_tuples')
-print(list_of_index_para_tuples)
+list_of_paragraphs = chapter.list_of_paragraphs
+list_of_index_para_tuples = chapter.list_of_para_paratext_tuples
+list_of_index_para_line_tuples = chapter.list_of_para_line_linetext_tuples
+
 
 # rzchap = RZChapter(1, 1, "Chapter 1")
 chapter.display_info()

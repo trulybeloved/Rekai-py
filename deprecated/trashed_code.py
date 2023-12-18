@@ -48,3 +48,35 @@ extracted_list = parser.DATA
 trimmed_list = [item for item in extracted_list if not FundamentalPatterns.contains_only_whitespace(item)]
 
 print(trimmed_list)
+
+    @property
+    def name(self):
+        return self.name
+
+    @name.setter
+    def name(self, name: str):
+        self.name = name
+
+
+class RZParagraph(RZChapter):
+    def __init__(self,
+                 arc_number: int,
+                 chapter_number: int,
+                 chapter_raw_name: str,
+                 paragraph_index: int,
+                 paragraph_raw_text: str
+                 ):
+        # this method calls a method from the parent class from within a child class method
+        super().__init__(
+            arc_number, chapter_number, chapter_raw_name
+        )
+        # validation
+        assert paragraph_index >= 0, f'Paragraph index cannot be a negative integer'
+
+        # assignment
+        self.index = paragraph_index
+        self.uid = f'{arc_number}_{chapter_number}_{paragraph_index}'
+        self.raw_text = paragraph_raw_text
+
+    def __repr__(self):
+        return self.uid

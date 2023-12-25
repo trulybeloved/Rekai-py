@@ -72,7 +72,6 @@ class ReZeroChapter:
         attributes = '| '.join(f'{key} = {value}\n' for key, value in vars(self).items())
         return f'{self.__class__.__name__}({attributes})'
 
-
     def set_url(self, url):
         """Set the URL for the chapter."""
         self.url = url

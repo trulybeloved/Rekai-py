@@ -44,7 +44,7 @@ class Transform:
                 zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
                 zen_outer_html = zen_bar_element.get_attribute('outerHTML')
 
-                # Selenium adds linebreaks that mess with the html when assigned to a string
+                # Selenium also extracts linebreaks that mess with the html when assigned to a string
                 zen_html = str(zen_outer_html).replace('\n', "").strip()
 
                 jisho_parsed_html_element += zen_html

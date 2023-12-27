@@ -11,15 +11,15 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
 
-from nlp_modules.basic_nlp import TextSplitter
-from nlp_modules.japanese_nlp import Classifier
-from nlp_modules.basic_nlp import test_text as test_lines
-from nlp_modules.basic_nlp import test_text_2 as test_lines_2
+from Rekai.nlp_modules.basic_nlp import TextSplitter
+from Rekai.nlp_modules.japanese_nlp import Classifier
+from Rekai.nlp_modules.basic_nlp import test_text as test_lines
+from Rekai.nlp_modules.basic_nlp import test_text_2 as test_lines_2
 
 logger.add(sink='log.log')
 
 
-class Transform:
+class Transmute:
 
     @staticmethod
     def jisho_parse_string(line: str, index: str = 0):
@@ -69,7 +69,7 @@ class Transform:
             with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
                 index_list = [index for index, line in enumerate(list_of_lines)]
                 list_of_jisho_parsed_html_elements = list(
-                    executor.map(Transform.jisho_parse_string, list_of_lines, index_list))
+                    executor.map(Transmute.jisho_parse_string, list_of_lines, index_list))
                 print(list_of_jisho_parsed_html_elements)
             logger.info("JISHO AutoParse: All lines parsed")
 
@@ -153,7 +153,7 @@ class Transform:
             with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
                 index_list = [index for index, line in enumerate(list_of_lines)]
                 list_of_deepl_translated_lines = list(
-                    executor.map(Transform.translate_string_with_deepl_web, list_of_lines, index_list))
+                    executor.map(Transmute.translate_string_with_deepl_web, list_of_lines, index_list))
 
             logger.info("All lines translated with DeepL web")
 
@@ -164,16 +164,16 @@ class Transform:
         return list_of_deepl_translated_lines
 
 
-test_list = TextSplitter.splitlines_to_list(input_text=test_lines, strip_each_line=True, trim_list=True)
-test_list_2 = TextSplitter.splitlines_to_list(input_text=test_lines_2, strip_each_line=True, trim_list=True)
+# test_list = TextSplitter.splitlines_to_list(input_text=test_lines, strip_each_line=True, trim_list=True)
+# test_list_2 = TextSplitter.splitlines_to_list(input_text=test_lines_2, strip_each_line=True, trim_list=True)
 
 # def threaded_function(test_list, test_list_2):
-#     th1 = threading.Thread(target=Transform.jisho_parse, args=(test_list,))
-#     th2 = threading.Thread(target=Transform.jisho_parse, args=(test_list_2,))
+#     th1 = threading.Thread(target=Transmute.jisho_parse, args=(test_list,))
+#     th2 = threading.Thread(target=Transmute.jisho_parse, args=(test_list_2,))
 #     th1.start()
 #     th2.start()
 #     th1.join()
 #     th2.join()
 
 # if __name__ == '__main__':
-#     Transform.translate_with_deepl_web(list_of_lines=test_list)
+#     Transmute.translate_with_deepl_web(list_of_lines=test_list)

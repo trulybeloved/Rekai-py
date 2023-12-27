@@ -11,6 +11,7 @@ import string
 import MeCab
 from sudachipy import Dictionary
 from Rekai.nlp_modules.basic_nlp import FundamentalPatterns
+from Rekai.nlp_modules.regex import regex_for_any_single_kanji, regex_for_selecting_blocks_of_kanji
 
 
 
@@ -40,6 +41,7 @@ test_text = """
 
 　が、そんな彼を見る人々の視線には『珍奇』なものでも見るような不可解な色が濃い。
 """
+test_tokeizer = 'が、そんな彼を見る人々の視線には『珍奇』なものでも見るような不可解な色が濃い。'
 
 # class FundamentalPatterns:
 #     """
@@ -71,7 +73,26 @@ class Classifier:
             input_text = input_text.replace(char, '')
 
         return len(input_text) < 3
+    @staticmethod
+    def contains_no_kanji(input_text: str) -> bool:
+        regex_pattern_for_any_kanji = re.compile(regex_for_any_single_kanji, re.IGNORECASE)
+        is_kanji_present = regex_pattern_for_any_kanji.search(input_text)
+        if is_kanji_present:
+            return False
+        else:
+            return True
 
+    @staticmethod
+    def extract_kanji_block(input_text: str) -> tuple[str, str]:
+        regex_pattern_for_kanji_block = re.compile(regex_for_selecting_blocks_of_kanji)
+        kanji_block_match = regex_pattern_for_kanji_block.match(input_text)
+        kanji_block = kanji_block_match.group(0)
+        non_kanji_block = input_text.replace(kanji_block, '')
+        return kanji_block, non_kanji_block
+
+# print(Classifier.contains_no_kanji('濃'))
+# print(Classifier.contains_no_kanji('だ'))
+# print(Classifier.extract_kanji_block('解な'))
 
 class TextSplitter:
 
@@ -183,13 +204,13 @@ class Parser:
 
         list_of_word_pos_tuples = [(word, pos_tag) for word, pos_tag in zip(list_of_words, list_of_pos_tags)]
 
-        print(list_of_pos_tags)
-        print(len(list_of_pos_tags))
-        print(list_of_words)
-
-        print(len(list_of_words))
-        print(list_of_word_pos_tuples)
-        print(len(list_of_word_pos_tuples))
+        # print(list_of_pos_tags)
+        # print(len(list_of_pos_tags))
+        # print(list_of_words)
+        #
+        # print(len(list_of_words))
+        # print(list_of_word_pos_tuples)
+        # print(len(list_of_word_pos_tuples))
 
         return list_of_word_pos_tuples
 
@@ -211,7 +232,7 @@ class Parser:
             'その他': 'Other'
         }
         # Create an instance of the MeCab Tagger
-        tagger = MeCab.Tagger()
+        tagger = MeCab.Tagger('-r /dictionaries -d /dictionaries/mydic')
 
         # Parse the Japanese text
         parsed_text = tagger.parse(japanese_text)
@@ -265,22 +286,10 @@ class Parser:
 
         return ' '.join(result)
 
-    # @staticmethod
-    # def tag_pos_sudachi(text):
-    #     dict_obj = Dictionary()
-    #     tokenizer_obj = dict_obj.create()
-    #     result = []
-    #
-    #     for token in tokenizer_obj.tokenize(text):
-    #         word = token.surface()
-    #         pos = token.part_of_speech()[0]
-    #         result.append(f'{word}({pos})')
-    #
-    #     return ' '.join(result)
 
     @staticmethod
     def tag_pos_sudachi(text):
-        dict_obj = Dictionary()
+        dict_obj = Dictionary(dict_type='full')
         tokenizer_obj = dict_obj.create()
 
         # Manual mapping from Japanese POS tags to English equivalents
@@ -297,54 +306,38 @@ class Parser:
             "連体詞": "adnominal",
             "代名詞": "pronoun",
             "フィラー": "filler",
-            "未知語": "unknown"
+            "未知語": "unknown",
+            "補助記号": "symbol",
+            "形状詞": "na-adjective"
         }
 
         result = []
+
+        tokens = tokenizer_obj.tokenize(text)
+        # print(tokens.get_internal_cost())
+        # print(tokens.__repr__())
+        # token = tokens[0]
+        # print(token.__repr__())
+        # print(f'SURFACE: {token.surface()}')
+        # print(f'RAW SURFACE: {token.raw_surface()}')
+        # print(f'DICTIONARY_FORM: {token.dictionary_form()}')
+        # print(f'DICTIONARY ID: {token.dictionary_id()}')
+        # print(f'NORMALIZED FORM: {token.normalized_form()}')
 
         for token in tokenizer_obj.tokenize(text):
             word = token.surface()
             pos_japanese = token.part_of_speech()[0]
 
             # Map the Japanese POS tag to an English equivalent if possible
-            pos_english = pos_map.get(pos_japanese, "unknown")
-            result.append(f'{word}({pos_english})')
+            pos_english = pos_map.get(pos_japanese, pos_japanese)
+            result.append((word, pos_english))
+        print(''.join(f'{word}:{pos_english}' for (word, pos_english) in result))
 
-        return ' '.join(result)
+        return result
 
-    # @staticmethod
-    # def tag_pos_sudachi(text):
-    #     dict_obj = Dictionary()
-    #     tokenizer_obj = dict_obj.create()
-    #
-    #     # Manual mapping from Japanese POS tags to English equivalents
-    #     pos_map = {
-    #         "名詞": "noun",
-    #         "動詞": "verb",
-    #         "形容詞": "adjective",
-    #         "副詞": "adverb",
-    #         "接続詞": "conjunction",
-    #         "助詞": "particle",
-    #         "助動詞": "auxiliary verb",
-    #         "感動詞": "interjection",
-    #         "記号": "symbol",
-    #         "連体詞": "adnominal",
-    #         "フィラー": "filler",
-    #         "未知語": "unknown"
-    #     }
-    #
-    #     result = []
-    #
-    #     for token in tokenizer_obj.tokenize(text):
-    #         word = token.surface()
-    #         pos_japanese = token.part_of_speech()[0]
-    #
-    #         # Map the Japanese POS tag to an English equivalent if possible
-    #         pos_english = pos_map.get(pos_japanese, pos_japanese)
-    #         result.append(f'{word}({pos_english})')
-    #
-    #     final_text = ' '.join(result)
-    #
-    #     return final_text
+
 
 # print(TextSplitter.split_para_to_list_of_lines(test_text))
+
+# print(f'SUDACHI: {Parser.tag_pos_sudachi(test_tokeizer)}')
+# print(f'MeCAB: {Parser.add_type_to_words(test_tokeizer)}')

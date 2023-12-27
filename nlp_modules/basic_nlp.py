@@ -103,6 +103,12 @@ class TextSplitter:
 
         return list_of_lines
 
+    @staticmethod
+    def split_at_delimiter(input_text: str, delimiter: str) -> str:
+        """
+        Function that will split text at a specified delimiter
+        """
+
 
 
 # print(TextSplitter.splitlines_to_list(input_text=test_text, keepends=False, trim_list=True, strip_each_line=False))

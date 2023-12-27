@@ -42,7 +42,7 @@ class RekaiUI:
     def gradio_web_ui(self):
 
         def t_function():
-            rekai_multiprocessed.Transform.jisho_parse(test_list)
+            rekai_multiprocessed.Transmute.jisho_parse(test_list)
             return print('function complete')
 
         # Frontend

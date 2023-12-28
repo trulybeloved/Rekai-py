@@ -1,7 +1,8 @@
 from Rekai.nlp_modules.japanese_nlp import Parser, Classifier
 import pykakasi
 
-
+# JISHO IS MORE ACCURATE. Sudachi has it's problems.
+# Need to give the whole word to KAKASI for accurate
 
 target_html = '''<section id="zen_bar" class="japanese_gothic focus" lang="ja">
                                     <ul class="clearfix">
@@ -159,7 +160,7 @@ for (word, pos) in list_of_word_pos_tuples:
 
     sentence += word
 
-# print(sentence)
+print(sentence)
 
 def get_furigana(input_text):
     transmuter = pykakasi.Kakasi()
@@ -173,34 +174,53 @@ def jisho_emulate(input_text):
     list_of_word_pos_tuples = Parser.tag_pos_sudachi(input_text)
     print(list_of_word_pos_tuples)
     jisho_search_url_prefix = 'https://jisho.org/search/'
-    non_symbolic_pos = ["noun", "verb", "adjective", "adverb", "conjunction", "particle", "auxiliary verb",
-                        "interjection", "adnominal", "pronoun", "filler", "unknown", "na-adjective"
+    non_symbolic_pos = ["Noun", "Verb", "Adjective", "Adverb", "Conjunction", "Particle", "Auxiliary verb",
+                        "Interjection", "Adnominal", "Pronoun", "Filler", "Unknown", "Na-adjective"
                         ]
 
     emulated_html_code = ''
-    html_start = '<section id="zen_bar" class="japanese_gothic focus" lang="ja">\n<ul class="clearfix">'
+    #Start of <section>
+    html_start = '<section id="zen_bar" class="japanese_gothic focus" lang="ja"><ul class="clearfix">\n'
     emulated_html_code += html_start
 
     for (word, pos) in list_of_word_pos_tuples:
-
-        emulated_html_code += f'<li class="clearfix japanese_word" data-pos="{pos}" title="{pos}" data-tooltip-direction="bottom" data-tooltip-color="black" data-tooltip-margin="10">'
-
+        #case for the word being completely kanji, or a combination of kanji and hiragana
         if not Classifier.contains_no_kanji(word) and pos in non_symbolic_pos:
+            # Start of <li>
+            emulated_html_code += f'<li class="clearfix japanese_word" data-pos="{pos}" title="{pos}" data-tooltip-direction="bottom" data-tooltip-color="black" data-tooltip-margin="10">'
+
             kanji_block, non_kanji_block = Classifier.extract_kanji_block(word)
-            furigana_for_kanji_block = get_furigana(kanji_block)
-        #
-        #     emulated_html_code +=
-        #
-        # if Classifier.contains_no_kanji(word) and pos not in non_symbolic_pos:
-        #     emulated_html_code +=
-        #
-        # if Classifier.contains_no_kanji(word):
-        #     emulated_html_code += f'<span class="japanese_word__furigana_wrapper"><span class="japanese_word__furigana" data-text="{word}">{furigana}</span> </span>'
-        #
+            furigana = get_furigana(kanji_block)
+
+            emulated_html_code += f'<span class="japanese_word__furigana_wrapper"> <span class="japanese_word__furigana" data-text="{kanji_block}">{furigana}</span>'
+            if non_kanji_block is not '':
+                emulated_html_code += f'<span class="japanese_word__furigana japanese_word__furigana-invisible japanese_word__furigana-invisible__last" data-text="">{non_kanji_block}</span>'
+            emulated_html_code += f'</span>' # closes out span of furigana wrapper class
+
+            #japanese word text wrapper
+            emulated_html_code += f'<span class="japanese_word__text_wrapper"> '
+            emulated_html_code += f'<a data-word="{word}" class="jisho-link" href="{jisho_search_url_prefix}{word}">'
+            emulated_html_code += f'<span class="japanese_word__text_with_furigana">{kanji_block}</span>'
+            if non_kanji_block is not '':
+                emulated_html_code += f'<span class="japanese_word__text_without_furigana">{non_kanji_block}</span>'
+            emulated_html_code += f'</a></span>' # closes out span, a and li
+            emulated_html_code += '</li>\n'
+
+        #case for the word being completely hiragana or katakana without kanji
+        if Classifier.contains_no_kanji(word) and pos in non_symbolic_pos:
+            emulated_html_code += f'<li class="clearfix japanese_word" data-pos="{pos}" title="{pos}" data-tooltip-direction="bottom" data-tooltip-color="black" data-tooltip-margin="10">'
+            emulated_html_code += f'<span class="japanese_word__furigana_wrapper"></span>'
+            emulated_html_code += f'<span class="japanese_word__text_wrapper"><a data-word="{word}" class="jisho-link" href="{jisho_search_url_prefix}{word}">{word}</a></span>'
+            emulated_html_code += f'</li>\n'
+
+        if Classifier.contains_no_kanji(word) and pos not in non_symbolic_pos : #need to make this better, check for both kanji and kana before excluding
+            emulated_html_code += f'<li class="clearfix japanese_word"><span class="japanese_word__furigana_wrapper"> </span><span class="japanese_word__text_wrapper">{word}</span></li>\n'
+
+    emulated_html_code += '</ul>'
+    emulated_html_code += '</section>'
+
+    return emulated_html_code
 
 
 
-
-
-
-# jisho_emulate(sentence)
+print(jisho_emulate(sentence))

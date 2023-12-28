@@ -43,27 +43,6 @@ test_text = """
 """
 test_tokeizer = 'が、そんな彼を見る人々の視線には『珍奇』なものでも見るような不可解な色が濃い。'
 
-# class FundamentalPatterns:
-#     """
-#     Class of basic pattern recognition functions. Takes a string as input and returns a bool
-#     """
-#
-#     @staticmethod
-#     def contains_only_whitespace(input_text: str) -> bool:
-#         set_of_whitespace_characters = set(string.whitespace)
-#         return all(character in set_of_whitespace_characters for character in input_text)
-#
-#     @staticmethod
-#     def contains_only_digits(input_text: str) -> bool:
-#         set_of_digit_characters = set(string.digits)
-#         return all(character in set_of_digit_characters for character in input_text)
-#
-#     @staticmethod
-#     def contains_only_punctuation(input_text: str) -> bool:
-#         set_of_punctuation_characters = set(string.punctuation)
-#         return all(character in set_of_punctuation_characters for character in input_text)
-
-
 class Classifier:
 
     @staticmethod
@@ -294,21 +273,21 @@ class Parser:
 
         # Manual mapping from Japanese POS tags to English equivalents
         pos_map = {
-            "名詞": "noun",
-            "動詞": "verb",
-            "形容詞": "adjective",
-            "副詞": "adverb",
-            "接続詞": "conjunction",
-            "助詞": "particle",
-            "助動詞": "auxiliary verb",
-            "感動詞": "interjection",
-            "記号": "symbol",
-            "連体詞": "adnominal",
-            "代名詞": "pronoun",
-            "フィラー": "filler",
-            "未知語": "unknown",
-            "補助記号": "symbol",
-            "形状詞": "na-adjective"
+            "名詞": "Noun",
+            "動詞": "Verb",
+            "形容詞": "Adjective",
+            "副詞": "Adverb",
+            "接続詞": "Conjunction",
+            "助詞": "Particle",
+            "助動詞": "Auxiliary verb",
+            "感動詞": "Interjection",
+            "記号": "Symbol",
+            "連体詞": "Adnominal",
+            "代名詞": "Pronoun",
+            "フィラー": "Filler",
+            "未知語": "Unknown",
+            "補助記号": "Symbol",
+            "形状詞": "Na-adjective"
         }
 
         result = []

@@ -1,18 +1,18 @@
 # from dataclasses import dataclass
 
 
-from Scratch import chapter_1_raw_text
+# from Scratch import chapter_1_raw_text
 import nlp_modules.basic_nlp as BasicNLP
 import nlp_modules.japanese_nlp as JNLP
 from loguru import logger
 
-logger.add(sink='log.log')
-
-raw_text_chapter_arc = 1
-raw_text_chapter_number = 1
-raw_text_chapter_title = '第一章１　　『ギザ十は使えない』'
-raw_text_chapter_name = '『ギザ十は使えない』'
-raw_text_chapter_content = chapter_1_raw_text
+# logger.add(sink='log.log')
+#
+# raw_text_chapter_arc = 1
+# raw_text_chapter_number = 1
+# raw_text_chapter_title = '第一章１　　『ギザ十は使えない』'
+# raw_text_chapter_name = '『ギザ十は使えない』'
+# raw_text_chapter_content = chapter_1_raw_text
 
 
 # @dataclass
@@ -105,16 +105,16 @@ class ReZeroChapter:
         else:
             logger.error('Paragraphs could not be extracted as raw_text is empty')
 
-
-chapter = ReZeroChapter(raw_text_chapter_arc, raw_text_chapter_number, raw_text_chapter_name,
-                        raw_text_chapter_content)
-
-chapter.extract_paragraphs()
-
-list_of_paragraphs = chapter.list_of_paragraphs
-list_of_index_para_tuples = chapter.list_of_para_paratext_tuples
-list_of_index_para_line_tuples = chapter.list_of_para_line_linetext_tuples
+#
+# chapter = ReZeroChapter(raw_text_chapter_arc, raw_text_chapter_number, raw_text_chapter_name,
+#                         raw_text_chapter_content)
+#
+# chapter.extract_paragraphs()
+#
+# list_of_paragraphs = chapter.list_of_paragraphs
+# list_of_index_para_tuples = chapter.list_of_para_paratext_tuples
+# list_of_index_para_line_tuples = chapter.list_of_para_line_linetext_tuples
 
 
 # rzchap = RZChapter(1, 1, "Chapter 1")
-chapter.display_info()
+# chapter.display_info()

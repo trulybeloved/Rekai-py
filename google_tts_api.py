@@ -6,7 +6,7 @@ Note: ssml must be well-formed according to:
 """
 # REIMPORT TO ENABLE SCRIPT
 
-# from google.cloud import texttospeech
+from google.cloud import texttospeech
 from datetime import datetime
 
 now = datetime.now()

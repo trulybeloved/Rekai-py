@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 import loguru
 import string
+import pykakasi
 
 import MeCab
 from sudachipy import Dictionary
@@ -313,10 +314,28 @@ class Parser:
         print(''.join(f'{word}:{pos_english}' for (word, pos_english) in result))
 
         return result
+    @staticmethod
+    def get_furigana(input_text):
+        transmuter = pykakasi.Kakasi()
+        transmuted_results = transmuter.convert(input_text)
+        print(transmuted_results)
+        for item in transmuted_results:
+            return f'{item["hira"]}'
 
-
+    @staticmethod
+    def get_hepburn(input_text):
+        transmuter = pykakasi.Kakasi()
+        transmuted_results = transmuter.convert(input_text)
+        print(transmuted_results)
+        hepburn = ''
+        for item in transmuted_results:
+            hepburn += f'{item["hepburn"]} '
+        hepburn = hepburn.strip()
+        return hepburn
+# print(Parser.get_hepburn('違いすぎていた'))
 
 # print(TextSplitter.split_para_to_list_of_lines(test_text))
 
 # print(f'SUDACHI: {Parser.tag_pos_sudachi(test_tokeizer)}')
 # print(f'MeCAB: {Parser.add_type_to_words(test_tokeizer)}')
+

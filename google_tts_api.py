@@ -15,7 +15,7 @@ timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 client = texttospeech.TextToSpeechClient()
 
 # Set the text input to be synthesized
-synthesis_input = texttospeech.SynthesisInput(text="コンビニ帰りに異世界へ召喚されたひきこもり学生の菜月昴")
+synthesis_input = texttospeech.SynthesisInput({"text": "コンビニ帰りに異世界へ召喚されたひきこもり学生の菜月昴"})
 
 # Build the voice request, select the language code ("en-US") and the ssml
 # voice gender ("neutral")
@@ -27,11 +27,11 @@ voice = texttospeech.VoiceSelectionParams(
 # Select the type of audio file you want returned
 audio_config = texttospeech.AudioConfig(
     # Can be MP3 or LINEAR16 (wav). OPUS is natively supported in browsers. MP3 is @ 32 kbps
-    audio_encoding=texttospeech.AudioEncoding.OGG_OPUS,
-    speaking_rate=1.0,
-    pitch=0.0,
-    volume_gain_db=0.0,
-    )
+    {"audio_encoding":texttospeech.AudioEncoding.OGG_OPUS,
+    "speaking_rate": 1.0,
+    "pitch": 0.0,
+    "volume_gain_db": 0.0,
+    })
 
 # Perform the text-to-speech request on the text input with the selected
 # voice parameters and audio file type

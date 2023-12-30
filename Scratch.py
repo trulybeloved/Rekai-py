@@ -296,3 +296,5 @@ chapter_1_raw_text = '''　――これは本気でマズイことになった�
 #
 # lines = line.split('。')
 # print(lines)
+
+

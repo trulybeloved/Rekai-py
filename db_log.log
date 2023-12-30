@@ -1,0 +1,86 @@
+2023-12-29 23:25:02.135 | INFO     | __main__:initialize_db_stucture:167 - jisho_parse created. DB initialized
+2023-12-29 23:25:02.140 | INFO     | __main__:insert:188 - Insert of parsed html for line test1 in jisho_parse was sucessful
+2023-12-29 23:25:41.881 | INFO     | __main__:initialize_db_stucture:167 - jisho_parse created. DB initialized
+2023-12-29 23:25:41.882 | INFO     | __main__:insert:190 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-29 23:26:04.587 | INFO     | __main__:insert:190 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-29 23:26:07.393 | INFO     | __main__:insert:190 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-29 23:33:00.965 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-29 23:33:26.375 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-29 23:34:02.355 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:41:07.659 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:41:21.348 | INFO     | __main__:initialize_db_stucture:163 - jisho_parse is already present
+2023-12-30 13:41:21.348 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:44:50.279 | INFO     | __main__:initialize_db_stucture:163 - jisho_parse is already present
+2023-12-30 13:44:50.280 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:47:33.478 | INFO     | __main__:initialize_db_stucture:163 - jisho_parse is already present
+2023-12-30 13:47:33.478 | INFO     | __main__:insert:194 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:47:33.478 | INFO     | __main__:delete:201 - raw line deleted from jisho_parse
+2023-12-30 13:49:21.278 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:49:21.278 | INFO     | __main__:insert:196 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:49:21.278 | INFO     | __main__:delete:203 - raw line deleted from jisho_parse
+2023-12-30 13:52:58.550 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:52:58.550 | INFO     | __main__:insert:202 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:52:58.551 | INFO     | __main__:delete:209 - raw line deleted from jisho_parse
+2023-12-30 13:53:31.397 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:53:31.398 | INFO     | __main__:insert:202 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:53:31.398 | INFO     | __main__:delete:209 - raw line deleted from jisho_parse
+2023-12-30 13:53:31.398 | INFO     | __main__:query:181 - test1 was not found in the database
+2023-12-30 13:53:50.965 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:53:50.965 | INFO     | __main__:insert:202 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:53:50.965 | INFO     | __main__:delete:209 - raw line deleted from jisho_parse
+2023-12-30 13:54:28.437 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:54:28.437 | INFO     | __main__:insert:203 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:54:28.438 | INFO     | __main__:delete:210 - raw line deleted from jisho_parse
+2023-12-30 13:54:42.979 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:54:42.980 | INFO     | __main__:insert:203 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:54:42.980 | INFO     | __main__:delete:210 - raw line deleted from jisho_parse
+2023-12-30 13:56:46.915 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 13:56:46.917 | INFO     | __main__:insert:203 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 13:56:46.917 | INFO     | __main__:delete:210 - raw line deleted from jisho_parse
+2023-12-30 14:00:15.651 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 14:00:15.652 | INFO     | __main__:insert:203 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 14:00:15.652 | INFO     | __main__:query:182 - raw was not found in the database
+2023-12-30 14:02:29.473 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 14:02:29.474 | INFO     | __main__:insert:203 - Insert of test1 into jisho_parse was skipped as line already existed
+2023-12-30 14:02:29.474 | INFO     | __main__:query:179 - Query for test1 successful
+2023-12-30 14:02:29.475 | INFO     | __main__:query:182 - raw was not found in the database
+2023-12-30 15:34:23.629 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 15:34:23.635 | INFO     | __main__:insert:200 - Insert of parsed html for line 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 in jisho_parse was sucessful
+2023-12-30 15:35:58.910 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 15:35:58.910 | INFO     | __main__:insert:202 - Insert of 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 into jisho_parse was skipped as line already existed
+2023-12-30 15:35:58.911 | INFO     | __main__:query:179 - Query for 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 successful
+2023-12-30 15:50:14.594 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 15:50:14.594 | INFO     | __main__:insert:209 - Insert of 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 into jisho_parse was skipped as line already existed
+2023-12-30 15:50:14.594 | INFO     | __main__:query:179 - Query for 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 successful
+2023-12-30 15:52:23.996 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 15:52:23.996 | INFO     | __main__:query:179 - Query for 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 successful
+2023-12-30 15:52:51.650 | INFO     | __main__:initialize_db_stucture:165 - jisho_parse is already present
+2023-12-30 15:52:51.650 | INFO     | __main__:query:182 - 　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。 was not found in the database
+2023-12-30 22:35:09.860 | INFO     | __main__:insert:88 - Insert of parsed html for line raw1 in jisho_parse was sucessful
+2023-12-30 22:35:09.865 | INFO     | __main__:insert:88 - Insert of parsed html for line raw2 in jisho_parse was sucessful
+2023-12-30 22:35:09.873 | INFO     | __main__:insert:88 - Insert of parsed html for line raw3 in jisho_parse was sucessful
+2023-12-30 22:35:09.878 | INFO     | __main__:insert:88 - Insert of parsed html for line raw4 in jisho_parse was sucessful
+2023-12-30 22:35:09.882 | INFO     | __main__:insert:88 - Insert of parsed html for line raw5 in jisho_parse was sucessful
+2023-12-30 22:35:09.887 | INFO     | __main__:insert:88 - Insert of parsed html for line raw6 in jisho_parse was sucessful
+2023-12-30 22:35:09.891 | INFO     | __main__:insert:88 - Insert of parsed html for line raw7 in jisho_parse was sucessful
+2023-12-30 22:38:19.398 | INFO     | __main__:insert:90 - Insert of raw1 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:19.398 | INFO     | __main__:insert:90 - Insert of raw2 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:19.399 | INFO     | __main__:insert:90 - Insert of raw3 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:19.399 | INFO     | __main__:insert:90 - Insert of raw4 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:19.399 | INFO     | __main__:insert:90 - Insert of raw5 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:19.399 | INFO     | __main__:insert:90 - Insert of raw6 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:19.399 | INFO     | __main__:insert:90 - Insert of raw7 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.723 | INFO     | __main__:insert:90 - Insert of raw1 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.723 | INFO     | __main__:insert:90 - Insert of raw2 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.724 | INFO     | __main__:insert:90 - Insert of raw3 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.724 | INFO     | __main__:insert:90 - Insert of raw4 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.724 | INFO     | __main__:insert:90 - Insert of raw5 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.724 | INFO     | __main__:insert:90 - Insert of raw6 into jisho_parse was skipped as line already existed
+2023-12-30 22:38:36.728 | INFO     | __main__:insert:88 - Insert of parsed html for line raw8 in jisho_parse was sucessful
+2023-12-30 22:53:44.696 | INFO     | __main__:insert:90 - Insert of raw1 into jisho_parse was skipped as line already existed
+2023-12-30 22:53:44.697 | INFO     | __main__:insert:90 - Insert of raw2 into jisho_parse was skipped as line already existed
+2023-12-30 22:53:44.697 | INFO     | __main__:insert:90 - Insert of raw3 into jisho_parse was skipped as line already existed
+2023-12-30 22:53:44.697 | INFO     | __main__:insert:90 - Insert of raw4 into jisho_parse was skipped as line already existed
+2023-12-30 22:53:44.698 | INFO     | __main__:insert:90 - Insert of raw5 into jisho_parse was skipped as line already existed
+2023-12-30 22:53:44.698 | INFO     | __main__:insert:90 - Insert of raw6 into jisho_parse was skipped as line already existed
+2023-12-30 22:53:44.698 | INFO     | __main__:insert:90 - Insert of raw8 into jisho_parse was skipped as line already existed

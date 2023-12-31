@@ -11,15 +11,21 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
 
+# Google Cloud
+from google.cloud import texttospeech
+
 from Rekai.nlp_modules.basic_nlp import TextSplitter
+from Rekai.appconfig import AppConfig
 from Rekai.nlp_modules.japanese_nlp import Classifier
 from Rekai.nlp_modules.basic_nlp import test_text as test_lines
 from Rekai.nlp_modules.basic_nlp import test_text_2 as test_lines_2
 
-logger.add(sink='log.log')
+
 
 
 class Transmute:
+
+    logger.add(sink='log.log')
 
     @staticmethod
     def parse_string_with_jisho(line: str, index: str = 0) -> str:
@@ -163,19 +169,56 @@ class Transmute:
 
         return list_of_deepl_translated_lines
 
+    @staticmethod
+    def tts_string_with_google_api(line: str) -> list:
+
+        """DOCSTRING PENDING"""
+
+        # Get configration on run
+        language_code: str = AppConfig.GoogleTTSConfig.language_code
+        ssml_gender = AppConfig.GoogleTTSConfig.ssml_gender
+        voice_name: str = AppConfig.GoogleTTSConfig.voice_name
+        audio_encoding = AppConfig.GoogleTTSConfig.audio_encoding
+        speaking_rate: float = AppConfig.GoogleTTSConfig.speaking_rate
+        pitch: float = AppConfig.GoogleTTSConfig.pitch
+        volume_gain_db: float = AppConfig.GoogleTTSConfig.volume_gain_db
+
+        tts_client = texttospeech.TextToSpeechClient()
+        input_for_synthesis = texttospeech.SynthesisInput({"text": f"{line}"})
+        voice_settings = texttospeech.VoiceSelectionParams(
+            {
+                "language_code": language_code,
+                "ssml_gender": ssml_gender,
+                "name": voice_name
+            }
+        )
+        audio_configuration = texttospeech.AudioConfig(
+            {
+                "audio_encoding": audio_encoding,
+                "speaking_rate": speaking_rate,
+                "pitch": pitch,
+                "volume_gain_db": volume_gain_db,
+            }
+        )
+        logger.info(f'TTS_API_CALL: Line: {line}')
+
+        api_response = tts_client.synthesize_speech(
+            input=input_for_synthesis,
+            voice=voice_settings,
+            audio_config=audio_configuration)
+
+        logger.info(f'TTS_API_CALL for {line} was sucessful')
+        output = [line, api_response.audio_content]
+        return output
+
+    def tts_list_with_google_api(list_of_lines: list) -> list[list[str | bytes]]:
+
+        if isinstance(list_of_lines, list):
+            with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+                output_list = list(executor.map(Transmute.tts_string_with_google_api, list_of_lines))
+        return output_list
 
 
-
-# test_list = TextSplitter.splitlines_to_list(input_text=test_lines, strip_each_line=True, trim_list=True)
-# test_list_2 = TextSplitter.splitlines_to_list(input_text=test_lines_2, strip_each_line=True, trim_list=True)
-
-# def threaded_function(test_list, test_list_2):
-#     th1 = threading.Thread(target=Transmute.jisho_parse, args=(test_list,))
-#     th2 = threading.Thread(target=Transmute.jisho_parse, args=(test_list_2,))
-#     th1.start()
-#     th2.start()
-#     th1.join()
-#     th2.join()
 
 # if __name__ == '__main__':
 #     Transmute.translate_with_deepl_web(list_of_lines=test_list)

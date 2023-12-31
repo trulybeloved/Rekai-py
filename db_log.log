@@ -122,3 +122,147 @@
 2023-12-31 21:37:47.977 | INFO     | __main__:initialize_db_stucture:231 - je_tts created. je_tts_archive created. DB initialized
 2023-12-31 21:37:47.979 | INFO     | __main__:__init__:203 - An instance of je_tts was initialized
 2023-12-31 21:37:47.979 | INFO     | __main__:__init__:203 - An instance of je_tts was initialized
+2023-12-31 22:13:46.182 | INFO     | Rekai.db_management:initialize_db_stucture:221 - je_tts is already initialized and has the correct structure.
+2023-12-31 22:13:46.182 | INFO     | Rekai.db_management:initialize_db_stucture:221 - je_tts is already initialized and has the correct structure.
+2023-12-31 22:13:46.183 | INFO     | Rekai.db_management:__init__:203 - An instance of je_tts db interface class was initialized
+2023-12-31 22:13:46.183 | INFO     | Rekai.db_management:__init__:203 - An instance of je_tts db interface class was initialized
+2023-12-31 22:13:48.640 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。
+2023-12-31 22:13:48.640 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とす�2023-12-31 22:13:48.640 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、
+2023-12-31 22:13:48.647 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。
+2023-12-31 22:13:48.647 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。
+2023-12-31 22:13:48.647 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。
+2023-12-31 22:13:48.647 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。
+2023-12-31 22:13:48.649 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。
+2023-12-31 22:13:48.649 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。
+2023-12-31 22:13:48.650 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。
+2023-12-31 22:13:48.650 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。
+2023-12-31 22:13:48.656 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: ひきこもった理由は特にない。
+2023-12-31 22:13:48.656 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: ひきこもった理由は特にない。
+2023-12-31 22:13:48.678 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」
+2023-12-31 22:13:48.678 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」
+2023-12-31 22:13:49.925 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 was sucessful
+2023-12-31 22:13:49.925 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 was sucessful
+2023-12-31 22:13:49.927 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 was sucessful
+2023-12-31 22:13:49.927 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 was sucessful
+2023-12-31 22:13:49.966 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 was sucessful
+2023-12-31 22:13:49.966 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 was sucessful
+2023-12-31 22:13:50.029 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for ひきこもった理由は特にない。 was sucessful
+2023-12-31 22:13:50.029 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for ひきこもった理由は特にない。 was sucessful
+2023-12-31 22:13:50.066 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 was sucessful
+2023-12-31 22:13:50.066 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 was sucessful
+2023-12-31 22:13:50.067 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 was sucessful
+2023-12-31 22:13:50.067 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 was sucessful
+2023-12-31 22:13:50.111 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 was sucessful
+2023-12-31 22:13:50.111 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 was sucessful
+2023-12-31 22:13:50.126 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 was sucessful
+2023-12-31 22:13:50.126 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 was sucessful
+2023-12-31 22:13:51.170 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。
+2023-12-31 22:13:51.170 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。
+2023-12-31 22:13:51.177 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。
+2023-12-31 22:13:51.177 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。
+2023-12-31 22:13:51.199 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。
+2023-12-31 22:13:51.199 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。
+2023-12-31 22:13:52.029 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 was sucessful
+2023-12-31 22:13:52.029 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 was sucessful
+2023-12-31 22:13:52.277 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 was sucessful
+2023-12-31 22:13:52.277 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 was sucessful
+2023-12-31 22:13:52.302 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 was sucessful
+2023-12-31 22:13:52.302 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 was sucessful
+2023-12-31 22:13:52.476 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 in je_tts was sucessful
+2023-12-31 22:13:52.476 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 in je_tts was sucessful
+2023-12-31 22:14:37.115 | INFO     | Rekai.db_management:initialize_db_stucture:221 - je_tts is already initialized and has the correct structure.
+2023-12-31 22:14:37.115 | INFO     | Rekai.db_management:initialize_db_stucture:221 - je_tts is already initialized and has the correct structure.
+2023-12-31 22:14:37.115 | INFO     | Rekai.db_management:__init__:203 - An instance of je_tts db interface class was initialized
+2023-12-31 22:14:37.115 | INFO     | Rekai.db_management:__init__:203 - An instance of je_tts db interface class was initialized
+2023-12-31 22:14:39.620 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。
+2023-12-31 22:14:39.620 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。
+2023-12-31 22:14:39.620 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。
+2023-12-31 22:14:39.620 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。
+2023-12-31 22:14:39.624 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。
+2023-12-31 22:14:39.624 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。
+2023-12-31 22:14:39.633 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。
+2023-12-31 22:14:39.633 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。
+2023-12-31 22:14:39.638 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。
+2023-12-31 22:14:39.638 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。
+2023-12-31 22:14:39.650 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、
+2023-12-31 22:14:39.650 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、
+2023-12-31 22:14:39.653 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」
+2023-12-31 22:14:39.653 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」
+2023-12-31 22:14:39.656 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: ひきこもった理由は特にない。
+2023-12-31 22:14:39.656 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: ひきこもった理由は特にない。
+2023-12-31 22:14:40.679 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 was sucessful
+2023-12-31 22:14:40.679 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 was sucessful
+2023-12-31 22:14:40.792 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 was sucessful
+2023-12-31 22:14:40.792 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 was sucessful
+2023-12-31 22:14:40.801 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 was sucessful
+2023-12-31 22:14:40.801 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 was sucessful
+2023-12-31 22:14:40.805 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 was sucessful
+2023-12-31 22:14:40.805 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 was sucessful
+2023-12-31 22:14:40.860 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 was sucessful
+2023-12-31 22:14:40.860 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 was sucessful
+2023-12-31 22:14:40.862 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for ひきこもった理由は特にない。 was sucessful
+2023-12-31 22:14:40.862 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for ひきこもった理由は特にない。 was sucessful
+2023-12-31 22:14:40.862 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 was sucessful
+2023-12-31 22:14:40.862 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 was sucessful
+2023-12-31 22:14:40.886 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 was sucessful
+2023-12-31 22:14:40.886 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 was sucessful
+2023-12-31 22:14:41.895 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。
+2023-12-31 22:14:41.895 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。
+2023-12-31 22:14:41.997 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。
+2023-12-31 22:14:41.997 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。
+2023-12-31 22:14:42.002 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。
+2023-12-31 22:14:42.002 | INFO     | __mp_main__:tts_string_with_google_api:80 - TTS_API_CALL: Line: 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。
+2023-12-31 22:14:42.614 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 was sucessful
+2023-12-31 22:14:42.614 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 was sucessful
+2023-12-31 22:14:42.933 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 was sucessful
+2023-12-31 22:14:42.933 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 was sucessful
+2023-12-31 22:14:42.943 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 was sucessful
+2023-12-31 22:14:42.943 | INFO     | __mp_main__:tts_string_with_google_api:87 - TTS_API_CALL for 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 was sucessful
+2023-12-31 22:14:43.094 | INFO     | Rekai.db_management:insert:275 - Insert of 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 into je_tts was skipped as line already existed
+2023-12-31 22:14:43.094 | INFO     | Rekai.db_management:insert:275 - Insert of 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 into je_tts was skipped as line already existed
+2023-12-31 22:14:43.100 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 in je_tts was sucessful
+2023-12-31 22:14:43.100 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 in je_tts was sucessful
+2023-12-31 22:14:43.105 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 in je_tts was sucessful
+2023-12-31 22:14:43.105 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 in je_tts was sucessful
+2023-12-31 22:14:43.109 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line ひきこもった理由は特にない。 in je_tts was sucessful
+2023-12-31 22:14:43.109 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line ひきこもった理由は特にない。 in je_tts was sucessful
+2023-12-31 22:14:43.115 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 in je_tts was sucessful
+2023-12-31 22:14:43.115 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 in je_tts was sucessful
+2023-12-31 22:14:43.120 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 in je_tts was sucessful
+2023-12-31 22:14:43.120 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 in je_tts was sucessful
+2023-12-31 22:14:43.125 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 in je_tts was sucessful
+2023-12-31 22:14:43.125 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 in je_tts was sucessful
+2023-12-31 22:14:43.130 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 in je_tts was sucessful
+2023-12-31 22:14:43.130 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 in je_tts was sucessful
+2023-12-31 22:14:43.134 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 in je_tts was sucessful
+2023-12-31 22:14:43.134 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 in je_tts was sucessful
+2023-12-31 22:14:43.139 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 in je_tts was sucessful
+2023-12-31 22:14:43.139 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 in je_tts was sucessful
+2023-12-31 22:14:43.144 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 in je_tts was sucessful
+2023-12-31 22:14:43.144 | INFO     | Rekai.db_management:insert:273 - Insert of tts bytes for line 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 in je_tts was sucessful
+2023-12-31 22:22:25.047 | INFO     | Rekai.db_management:initialize_db_stucture:221 - je_tts is already initialized and has the correct structure.
+2023-12-31 22:22:25.047 | INFO     | Rekai.db_management:initialize_db_stucture:221 - je_tts is already initialized and has the correct structure.
+2023-12-31 22:22:25.047 | INFO     | Rekai.db_management:__init__:203 - An instance of je_tts db interface class was initialized
+2023-12-31 22:22:25.047 | INFO     | Rekai.db_management:__init__:203 - An instance of je_tts db interface class was initialized
+2023-12-31 22:22:25.048 | INFO     | Rekai.db_management:query:254 - je_tts Query for 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 successful
+2023-12-31 22:22:25.048 | INFO     | Rekai.db_management:query:254 - je_tts Query for 彼の人生は十七年、その全てを語り尽くすにはそれこそ十七年の時間を必要とする。 successful
+2023-12-31 22:22:25.049 | INFO     | Rekai.db_management:query:254 - je_tts Query for それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 successful
+2023-12-31 22:22:25.049 | INFO     | Rekai.db_management:query:254 - je_tts Query for それらを割愛し、彼の現在の立場を簡単に説明するのならば『高校三年生にしてひきこもり』となる。 successful
+2023-12-31 22:22:25.050 | INFO     | Rekai.db_management:query:254 - je_tts Query for 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 successful
+2023-12-31 22:22:25.050 | INFO     | Rekai.db_management:query:254 - je_tts Query for 詳細に説明するなら、『受験を間近に控えた時期なのに、親の期待もなにもかもうっちゃって自分の殻に閉じこもったどうしようもないクズ』といったところだ。 successful
+2023-12-31 22:22:25.050 | INFO     | Rekai.db_management:query:254 - je_tts Query for ひきこもった理由は特にない。 successful
+2023-12-31 22:22:25.050 | INFO     | Rekai.db_management:query:254 - je_tts Query for ひきこもった理由は特にない。 successful
+2023-12-31 22:22:25.052 | INFO     | Rekai.db_management:query:254 - je_tts Query for 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 successful
+2023-12-31 22:22:25.052 | INFO     | Rekai.db_management:query:254 - je_tts Query for 普通の平日、たまたま「今日は起きるのが面倒だ」となんとなく思い、サボりを実行に移したことが切っ掛けではあった。 successful
+2023-12-31 22:22:25.054 | INFO     | Rekai.db_management:query:254 - je_tts Query for そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 successful
+2023-12-31 22:22:25.054 | INFO     | Rekai.db_management:query:254 - je_tts Query for そのままずるずると自主休校が増え、気付けば立派に親を泣かせるひきこもり。 successful
+2023-12-31 22:22:25.054 | INFO     | Rekai.db_management:query:254 - je_tts Query for 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 successful
+2023-12-31 22:22:25.054 | INFO     | Rekai.db_management:query:254 - je_tts Query for 日がな一日怠惰をむさぼり、コミュニケーション皆無のネットに沈み続け――、 successful
+2023-12-31 22:22:25.055 | INFO     | Rekai.db_management:query:254 - je_tts Query for 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 successful
+2023-12-31 22:22:25.055 | INFO     | Rekai.db_management:query:254 - je_tts Query for 「その結果が異世界召喚か……もはや自分で言ってて意味わかんねぇな」 successful
+2023-12-31 22:22:25.056 | INFO     | Rekai.db_management:query:254 - je_tts Query for 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 successful
+2023-12-31 22:22:25.056 | INFO     | Rekai.db_management:query:254 - je_tts Query for 改めて状況を再確認して、スバルはもう何度目になるかわからないため息をついた。 successful
+2023-12-31 22:22:25.057 | INFO     | Rekai.db_management:query:254 - je_tts Query for 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 successful
+2023-12-31 22:22:25.057 | INFO     | Rekai.db_management:query:254 - je_tts Query for 先ほどまで好奇の視線を浴びていた通りから場所を移し、今は少し薄暗い路地裏に腰を下ろしている。 successful
+2023-12-31 22:22:25.058 | INFO     | Rekai.db_management:query:254 - je_tts Query for 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 successful
+2023-12-31 22:22:25.058 | INFO     | Rekai.db_management:query:254 - je_tts Query for 地面は舗装されていて、現代日本と比較すれば雑な仕事だが悪くはない。 successful

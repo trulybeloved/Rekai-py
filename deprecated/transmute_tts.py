@@ -3,7 +3,8 @@ import concurrent.futures
 from datetime import datetime
 from loguru import logger
 from Rekai.nlp_modules.basic_nlp import TextSplitter
-
+from Rekai.appconfig import AppConfig
+from Rekai.db_management import TextToSpeechDBM
 # To do
 # input validation
 
@@ -42,19 +43,22 @@ lines = """　彼の人生は十七年、その全てを語り尽くすにはそ
 list_of_lines = TextSplitter.splitlines_to_list(lines)
 
 
-def tts_string_with_google_api(
-        line: str,
-        language_code: str = 'ja-JP',
-        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL,
-        voice_name: str = 'ja-JP-Wavenet-B',
-        audio_encoding=texttospeech.AudioEncoding.OGG_OPUS,
-        speaking_rate: float = 1.0,
-        pitch: float = 0.0,
-        volume_gain_db: float = 0.0) -> list[str | bytes]:
+def tts_string_with_google_api(line: str) -> list:
+
     """DOCSTRING PENDING"""
 
     now = datetime.now()
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
+
+    # Get configration on run
+    language_code: str = AppConfig.GoogleTTSConfig.language_code
+    ssml_gender = AppConfig.GoogleTTSConfig.ssml_gender
+    voice_name: str = AppConfig.GoogleTTSConfig.voice_name
+    audio_encoding = AppConfig.GoogleTTSConfig.audio_encoding
+    speaking_rate: float = AppConfig.GoogleTTSConfig.speaking_rate
+    pitch: float = AppConfig.GoogleTTSConfig.pitch
+    volume_gain_db: float = AppConfig.GoogleTTSConfig.volume_gain_db
+
 
     tts_client = texttospeech.TextToSpeechClient()
     input_for_synthesis = texttospeech.SynthesisInput({"text": f"{line}"})
@@ -101,4 +105,18 @@ def tts_list_with_google_api(list_of_lines: list) -> list[list[str | bytes]]:
     return output_list
 
 if __name__ == '__main__':
-    tts_list_with_google_api(list_of_lines)
+    # tts_db_interface = TextToSpeechDBM()
+    #
+    # now = datetime.now()
+    # timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
+    # # output = tts_list_with_google_api(list_of_lines)
+    # # for raw_line, tts_bytes in output:
+    # #     tts_db_interface.insert(raw_line=raw_line, tts_bytes=tts_bytes)
+    # # tts_db_interface.close_connection()
+    # for index, raw_line in enumerate(list_of_lines):
+    #     tss_bytes = tts_db_interface.query(raw_line=raw_line)
+    #     with open(
+    #         f"C:\\Users\\prav9\\OneDrive\\Desktop\\Coding\\MTL\Rekai\\tts_outputs\\google_tts_api_output_{timestamp}_{index}.opus",
+    #         "wb") as out:
+    #         out.write(tss_bytes)
+    pass

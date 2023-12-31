@@ -19,3 +19,5 @@ class FileManagement:
     def write_file(self):
         pass
 
+    @staticmethod
+    def write_ogg_from_audio_bytes(save_path: str, audio_bytes: bytes, ):

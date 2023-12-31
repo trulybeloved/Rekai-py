@@ -22,7 +22,7 @@ logger.add(sink='log.log')
 class Transmute:
 
     @staticmethod
-    def jisho_parse_string(line: str, index: str = 0):
+    def parse_string_with_jisho(line: str, index: str = 0) -> str:
 
         driver = webdriver.Chrome()
         #
@@ -60,7 +60,7 @@ class Transmute:
         return jisho_parsed_html_element
 
     @staticmethod
-    def jisho_parse(list_of_lines: list) -> list:
+    def parse_list_with_jisho(list_of_lines: list) -> list:
 
         logger.info('JISHO AutoParse initialized')
 
@@ -69,7 +69,7 @@ class Transmute:
             with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
                 index_list = [index for index, line in enumerate(list_of_lines)]
                 list_of_jisho_parsed_html_elements = list(
-                    executor.map(Transmute.jisho_parse_string, list_of_lines, index_list))
+                    executor.map(Transmute.parse_string_with_jisho, list_of_lines, index_list))
                 print(list_of_jisho_parsed_html_elements)
             logger.info("JISHO AutoParse: All lines parsed")
 
@@ -145,7 +145,7 @@ class Transmute:
                 return deepl_translated_text
 
     @staticmethod
-    def translate_with_deepl_web(list_of_lines: list) -> list:
+    def translate_list_with_deepl_web(list_of_lines: list) -> list:
 
         logger.info('DeepL web translator function initialized')
 
@@ -162,6 +162,8 @@ class Transmute:
             raise TypeError(f"JISHO AutoParse: argument was not a list but {str(type(list_of_lines))}")
 
         return list_of_deepl_translated_lines
+
+
 
 
 # test_list = TextSplitter.splitlines_to_list(input_text=test_lines, strip_each_line=True, trim_list=True)

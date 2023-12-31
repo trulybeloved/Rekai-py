@@ -84,3 +84,41 @@
 2023-12-30 22:53:44.698 | INFO     | __main__:insert:90 - Insert of raw5 into jisho_parse was skipped as line already existed
 2023-12-30 22:53:44.698 | INFO     | __main__:insert:90 - Insert of raw6 into jisho_parse was skipped as line already existed
 2023-12-30 22:53:44.698 | INFO     | __main__:insert:90 - Insert of raw8 into jisho_parse was skipped as line already existed
+2023-12-31 14:54:38.927 | INFO     | __main__:initialize_db_stucture:54 - jisho_parse created. jisho_parse_archive created. DB initialized
+2023-12-31 14:54:38.933 | INFO     | __main__:archive:107 - raw7 deleted from jisho_parse
+2023-12-31 15:14:30.670 | INFO     | __main__:initialize_db_stucture:46 - jisho_parse is already present
+2023-12-31 15:14:30.671 | INFO     | __main__:initialize_db_stucture:47 - jisho_parse_archive is already present
+2023-12-31 15:14:30.671 | INFO     | __main__:initialize_db_stucture:48 - DB is already initialized. No changes made
+2023-12-31 15:14:30.671 | INFO     | __main__:archive:114 - CHECK QUERY for raw2352 failed. No such entry exists. Archive function is not applicable
+2023-12-31 15:14:49.866 | INFO     | __main__:initialize_db_stucture:46 - jisho_parse is already present
+2023-12-31 15:14:49.867 | INFO     | __main__:initialize_db_stucture:47 - jisho_parse_archive is already present
+2023-12-31 15:14:49.867 | INFO     | __main__:initialize_db_stucture:48 - DB is already initialized. No changes made
+2023-12-31 15:14:49.872 | INFO     | __main__:archive:111 - raw8 archived from jisho_parse
+2023-12-31 15:15:23.740 | INFO     | __main__:initialize_db_stucture:46 - jisho_parse is already present
+2023-12-31 15:15:23.741 | INFO     | __main__:initialize_db_stucture:47 - jisho_parse_archive is already present
+2023-12-31 15:15:23.741 | INFO     | __main__:initialize_db_stucture:48 - DB is already initialized. No changes made
+2023-12-31 15:15:23.741 | INFO     | __main__:archive:114 - CHECK QUERY for raw8 failed. No such entry exists. Archive function is not applicable
+2023-12-31 15:16:17.282 | INFO     | __main__:initialize_db_stucture:46 - jisho_parse is already present
+2023-12-31 15:16:17.282 | INFO     | __main__:initialize_db_stucture:47 - jisho_parse_archive is already present
+2023-12-31 15:16:17.283 | INFO     | __main__:initialize_db_stucture:48 - DB is already initialized. No changes made
+2023-12-31 15:16:17.283 | INFO     | __main__:archive:114 - CHECK QUERY for raw8 failed. No such entry exists. Archive function is not applicable
+2023-12-31 15:16:17.288 | INFO     | __main__:clear_archive:121 - Jisho Parse Archive Cleared
+2023-12-31 15:22:01.766 | INFO     | __main__:initialize_db_stucture:46 - jisho_parse is already present
+2023-12-31 15:22:01.767 | INFO     | __main__:initialize_db_stucture:47 - jisho_parse_archive is already present
+2023-12-31 15:22:01.767 | INFO     | __main__:initialize_db_stucture:48 - DB is already initialized. No changes made
+2023-12-31 15:22:01.767 | INFO     | __main__:archive:114 - CHECK QUERY for raw8 failed. No such entry exists. Archive function is not applicable
+2023-12-31 15:22:01.772 | INFO     | __main__:clear_archive:121 - Jisho Parse Archive Cleared
+2023-12-31 15:22:01.779 | CRITICAL | __main__:clear_main_table:128 - MAIN TABLE in jisho_parse has been cleared
+2023-12-31 17:49:42.473 | INFO     | __main__:__init__:47 - An instance of jisho_parse_db was initialized
+2023-12-31 17:50:18.235 | INFO     | __main__:__init__:47 - An instance of jisho_parse_db was initialized
+2023-12-31 17:53:16.530 | INFO     | __main__:__init__:45 - An instance of jisho_parse_db was initialized
+2023-12-31 17:59:27.798 | INFO     | __main__:__init__:45 - An instance of jisho_parse_db was initialized
+2023-12-31 17:59:42.757 | INFO     | __main__:__init__:45 - An instance of jisho_parse_db was initialized
+2023-12-31 17:59:57.628 | INFO     | __main__:__init__:45 - An instance of jisho_parse_db was initialized
+2023-12-31 18:00:18.119 | INFO     | __main__:__init__:45 - An instance of jisho_parse_db was initialized
+2023-12-31 18:01:52.160 | INFO     | __main__:__init__:45 - An instance of jisho_parse_db was initialized
+2023-12-31 19:04:58.985 | INFO     | __main__:__init__:47 - An instance of jisho_parse_db was initialized
+2023-12-31 21:37:47.977 | INFO     | __main__:initialize_db_stucture:231 - je_tts created. je_tts_archive created. DB initialized
+2023-12-31 21:37:47.977 | INFO     | __main__:initialize_db_stucture:231 - je_tts created. je_tts_archive created. DB initialized
+2023-12-31 21:37:47.979 | INFO     | __main__:__init__:203 - An instance of je_tts was initialized
+2023-12-31 21:37:47.979 | INFO     | __main__:__init__:203 - An instance of je_tts was initialized

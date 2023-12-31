@@ -24,8 +24,8 @@ Todo
 
 
 import gradio as gr
-from rekai_multiprocessed import test_list as test_list, test_list_2 as test_list_2
-import rekai_multiprocessed
+from transmute import test_list as test_list, test_list_2 as test_list_2
+import transmute
 
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
@@ -42,7 +42,7 @@ class RekaiUI:
     def gradio_web_ui(self):
 
         def t_function():
-            rekai_multiprocessed.Transmute.jisho_parse(test_list)
+            rekai_multiprocessed.Transmute.parse_list_with_jisho(test_list)
             return print('function complete')
 
         # Frontend

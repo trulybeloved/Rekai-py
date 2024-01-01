@@ -21,10 +21,7 @@ from Rekai.nlp_modules.basic_nlp import test_text as test_lines
 from Rekai.nlp_modules.basic_nlp import test_text_2 as test_lines_2
 
 
-
-
 class Transmute:
-
     logger.add(sink='log.log')
 
     @staticmethod
@@ -72,7 +69,7 @@ class Transmute:
 
         if isinstance(list_of_lines, list):
 
-            with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=AppConfig.jisho_multipro_max_workers) as executor:
                 index_list = [index for index, line in enumerate(list_of_lines)]
                 list_of_jisho_parsed_html_elements = list(
                     executor.map(Transmute.parse_string_with_jisho, list_of_lines, index_list))
@@ -83,10 +80,10 @@ class Transmute:
             list_of_jisho_parsed_html_elements = [html.replace('/search/', 'https://jisho.org/search/')
                                                   for html in list_of_jisho_parsed_html_elements]
 
-            list_of_jisho_parsed_html_elements = [html.replace('class="current"', 'class=""')
+            list_of_jisho_parsed_html_elements = [html.replace('class="current"', 'class="||placeholder||"')
                                                   for html in list_of_jisho_parsed_html_elements]
 
-            list_of_jisho_parsed_html_elements = [html.replace('class=""', 'class="jisho-link"')
+            list_of_jisho_parsed_html_elements = [html.replace('class="||placeholder||"', 'class="jisho-link"')
                                                   for html in list_of_jisho_parsed_html_elements]
 
         else:
@@ -156,7 +153,7 @@ class Transmute:
         logger.info('DeepL web translator function initialized')
 
         if isinstance(list_of_lines, list):
-            with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=AppConfig.deepl_multipro_max_workers) as executor:
                 index_list = [index for index, line in enumerate(list_of_lines)]
                 list_of_deepl_translated_lines = list(
                     executor.map(Transmute.translate_string_with_deepl_web, list_of_lines, index_list))
@@ -214,11 +211,9 @@ class Transmute:
     def tts_list_with_google_api(list_of_lines: list) -> list[list[str | bytes]]:
 
         if isinstance(list_of_lines, list):
-            with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=AppConfig.tts_multipro_max_workers) as executor:
                 output_list = list(executor.map(Transmute.tts_string_with_google_api, list_of_lines))
         return output_list
-
-
 
 # if __name__ == '__main__':
 #     Transmute.translate_with_deepl_web(list_of_lines=test_list)

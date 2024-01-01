@@ -16,6 +16,13 @@ class AppConfig:
     deepl_tl_db_path = os.path.join(current_working_directory, 'datastores', 'deepl_tl.db')
     je_tts_db = os.path.join(current_working_directory, 'datastores', 'je_text_to_speech.db')
 
+
+    # internal function parameters
+    general_multipro_max_workers: int = 8
+    jisho_multipro_max_workers: int = 12
+    deepl_multipro_max_workers: int = 4
+    tts_multipro_max_workers: int = 12
+
     class GoogleTTSConfig:
 
         language_code: str = 'ja-JP'

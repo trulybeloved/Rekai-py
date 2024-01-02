@@ -19,7 +19,7 @@ class JishoParseDBM:
         ]
 
     # logging
-    logger.add(sink='db_log.log')
+    logger.add(sink= AppConfig.db_log_path)
 
     # operational flags
     db_updated = False
@@ -50,7 +50,7 @@ class JishoParseDBM:
                     return False
             return True
         except Exception as e:
-            logger.error(f'An Exception:{e} was raised')
+            logger.error(f'{self._database_name}:An Exception:{e} was raised')
             return False
 
     def initialize_db_stucture(self) -> None:
@@ -66,11 +66,11 @@ class JishoParseDBM:
                 create_query = (f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} '
                                 f'(id INTEGER PRIMARY KEY, raw_line TEXT, parsed_html TEXT)')
                 cursor.execute(create_query)
-                logger.info(f'{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                logger.info(f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
                 self.db_connection.commit()
                 self.db_updated = True
             except Exception as e:
-                logger.error(f'An Exception:{e} was raised')
+                logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
     def update_cached_dict_of_raw_lines(self) -> dict:
         cursor = self.db_connection.cursor()
@@ -89,10 +89,10 @@ class JishoParseDBM:
         query_results = cursor.fetchone()
         if query_results:
             html_parse = query_results[0]
-            logger.info(f'{self._database_name} Query for {raw_line} successful')
+            logger.info(f'{self._database_name}:{self._database_name} Query for {raw_line} successful')
             return html_parse
         else:
-            logger.info(f'{raw_line} was not found in the {self._database_name} database')
+            logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
             return r'||NOT FOUND||'
 
     def insert(self, raw_line: str, parsed_html: str) -> None:
@@ -108,9 +108,9 @@ class JishoParseDBM:
             cursor.execute(insert_query, (raw_line, parsed_html))
             self.db_connection.commit()
             self.db_updated = True
-            logger.info(f'Insert of parsed html for line {raw_line} in {self._main_table_name} was sucessful')
+            logger.info(f'{self._database_name}:Insert of parsed html for line {raw_line} in {self._main_table_name} was sucessful')
         else:
-            logger.info(f'Insert of {raw_line} into {self._main_table_name} was skipped as line already existed')
+            logger.info(f'{self._database_name}:Insert of {raw_line} into {self._main_table_name} was skipped as line already existed')
 
     def archive(self, raw_line: str) -> None:
         cursor = self.db_connection.cursor()
@@ -124,10 +124,10 @@ class JishoParseDBM:
             delete_query = f'DELETE FROM {self._main_table_name} WHERE raw_line = ?'
             cursor.execute(delete_query, (raw_line,))
             self.db_connection.commit()
-            logger.info(f'{raw_line} archived from {self._main_table_name}')
+            logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
             self.db_updated = True
         else:
-            logger.info(f'CHECK QUERY for {raw_line} in {self._database_name} failed. '
+            logger.info(f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. '
                         f'No such entry exists. Archive function is not applicable')
 
     def clear_archive(self) -> None:
@@ -135,7 +135,7 @@ class JishoParseDBM:
         clear_query = f'DELETE FROM {self._archive_table_name}'
         cursor.execute(clear_query)
         self.db_connection.commit()
-        logger.info(f'{self._archive_table_name} Cleared')
+        logger.info(f'{self._database_name}:{self._archive_table_name} Cleared')
 
     def clear_main_table(self) -> None:
         cursor = self.db_connection.cursor()
@@ -180,7 +180,7 @@ class TextToSpeechDBM:
         ]
 
     # logging
-    logger.add(sink='db_log.log')
+    logger.add(sink= AppConfig.db_log_path)
 
     # operational flags
     db_updated = False
@@ -212,7 +212,7 @@ class TextToSpeechDBM:
                     return False
             return True
         except Exception as e:
-            logger.error(f'An Exception:{e} was raised')
+            logger.error(f'{self._database_name}: An Exception:{e} was raised')
             return False
 
     def initialize_db_stucture(self) -> None:
@@ -228,11 +228,11 @@ class TextToSpeechDBM:
                 create_query = (f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} (id INTEGER PRIMARY KEY, '
                                 f'raw_line TEXT, tts_bytes BLOB)')
                 cursor.execute(create_query)
-                logger.info(f'{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                logger.info(f'{self._database_name}: {self._main_table_name} created. {self._archive_table_name} created. DB initialized')
                 self.db_connection.commit()
                 self.db_updated = True
             except Exception as e:
-                logger.error(f'An Exception:{e} was raised')
+                logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
     def update_cached_dict_of_raw_lines(self) -> dict:
         cursor = self.db_connection.cursor()
@@ -270,7 +270,8 @@ class TextToSpeechDBM:
             cursor.execute(insert_query, (raw_line, sqlite3.Binary(tts_bytes)))
             self.db_connection.commit()
             self.db_updated = True
-            logger.info(f'Insert of tts bytes for line {raw_line} in {self._main_table_name} was sucessful')
+            logger.info(f'{self._database_name}:Insert of tts bytes for line {raw_line} in {self._main_table_name} was sucessful')
+
         else:
             logger.info(f'Insert of {raw_line} into {self._main_table_name} was skipped as line already existed')
 
@@ -286,10 +287,10 @@ class TextToSpeechDBM:
             delete_query = f'DELETE FROM {self._main_table_name} WHERE raw_line = ?'
             cursor.execute(delete_query, (raw_line,))
             self.db_connection.commit()
-            logger.info(f'{raw_line} archived from {self._main_table_name}')
+            logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
             self.db_updated = True
         else:
-            logger.info(f'CHECK QUERY for {raw_line} in {self._database_name} failed. No such entry exists. Archive '
+            logger.info(f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. No such entry exists. Archive '
                         f'function is not applicable')
 
     def clear_archive(self) -> None:
@@ -297,7 +298,7 @@ class TextToSpeechDBM:
         clear_query = f'DELETE FROM {self._archive_table_name}'
         cursor.execute(clear_query)
         self.db_connection.commit()
-        logger.info(f'{self._archive_table_name} Cleared')
+        logger.info(f'{self._database_name}:{self._archive_table_name} Cleared')
 
     def clear_main_table(self) -> None:
         cursor = self.db_connection.cursor()

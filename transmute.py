@@ -22,10 +22,12 @@ from Rekai.nlp_modules.basic_nlp import test_text_2 as test_lines_2
 
 
 class Transmute:
-    logger.add(sink='log.log')
+    logger.add(sink='')
 
     @staticmethod
     def parse_string_with_jisho(line: str, index: str = 0) -> str:
+
+        """DOCSTRING PENDING"""
 
         driver = webdriver.Chrome()
         #
@@ -65,6 +67,8 @@ class Transmute:
     @staticmethod
     def parse_list_with_jisho(list_of_lines: list) -> list:
 
+        """DOCSTING PENDING"""
+
         logger.info('JISHO AutoParse initialized')
 
         if isinstance(list_of_lines, list):
@@ -94,6 +98,8 @@ class Transmute:
 
     @staticmethod
     def translate_string_with_deepl_web(line: str, index: str = 0) -> str:
+
+        """DOCSTRING PENDING"""
 
         driver = webdriver.Chrome()
 
@@ -149,6 +155,8 @@ class Transmute:
 
     @staticmethod
     def translate_list_with_deepl_web(list_of_lines: list) -> list:
+
+        """DOCSTRING PENDING"""
 
         logger.info('DeepL web translator function initialized')
 
@@ -208,12 +216,14 @@ class Transmute:
         output = [line, api_response.audio_content]
         return output
 
+    @staticmethod
     def tts_list_with_google_api(list_of_lines: list) -> list[list[str | bytes]]:
+
+        """DOCSTRING PENDING"""
 
         if isinstance(list_of_lines, list):
             with concurrent.futures.ProcessPoolExecutor(max_workers=AppConfig.tts_multipro_max_workers) as executor:
                 output_list = list(executor.map(Transmute.tts_string_with_google_api, list_of_lines))
         return output_list
 
-# if __name__ == '__main__':
-#     Transmute.translate_with_deepl_web(list_of_lines=test_list)
+

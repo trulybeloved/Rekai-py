@@ -11,13 +11,22 @@ class AppConfig:
             cls._instance = super(AppConfig, cls).__new__(cls)
         return cls._instance
 
+    # directories
     current_working_directory = os.getcwd()
-    jisho_parse_db_path = os.path.join(current_working_directory, 'datastores', 'jisho_parse.db')
-    deepl_tl_db_path = os.path.join(current_working_directory, 'datastores', 'deepl_tl.db')
-    je_tts_db = os.path.join(current_working_directory, 'datastores', 'je_text_to_speech.db')
 
+    # paths pertaining to logging
+    logging_directory = os.path.join(current_working_directory, 'logs')
+    rekai_log_path = os.path.join(logging_directory, 'rekai_log.log')
+    db_log_path = os.path.join(logging_directory, 'db_log.log')
+
+    # paths pertaining to databases
+    datastores_directory = os.path.join(current_working_directory, 'datastores')
+    jisho_parse_db_path = os.path.join(datastores_directory, 'jisho_parse.db')
+    deepl_tl_db_path = os.path.join(datastores_directory, 'deepl_tl.db')
+    je_tts_db = os.path.join(datastores_directory, 'je_text_to_speech.db')
 
     # internal function parameters
+    # concurrency limits
     general_multipro_max_workers: int = 8
     jisho_multipro_max_workers: int = 12
     deepl_multipro_max_workers: int = 4

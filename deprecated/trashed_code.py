@@ -183,15 +183,15 @@ class RZParagraph(RZChapter):
             with open(file, 'rb') as f:
                 blob = f.read()
             return blob
-    db = DatabaseManager("my_db",r"C:\Users\prav9\OneDrive\Desktop\Coding\MTL\Rekai\my_db.db")
-    # db.create_table("users", ["id INTEGER PRIMARY KEY", "name TEXT", "email TEXT"])
-    db.insert_into_table("users", ["name", "email"], ["John Doe", "john.doe@example.com"])
-    print(db.select_from_table("users", ["name", "email"]))
-    db.update_table("users", ["email"], ["johndoe@example.com"], "name", "John Doe")
-    print(db.select_from_table("users", ["name", "email"]))
-    # db.delete_from_table("users", "name", "John Doe")
+    # db = DatabaseManager("my_db",r"C:\Users\prav9\OneDrive\Desktop\Coding\MTL\Rekai\my_db.db")
+    # # db.create_table("users", ["id INTEGER PRIMARY KEY", "name TEXT", "email TEXT"])
+    # db.insert_into_table("users", ["name", "email"], ["John Doe", "john.doe@example.com"])
     # print(db.select_from_table("users", ["name", "email"]))
-    db.close_connection()
+    # db.update_table("users", ["email"], ["johndoe@example.com"], "name", "John Doe")
+    # print(db.select_from_table("users", ["name", "email"]))
+    # # db.delete_from_table("users", "name", "John Doe")
+    # # print(db.select_from_table("users", ["name", "email"]))
+    # db.close_connection()
 
     class DatabaseIO(ABC):
 

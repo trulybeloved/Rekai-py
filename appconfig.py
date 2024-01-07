@@ -18,6 +18,8 @@ class AppConfig:
     logging_directory = os.path.join(current_working_directory, 'logs')
     rekai_log_path = os.path.join(logging_directory, 'rekai_log.log')
     db_log_path = os.path.join(logging_directory, 'db_log.log')
+    dataclasses_log_path = os.path.join(logging_directory, 'dataclasses.log')
+    deep_log_dataclasses = True
 
     # paths pertaining to databases
     datastores_directory = os.path.join(current_working_directory, 'datastores')

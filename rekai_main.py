@@ -18,14 +18,14 @@ Todo
 - There should be a central DB for all the lines that have been run and sucessfully processed. - sqlite will work
 - Add check for internet connectivity
 - add assertion error try accept blocks to data processing pipelines
-
+- improve unparsability check
+- add paragraph classifier
 """
 
 
 
 import gradio as gr
-from transmute import test_list as test_list, test_list_2 as test_list_2
-import transmute
+
 
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
@@ -41,10 +41,6 @@ class RekaiUI:
 
     def gradio_web_ui(self):
 
-        def t_function():
-            rekai_multiprocessed.Transmute.parse_list_with_jisho(test_list)
-            return print('function complete')
-
         # Frontend
         with gr.Blocks() as self.web_ui:
             gr.Markdown("""# Re:KAI""")
@@ -54,7 +50,6 @@ class RekaiUI:
                     Tab1_run_btn = gr.Button('Run')
 
             # Event Listeners
-            Tab1_run_btn.click(fn=t_function, inputs=None, outputs=None)
 
 
     def launch(self):

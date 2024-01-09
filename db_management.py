@@ -1,6 +1,10 @@
 import sqlite3
 from Rekai.appconfig import AppConfig
+from Rekai.custom_modules.custom_exceptions import CustomExceptions
 from loguru import logger
+
+# TODO
+
 
 class JishoParseDBM:
     """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
@@ -19,7 +23,7 @@ class JishoParseDBM:
         ]
 
     # logging
-    logger.add(sink= AppConfig.db_log_path)
+    logger.add(sink=AppConfig.db_log_path)
 
     # operational flags
     db_updated = False
@@ -66,7 +70,8 @@ class JishoParseDBM:
                 create_query = (f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} '
                                 f'(id INTEGER PRIMARY KEY, raw_line TEXT, parsed_html TEXT)')
                 cursor.execute(create_query)
-                logger.info(f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                logger.info(
+                    f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
                 self.db_connection.commit()
                 self.db_updated = True
             except Exception as e:
@@ -93,7 +98,7 @@ class JishoParseDBM:
             return html_parse
         else:
             logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
-            return r'||NOT FOUND||'
+            raise CustomExceptions.EntryNotFound
 
     def insert(self, raw_line: str, parsed_html: str) -> None:
         cursor = self.db_connection.cursor()
@@ -108,9 +113,11 @@ class JishoParseDBM:
             cursor.execute(insert_query, (raw_line, parsed_html))
             self.db_connection.commit()
             self.db_updated = True
-            logger.info(f'{self._database_name}:Insert of parsed html for line {raw_line} in {self._main_table_name} was sucessful')
+            logger.info(
+                f'{self._database_name}:Insert of parsed html for line {raw_line} in {self._main_table_name} was sucessful')
         else:
-            logger.info(f'{self._database_name}:Insert of {raw_line} into {self._main_table_name} was skipped as line already existed')
+            logger.info(
+                f'{self._database_name}:Insert of {raw_line} into {self._main_table_name} was skipped as line already existed')
 
     def archive(self, raw_line: str) -> None:
         cursor = self.db_connection.cursor()
@@ -180,7 +187,7 @@ class TextToSpeechDBM:
         ]
 
     # logging
-    logger.add(sink= AppConfig.db_log_path)
+    logger.add(sink=AppConfig.db_log_path)
 
     # operational flags
     db_updated = False
@@ -198,7 +205,7 @@ class TextToSpeechDBM:
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
-        self.initialize_db_stucture()
+        # self.initialize_db_stucture()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         logger.info(f'An instance of {self._database_name} db interface class was initialized')
 
@@ -228,7 +235,8 @@ class TextToSpeechDBM:
                 create_query = (f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} (id INTEGER PRIMARY KEY, '
                                 f'raw_line TEXT, tts_bytes BLOB)')
                 cursor.execute(create_query)
-                logger.info(f'{self._database_name}: {self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                logger.info(
+                    f'{self._database_name}: {self._main_table_name} created. {self._archive_table_name} created. DB initialized')
                 self.db_connection.commit()
                 self.db_updated = True
             except Exception as e:
@@ -255,7 +263,7 @@ class TextToSpeechDBM:
             return tts_bytes
         else:
             logger.info(f'{raw_line} was not found in the {self._database_name} database')
-            return b''
+            raise CustomExceptions.EntryNotFound
 
     def insert(self, raw_line: str, tts_bytes: bytes) -> None:
         cursor = self.db_connection.cursor()
@@ -270,7 +278,8 @@ class TextToSpeechDBM:
             cursor.execute(insert_query, (raw_line, sqlite3.Binary(tts_bytes)))
             self.db_connection.commit()
             self.db_updated = True
-            logger.info(f'{self._database_name}:Insert of tts bytes for line {raw_line} in {self._main_table_name} was sucessful')
+            logger.info(
+                f'{self._database_name}:Insert of tts bytes for line {raw_line} in {self._main_table_name} was sucessful')
 
         else:
             logger.info(f'Insert of {raw_line} into {self._main_table_name} was skipped as line already existed')
@@ -290,8 +299,9 @@ class TextToSpeechDBM:
             logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
             self.db_updated = True
         else:
-            logger.info(f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. No such entry exists. Archive '
-                        f'function is not applicable')
+            logger.info(
+                f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. No such entry exists. Archive '
+                f'function is not applicable')
 
     def clear_archive(self) -> None:
         cursor = self.db_connection.cursor()
@@ -324,4 +334,3 @@ class TextToSpeechDBM:
 
     def close_connection(self) -> None:
         self.db_connection.close()
-

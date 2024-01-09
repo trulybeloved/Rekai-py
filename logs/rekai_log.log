@@ -5413,3 +5413,257 @@ Stacktrace:
 2024-01-07 19:48:44.136 | INFO     | Rekai.transmute:tts_string_with_google_api:211 - TTS_API_CALL: Line: 菜月なつき昴すばるは平成日本生まれのゆとり教育世代出身である。
 2024-01-07 19:48:45.141 | INFO     | Rekai.transmute:tts_string_with_google_api:218 - TTS_API_CALL for 菜月なつき昴すばるは平成日本生まれのゆとり教育世代出身である。 was sucessful
 2024-01-07 19:48:45.245 | INFO     | Rekai.db_management:insert:277 - je_tts:Insert of tts bytes for line 菜月なつき昴すばるは平成日本生まれのゆとり教育世代出身である。 in je_tts was sucessful
+2024-01-09 23:18:17.592 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:18:17.594 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:20:00.517 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:20:00.518 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:20:31.633 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:20:31.635 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.674 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.676 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.678 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:22:44.678 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:22:44.685 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:22:44.686 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:22:44.703 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.704 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:22:44.706 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.707 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:22:44.708 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.709 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:22:44.711 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.712 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:22:44.714 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.715 | INFO     | Rekai.db_management:query:262 - je_tts Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:22:44.718 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.720 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:22:44.722 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.723 | INFO     | Rekai.db_management:query:262 - je_tts Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:22:44.725 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.725 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:22:44.726 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.727 | INFO     | Rekai.db_management:query:262 - je_tts Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:22:44.729 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.730 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:22:44.732 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.732 | INFO     | Rekai.db_management:query:262 - je_tts Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:22:44.734 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.735 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:22:44.736 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.736 | INFO     | Rekai.db_management:query:262 - je_tts Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:22:44.738 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.739 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:22:44.740 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.740 | INFO     | Rekai.db_management:query:262 - je_tts Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:22:44.743 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.744 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:22:44.746 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.747 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:22:44.749 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.750 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:22:44.752 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:22:44.752 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「そう、あの子に」 successful
+2024-01-09 23:22:44.754 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:22:44.755 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「そう、あの子に」 successful
+2024-01-09 23:24:44.275 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.277 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.285 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:24:44.287 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:24:44.331 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:24:44.333 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:24:44.345 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.348 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:24:44.351 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.352 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:24:44.355 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.357 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:24:44.360 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.363 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:24:44.366 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.367 | INFO     | Rekai.db_management:query:262 - je_tts Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:24:44.370 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.373 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:24:44.375 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.377 | INFO     | Rekai.db_management:query:262 - je_tts Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:24:44.380 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.382 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:24:44.384 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.385 | INFO     | Rekai.db_management:query:262 - je_tts Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:24:44.388 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.390 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:24:44.393 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.394 | INFO     | Rekai.db_management:query:262 - je_tts Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:24:44.397 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.398 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:24:44.401 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.402 | INFO     | Rekai.db_management:query:262 - je_tts Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:24:44.405 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.406 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:24:44.409 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.410 | INFO     | Rekai.db_management:query:262 - je_tts Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:24:44.415 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.416 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:24:44.418 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.418 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:24:44.422 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.424 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:24:44.426 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:24:44.428 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「そう、あの子に」 successful
+2024-01-09 23:24:44.430 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:24:44.432 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「そう、あの子に」 successful
+2024-01-09 23:30:49.416 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:30:49.418 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:30:49.424 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:30:49.426 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:30:49.431 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:30:49.432 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:30:49.443 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:30:49.445 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:31:35.194 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:31:35.196 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:31:35.205 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:31:35.206 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:31:35.212 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:31:35.212 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:31:35.222 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:31:35.222 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:34:54.142 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.144 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.148 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:34:54.149 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:34:54.153 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:34:54.154 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:34:54.162 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.162 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:34:54.164 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.165 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:34:54.167 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.169 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:34:54.172 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.172 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:34:54.173 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.174 | INFO     | Rekai.db_management:query:262 - je_tts Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:34:54.175 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.176 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:34:54.177 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.177 | INFO     | Rekai.db_management:query:262 - je_tts Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:34:54.179 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.179 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:34:54.181 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.182 | INFO     | Rekai.db_management:query:262 - je_tts Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:34:54.184 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.185 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:34:54.185 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.186 | INFO     | Rekai.db_management:query:262 - je_tts Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:34:54.187 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.188 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:34:54.189 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.189 | INFO     | Rekai.db_management:query:262 - je_tts Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:34:54.190 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.190 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:34:54.192 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.192 | INFO     | Rekai.db_management:query:262 - je_tts Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:34:54.194 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.195 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:34:54.196 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.197 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:34:54.199 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.200 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:34:54.201 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:34:54.202 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「そう、あの子に」 successful
+2024-01-09 23:34:54.203 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:34:54.204 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「そう、あの子に」 successful
+2024-01-09 23:35:33.030 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.030 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.036 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:35:33.036 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:35:33.040 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:35:33.040 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:35:33.047 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.048 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:35:33.049 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.050 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:35:33.051 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.051 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:35:33.053 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.054 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:35:33.055 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.056 | INFO     | Rekai.db_management:query:262 - je_tts Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:35:33.058 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.059 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:35:33.060 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.062 | INFO     | Rekai.db_management:query:262 - je_tts Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:35:33.063 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.064 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:35:33.065 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.065 | INFO     | Rekai.db_management:query:262 - je_tts Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:35:33.067 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.067 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:35:33.068 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.068 | INFO     | Rekai.db_management:query:262 - je_tts Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:35:33.070 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.071 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:35:33.072 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.073 | INFO     | Rekai.db_management:query:262 - je_tts Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:35:33.075 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.076 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:35:33.077 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.078 | INFO     | Rekai.db_management:query:262 - je_tts Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:35:33.079 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.080 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:35:33.080 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.080 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:35:33.083 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.083 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:35:33.084 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:35:33.085 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「そう、あの子に」 successful
+2024-01-09 23:35:33.087 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:35:33.087 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「そう、あの子に」 successful
+2024-01-09 23:35:33.222 | INFO     | Rekai.generators:full_html:311 - RekaiHTML file generated sucessfully
+2024-01-09 23:39:36.752 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.754 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.759 | INFO     | Rekai.processors:jisho_parse:34 - Jisho Parser - Lines to transmute: 0
+2024-01-09 23:39:36.760 | INFO     | Rekai.transmutors:parse_list_with_jisho:72 - JISHO AutoParse initialized
+2024-01-09 23:39:36.764 | INFO     | Rekai.transmutors:parse_list_with_jisho:81 - JISHO AutoParse: All lines parsed
+2024-01-09 23:39:36.765 | INFO     | Rekai.processors:gcloud_tts:63 - Google Cloud TTS - Lines to transmute: 0
+2024-01-09 23:39:36.773 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.775 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:39:36.776 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.777 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」 successful
+2024-01-09 23:39:36.779 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.779 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:39:36.782 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.783 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「それは少しだけ複雑なのですが……そこの、スバルの導きですね」 successful
+2024-01-09 23:39:36.784 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.785 | INFO     | Rekai.db_management:query:262 - je_tts Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:39:36.787 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.787 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。 successful
+2024-01-09 23:39:36.789 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.792 | INFO     | Rekai.db_management:query:262 - je_tts Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:39:36.793 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.794 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。 successful
+2024-01-09 23:39:36.795 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.796 | INFO     | Rekai.db_management:query:262 - je_tts Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:39:36.797 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.798 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。 successful
+2024-01-09 23:39:36.800 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.800 | INFO     | Rekai.db_management:query:262 - je_tts Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:39:36.803 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.804 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。 successful
+2024-01-09 23:39:36.806 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.806 | INFO     | Rekai.db_management:query:262 - je_tts Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:39:36.808 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.808 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for その人物への接触を求めるスバル。 successful
+2024-01-09 23:39:36.809 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.810 | INFO     | Rekai.db_management:query:262 - je_tts Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:39:36.811 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.811 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、。 successful
+2024-01-09 23:39:36.812 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.812 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:39:36.814 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.814 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「途中で彼女と出会い、今に至るというところです」 successful
+2024-01-09 23:39:36.815 | INFO     | Rekai.db_management:__init__:210 - An instance of je_tts db interface class was initialized
+2024-01-09 23:39:36.816 | INFO     | Rekai.db_management:query:262 - je_tts Query for 「そう、あの子に」 successful
+2024-01-09 23:39:36.818 | INFO     | Rekai.db_management:__init__:45 - An instance of jisho_parse_db db interface class was initialized
+2024-01-09 23:39:36.818 | INFO     | Rekai.db_management:query:97 - jisho_parse_db:jisho_parse_db Query for 「そう、あの子に」 successful
+2024-01-09 23:39:37.017 | INFO     | Rekai.generators:full_html:311 - RekaiHTML file generated sucessfully

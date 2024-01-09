@@ -21,12 +21,15 @@ Todo
 - improve unparsability check
 - add paragraph classifier
 """
-
-
+import os.path
 
 import gradio as gr
 
-
+from Rekai.appconfig import AppConfig
+from Rekai.custom_dataclasses import RekaiText
+from Rekai.processors import Process
+from Rekai.generators import GenerateHtml
+from Rekai.custom_modules.utilities import get_current_timestamp
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -36,6 +39,46 @@ import gradio as gr
 # GRADIO WEBGUI
 # ----------------------------------------------------------------------------------------------------------------------#
 
+class CustomTest:
+    @staticmethod
+    def rekai_test():
+        input_japanese_text = '''
+        
+「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」
+
+
+
+「それは少しだけ複雑なのですが……そこの、スバルの導きですね」
+
+
+
+　今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。
+
+　順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。
+
+　あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。
+
+　その人物への接触を求めるスバル。彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、
+
+
+
+「途中で彼女と出会い、今に至るというところです」
+
+
+
+「そう、あの子に」
+        '''
+        timestamp = get_current_timestamp()
+        output_directory = AppConfig.output_directory
+
+        final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
+
+        rekai_text_object = RekaiText(input_text=input_japanese_text)
+
+        Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+        Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+
+        GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
 class RekaiUI:
 
@@ -60,7 +103,6 @@ class RekaiUI:
 if __name__ == '__main__':
 
     try:
-        rekai_ui = RekaiUI()
-        rekai_ui.launch()
+        CustomTest.rekai_test()
     except Exception as e:
         print(e)

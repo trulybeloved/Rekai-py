@@ -1,4 +1,4 @@
-import os
+import os.path
 import shutil
 from loguru import logger
 from bs4 import BeautifulSoup
@@ -26,6 +26,7 @@ class GenerateHtml:
             tts_save_path = os.path.join(output_directory, tts_file_name)
             with open(tts_save_path, 'wb') as tts_output_file:
                 tts_output_file.write(tts_bytes)
+
             return tts_file_name
 
         @staticmethod
@@ -41,6 +42,7 @@ class GenerateHtml:
 
     class RekaiHtmlBlock:
 
+        # Inner Elements ===========================================
         @staticmethod
         def audio_button(line_id: str, line_raw: str, output_directory: str) -> str:
 
@@ -59,6 +61,7 @@ class GenerateHtml:
             '''
             return output_html
 
+        # Card Blocks ==============================================
         @staticmethod
         def para_card_unparsable(paragraph_number: int, input_rekai_paragraph_object: Paragraph) -> str:
 
@@ -199,6 +202,7 @@ class GenerateHtml:
 
             return output_html
 
+        # Page Blocks ==============================================
         @staticmethod
         def html_head(html_title: str) -> str:
             html_head = f'''
@@ -226,7 +230,7 @@ class GenerateHtml:
             return output_html
 
         @staticmethod
-        def html_body_main(input_rekai_text_object: RekaiText, output_directory: str):
+        def html_body_main(input_rekai_text_object: RekaiText, output_directory: str) -> str:
 
             output_html = '<div id="card-coloumn" class="card-coloumn">'
 
@@ -235,6 +239,11 @@ class GenerateHtml:
                     output_html += GenerateHtml.RekaiHtmlBlock.para_card_unparsable(input_rekai_paragraph_object=paragraph_object, paragraph_number=index)
                 else:
                     output_html += GenerateHtml.RekaiHtmlBlock.para_card(input_rekai_paragraph_object=paragraph_object, paragraph_number=index, output_directory=output_directory)
+
+            output_html += '</div>'
+
+            return output_html
+
         @staticmethod
         def html_body_suffix() -> str:
             output_html = f'''
@@ -295,7 +304,7 @@ class GenerateHtml:
             html += GenerateHtml.RekaiHtmlBlock.html_body_prefix()
             html += GenerateHtml.RekaiHtmlBlock.html_body_main(input_rekai_text_object=input_rekai_text_object, output_directory=output_directory)
             html += GenerateHtml.RekaiHtmlBlock.html_body_suffix()
-            soup = BeautifulSoup(html, parser='html.parser')
+            soup = BeautifulSoup(html, 'html.parser')
             pretty_html = soup.prettify()
 
             output_html_file_path = os.path.join(output_directory, 'rekai.html')

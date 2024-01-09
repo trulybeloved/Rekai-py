@@ -58,6 +58,8 @@ class Paragraph:
         # THIS FUNCTION IS PRESENTLY AN ARBITARY RULE THAT WORKS FOR MOST CASES NEEDS IMPROVEMENT
         if JNLP.Classifier.contains_no_parsable_text(self.paragraph_raw):
             self.unparsable = True
+        else:
+            self.unparsable = False
 
         # PARAGRAPH CLASSIFIER GOES HERE
         self.paragraph_type = 'Unclassified'

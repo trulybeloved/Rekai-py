@@ -3,6 +3,7 @@ from loguru import logger
 from Rekai.db_management import JishoParseDBM, TextToSpeechDBM
 from Rekai.custom_modules.custom_exceptions import CustomExceptions
 
+
 class Fetch:
 
     @staticmethod
@@ -26,5 +27,3 @@ class Fetch:
         except CustomExceptions.EntryNotFound as e:
             logger.exception(e)
             raise e
-
-

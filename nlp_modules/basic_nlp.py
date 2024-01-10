@@ -1,49 +1,6 @@
 """Functions related to basic NLP"""
 
-import re
 import string
-
-test_text = """
-――これは本気でマズイことになった。
-
-
-
-
-
-　一文無しで途方に暮れながら、彼の心中はそんな一言で埋め尽くされていた。
-
-
-
-「……」
-
-「やっぱ、貨幣価値とかって全然違うんだよな……」
-
-
-
-　群衆に紛れれば一瞬で見失いそうなほど凡庸な見た目だ。
-
-　が、そんな彼を見る人々の視線には『珍奇』なものでも見るような不可解な色が濃い。
-"""
-
-test_text_2 = """
-　無遠慮な視線の波にさらされて、少年は腕を組みながら納得するしかない。
-
-
-
-「つまり、これはあれだな」
-
-
-
-　指を鳴らし、自分の方を見る人々に鳴らした指を向けながら、
-
-
-
-「――異世界召喚もの、ということらしい」
-
-
-
-　目の前を、巨大なトカゲ風の生き物に引かれた馬車的な乗り物が横切っていった。
-"""
 
 class FundamentalPatterns:
     """
@@ -61,7 +18,7 @@ class FundamentalPatterns:
         return all(character in set_of_digit_characters for character in input_text)
 
     @staticmethod
-    def contains_only_punctuation(input_text: str) -> bool:
+    def contains_only_ascii_punctuation(input_text: str) -> bool:
         set_of_punctuation_characters = set(string.punctuation)
         return all(character in set_of_punctuation_characters for character in input_text)
 
@@ -108,8 +65,6 @@ class TextSplitter:
         """
         Function that will split text at a specified delimiter
         """
+        pass
 
-
-
-# print(TextSplitter.splitlines_to_list(input_text=test_text, keepends=False, trim_list=True, strip_each_line=False))
 

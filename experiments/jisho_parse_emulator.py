@@ -1,4 +1,4 @@
-from Rekai.nlp_modules.japanese_nlp import Parser, Classifier
+from Rekai.nlp_modules.japanese_nlp import Parser, Classifier, Extractor
 import pykakasi
 
 # JISHO IS MORE ACCURATE. Sudachi has it's problems.
@@ -189,7 +189,7 @@ def jisho_emulate(input_text):
             # Start of <li>
             emulated_html_code += f'<li class="clearfix japanese_word" data-pos="{pos}" title="{pos}" data-tooltip-direction="bottom" data-tooltip-color="black" data-tooltip-margin="10">'
 
-            kanji_block, non_kanji_block = Classifier.extract_kanji_block(word)
+            kanji_block, non_kanji_block = Extractor.extract_kanji_block(word)
             furigana = get_furigana(kanji_block)
 
             emulated_html_code += f'<span class="japanese_word__furigana_wrapper"> <span class="japanese_word__furigana" data-text="{kanji_block}">{furigana}</span>'

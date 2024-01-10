@@ -7,10 +7,12 @@ from Rekai.custom_dataclasses import RekaiText, Paragraph, Line
 from Rekai.appconfig import AppConfig
 from Rekai.fetchers import Fetch
 
+
 class GenerateHtml:
 
     class Config:
         pass
+
     class CommonElements:
 
         copy_button_content = '''<span style="font-size: .875em; margin-right: .125em; position: relative; top: -.25em; left: -.125em">📄<span style="position: absolute; top: .25em; left: .25em">📄</span></span>Raw'''
@@ -52,10 +54,8 @@ class GenerateHtml:
             line_tts_relative_path = f'{tts_file_output_folder_name}/{tts_file_name}'
 
             output_html = f'''
-            <!-- Specific ID -->
             <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
             </audioButton>
-            <!-- Specific ID and SRC -->
             <audio id="{line_id}-audioPlayer" class="audioPlayer"
                 src="{line_tts_relative_path}"></audio>
             '''
@@ -80,8 +80,6 @@ class GenerateHtml:
                        <p class="card-para-type">{paragraph_object.paragraph_type}</p>
                    </div>
                    <div class="card-header-right-half">
-                       <!-- Specific ID and spedific argument to be passed into the function -->
-                       <!-- function copyTextByElementId (elementId, buttonId) -->
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
                            onclick="copyTextByElementId('{paragraph_id}-raw-text', '{paragraph_id}-copy-button')">{GenerateHtml.CommonElements.copy_button_content}</button>
                    </div>
@@ -90,7 +88,6 @@ class GenerateHtml:
             # CARD MASTER CONTENTS
             output_html += f'''
                 <div class="card-contents-raw master-raw">
-                    <!-- Specific ID -->
                     <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
                     <span class="japanese-raw-para">{paragraph_raw}</span>
                     </div>
@@ -119,13 +116,10 @@ class GenerateHtml:
             output_html += f'''
                 <div class="card-header">
                     <div class="card-header-left-half">
-                        <!-- Specific Text Content -->
                         <p class="card-line-number">{line_number}</p>
                     </div>
 
                     <div class="card-header-right-half">
-                        <!-- Specific ID and spedific argument to be passed into the function -->
-                        <!-- function copyTextByElementId (elementId, buttonId) -->
                         <button id="{line_id}-copy-button" class="raw-copy-button raw-line-copy-button"
                             onclick="copyTextByElementId('{line_id}-raw-text', '{line_id}-copy-button')">{GenerateHtml.CommonElements.copy_button_content}</button>
                         {audio_button_html}
@@ -137,7 +131,6 @@ class GenerateHtml:
             # CARD SLAVE RAW
             output_html += f'''
                 <div class="card-contents-raw slave-raw">
-                    <!-- Specific ID -->
                     <div id="{line_id}-raw-text" class="card-contents-raw-text">
                     <span class="japanese-raw-line">{line_raw}</span>
                     </div>
@@ -177,8 +170,6 @@ class GenerateHtml:
                        <p class="card-para-type">{paragraph_object.paragraph_type}</p>
                    </div>
                    <div class="card-header-right-half">
-                       <!-- Specific ID and spedific argument to be passed into the function -->
-                       <!-- function copyTextByElementId (elementId, buttonId) -->
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
                            onclick="copyTextByElementId('{paragraph_id}-raw-text', '{paragraph_id}-copy-button')">{GenerateHtml.CommonElements.copy_button_content}</button>
                    </div>
@@ -187,7 +178,6 @@ class GenerateHtml:
             # CARD MASTER CONTENTS
             output_html += f'''
                 <div class="card-contents-raw master-raw">
-                    <!-- Specific ID -->
                     <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
                     <span class="japanese-raw-para">{paragraph_raw}</span>
                     </div>
@@ -236,9 +226,14 @@ class GenerateHtml:
 
             for (index, paragraph_object) in input_rekai_text_object.list_of_paragraph_object_tuples:
                 if paragraph_object.unparsable:
-                    output_html += GenerateHtml.RekaiHtmlBlock.para_card_unparsable(input_rekai_paragraph_object=paragraph_object, paragraph_number=index)
+                    output_html += GenerateHtml.RekaiHtmlBlock.para_card_unparsable(
+                        input_rekai_paragraph_object=paragraph_object,
+                        paragraph_number=index)
                 else:
-                    output_html += GenerateHtml.RekaiHtmlBlock.para_card(input_rekai_paragraph_object=paragraph_object, paragraph_number=index, output_directory=output_directory)
+                    output_html += GenerateHtml.RekaiHtmlBlock.para_card(
+                        input_rekai_paragraph_object=paragraph_object,
+                        paragraph_number=index,
+                        output_directory=output_directory)
 
             output_html += '</div>'
 
@@ -296,7 +291,7 @@ class GenerateHtml:
 
     class RekaiHtml:
         @staticmethod
-        def full_html(html_title: str, input_rekai_text_object: RekaiText, output_directory: str) -> None:
+        def full_html(html_title: str, input_rekai_text_object: RekaiText, output_directory: str, prettify: bool = False) -> None:
 
             GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
@@ -304,13 +299,15 @@ class GenerateHtml:
             html += GenerateHtml.RekaiHtmlBlock.html_body_prefix()
             html += GenerateHtml.RekaiHtmlBlock.html_body_main(input_rekai_text_object=input_rekai_text_object, output_directory=output_directory)
             html += GenerateHtml.RekaiHtmlBlock.html_body_suffix()
-            soup = BeautifulSoup(html, 'html.parser')
-            pretty_html = soup.prettify()
+
+            if prettify:
+                soup = BeautifulSoup(html, 'html.parser')
+                html = soup.prettify()
 
             output_html_file_path = os.path.join(output_directory, 'rekai.html')
 
             with open(output_html_file_path, 'w', encoding='utf-8') as rekai_html_file:
-                rekai_html_file.write(pretty_html)
+                rekai_html_file.write(html)
 
             os.startfile(output_html_file_path)
 

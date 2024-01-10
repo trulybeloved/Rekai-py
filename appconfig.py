@@ -1,11 +1,12 @@
 import os
+
 from google.cloud import texttospeech
 from dataclasses import dataclass
 from selenium.webdriver.chrome.options import Options
 
+
 @dataclass
 class AppConfig:
-
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -45,8 +46,8 @@ class AppConfig:
     # text to speech configuration
     tts_file_extension: str = 'opus'
     tts_output_folder_name: str = 'tts_files'
-    class GoogleTTSConfig:
 
+    class GoogleTTSConfig:
         language_code: str = 'ja-JP'
         ssml_gender = texttospeech.SsmlVoiceGender.NEUTRAL
         voice_name: str = 'ja-JP-Wavenet-B'
@@ -57,10 +58,9 @@ class AppConfig:
 
     # Selenium Webdriver configuration
     class ChromeOptions:
-
         options = Options()
         options.add_argument('--headless')
-        # user_profile_path = "C:/Users/prav9/AppData/Local/Google/Chrome/User Data/Profile 3"
+        # user_profile_path = ""
         # options.setBinary('/path/to/chrome/binary')
         # PROFILES ARE NOT WORKING RIGHT NOW
         # options.add_argument(f'--user-data-dir={user_profile_path}')

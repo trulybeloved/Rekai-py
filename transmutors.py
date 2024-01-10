@@ -13,11 +13,8 @@ from time import sleep
 # Google Cloud
 from google.cloud import texttospeech
 
-from Rekai.nlp_modules.basic_nlp import TextSplitter
 from Rekai.appconfig import AppConfig
 from Rekai.nlp_modules.japanese_nlp import Classifier
-from Rekai.nlp_modules.basic_nlp import test_text as test_lines
-from Rekai.nlp_modules.basic_nlp import test_text_2 as test_lines_2
 
 
 class Transmute:
@@ -34,7 +31,7 @@ class Transmute:
 
         jisho_parsed_html_element = str()
 
-        if Classifier.contains_no_parsable_text(line):
+        if Classifier.contains_no_parsable_ja_text(line):
             jisho_parsed_html_element += 'unparsable'
 
         else:
@@ -107,7 +104,7 @@ class Transmute:
 
         deepl_translated_text = str()
 
-        if Classifier.contains_no_parsable_text(line):
+        if Classifier.contains_no_parsable_ja_text(line):
             deepl_translated_text += 'unparsable'
 
         else:

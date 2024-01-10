@@ -1,10 +1,8 @@
 from loguru import logger
-import time
 
 from Rekai.custom_dataclasses import RekaiText, Paragraph, Line
 from Rekai.transmutors import Transmute
 from Rekai.db_management import JishoParseDBM, TextToSpeechDBM
-from Rekai.misc.Scratch import chapter_1_raw_text, chapter_raw_2
 
 
 class Process:
@@ -70,13 +68,3 @@ class Process:
             db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
         db_interface.close_connection()
 
-# if __name__ == "__main__":
-#
-#     starttime = time.time()
-#     text_object = RekaiText(chapter_raw_2)
-#     Processor.jisho_parse(text_object)
-#     Processor.gcloud_tts(text_object)
-#
-#
-#     endtime = time.time()
-#     print(f'Execution time: {endtime - starttime}')

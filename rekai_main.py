@@ -4,12 +4,10 @@
 @author: beloved
 
 This app will take japanese text as input, carry out all the NLP tasks, and save everything in a structured database
-along with media files in proper folders, uniquely named folders.
+along with media files in proper folders
 
 Features:
 - gradio UI for interfacing
-- inputs - Option to input the respective text lines or
-- JP text line spliting
 - Incorporate Kudasai Preprocessor
 -
 
@@ -24,11 +22,11 @@ import os.path
 
 import gradio as gr
 
-from Rekai.appconfig import AppConfig
-from Rekai.custom_dataclasses import RekaiText
-from Rekai.processors import Process
-from Rekai.generators import GenerateHtml
-from Rekai.custom_modules.utilities import get_current_timestamp
+from appconfig import AppConfig
+from custom_dataclasses import RekaiText
+from processors import Process
+from generators import GenerateHtml
+from custom_modules.utilities import get_current_timestamp
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -79,29 +77,30 @@ class CustomTest:
 
         GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
-class RekaiUI:
 
-    def gradio_web_ui(self):
+# Frontend
+with gr.Blocks() as demo:
+    gr.Markdown("""# Re:KAI""")
 
-        # Frontend
-        with gr.Blocks() as self.web_ui:
-            gr.Markdown("""# Re:KAI""")
+    with gr.Tab('RekaiHTML') as rekai_html_tab:
 
-            with gr.Tab("Preprocess") as self.preprocess_tab:
-                with gr.Column():
-                    Tab1_run_btn = gr.Button('Run')
+        gr.Markdown('''Generate RekaiHTML files for japanese text.''')
 
-            # Event Listeners
+        with gr.Row():
+            with gr.Column():
+                html_input_text_box = gr.Textbox(label='Japanese Raw Text', value='', lines=10, max_lines=20, visible=True, interactive=True,
+                                                 placeholder='Input Japanese Raw text here')
+                html_generate_button = gr.Button(value='Generate HTML', variant='primary', interactive=True, visible=True)
+                html_interrupt_button = gr.Button(value='Stop', variant='stop', interactive=False, visible=True)
+            with gr.Column():
+                rekai_html_log_area = gr.Textbox(label='Log', value='', lines=10, max_lines=20, visible=True, interactive=False)
 
+    with gr.Tab("Preprocess") as preprocess_tab:
+        with gr.Column():
+            Tab0_run_btn = gr.Button('Run')
 
-    def launch(self):
-        self.gradio_web_ui()
-        self.web_ui.launch(show_error=True)
-
+    # Event Listeners
 
 if __name__ == '__main__':
 
-    try:
-        CustomTest.rekai_test()
-    except Exception as e:
-        print(e)
+    demo.launch()

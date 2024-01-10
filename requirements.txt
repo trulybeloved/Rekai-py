@@ -2,5 +2,4 @@ selenium
 loguru
 google-cloud-texttospeech
 gradio
-pi
 beautifulsoup4

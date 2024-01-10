@@ -1,8 +1,8 @@
 from loguru import logger
 
-from Rekai.custom_dataclasses import RekaiText, Paragraph, Line
-from Rekai.transmutors import Transmute
-from Rekai.db_management import JishoParseDBM, TextToSpeechDBM
+from custom_dataclasses import RekaiText, Paragraph, Line
+from transmutors import Transmute
+from db_management import JishoParseDBM, TextToSpeechDBM
 
 
 class Process:

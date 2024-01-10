@@ -8,8 +8,8 @@ import pykakasi
 import MeCab
 from sudachipy import Dictionary
 
-from Rekai.nlp_modules.basic_nlp import FundamentalPatterns
-from Rekai.nlp_modules.patterns import Regex, Charsets
+from nlp_modules.basic_nlp import FundamentalPatterns
+from nlp_modules.patterns import Regex, Charsets
 
 
 class Classifier:
@@ -38,11 +38,11 @@ class Classifier:
         else:
             return True
 
-print(Classifier.contains_no_parsable_ja_text('「「お客様――？」」'))
-print(Classifier.contains_no_parsable_ja_text('※※　※　※　※　※　※　※　※　※　※　※　※'))
-print(Classifier.contains_no_parsable_ja_text('　　　　　　　　　　　　　　　　△▼△▼△▼△'))
-print(Classifier.contains_no_parsable_ja_text('「たたたたたたたたたたたたたた――っ！！」'))
-print(Classifier.contains_no_parsable_ja_text('「――――」'))
+# print(Classifier.contains_no_parsable_ja_text('「「お客様――？」」'))
+# print(Classifier.contains_no_parsable_ja_text('※※　※　※　※　※　※　※　※　※　※　※　※'))
+# print(Classifier.contains_no_parsable_ja_text('　　　　　　　　　　　　　　　　△▼△▼△▼△'))
+# print(Classifier.contains_no_parsable_ja_text('「たたたたたたたたたたたたたた――っ！！」'))
+# print(Classifier.contains_no_parsable_ja_text('「――――」'))
 
 class Extractor:
     @staticmethod

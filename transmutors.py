@@ -13,8 +13,8 @@ from time import sleep
 # Google Cloud
 from google.cloud import texttospeech
 
-from Rekai.appconfig import AppConfig
-from Rekai.nlp_modules.japanese_nlp import Classifier
+from appconfig import AppConfig
+from nlp_modules.japanese_nlp import Classifier
 
 
 class Transmute:

@@ -1,6 +1,6 @@
 import sqlite3
-from Rekai.appconfig import AppConfig
-from Rekai.custom_modules.custom_exceptions import CustomExceptions
+from appconfig import AppConfig
+from custom_modules.custom_exceptions import CustomExceptions
 from loguru import logger
 
 # TODO

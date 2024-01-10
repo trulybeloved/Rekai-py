@@ -1,7 +1,7 @@
 from loguru import logger
 
-from Rekai.db_management import JishoParseDBM, TextToSpeechDBM
-from Rekai.custom_modules.custom_exceptions import CustomExceptions
+from db_management import JishoParseDBM, TextToSpeechDBM
+from custom_modules.custom_exceptions import CustomExceptions
 
 
 class Fetch:

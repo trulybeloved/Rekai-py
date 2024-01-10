@@ -3,9 +3,9 @@ import shutil
 from loguru import logger
 from bs4 import BeautifulSoup
 
-from Rekai.custom_dataclasses import RekaiText, Paragraph, Line
-from Rekai.appconfig import AppConfig
-from Rekai.fetchers import Fetch
+from custom_dataclasses import RekaiText, Paragraph, Line
+from appconfig import AppConfig
+from fetchers import Fetch
 
 
 class GenerateHtml:

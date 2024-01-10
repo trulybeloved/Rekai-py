@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from loguru import logger
 
-import Rekai.nlp_modules.basic_nlp as BasicNLP
-import Rekai.nlp_modules.japanese_nlp as JNLP
-from Rekai.appconfig import AppConfig
+import nlp_modules.basic_nlp as BasicNLP
+import nlp_modules.japanese_nlp as JNLP
+from appconfig import AppConfig
 
 
 @dataclass

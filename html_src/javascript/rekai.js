@@ -48,7 +48,13 @@ jishoLinks.forEach(function (jishoLink) {
   jishoLink.onclick = function (event) {
     event.preventDefault();
     var iframe = document.getElementById("sidebar-iframe");
-    iframe.src = this.href;
+    var originalJishoLink = this.href;
+    if (localStorage.getItem("darkModeEnabled") === "true") {
+      var modifiedJishoLink = originalJishoLink + "?color_theme=dark";
+    } else {
+      var modifiedJishoLink = originalJishoLink + "?color_theme=light";
+    }
+    iframe.src = modifiedJishoLink;
   };
 });
 
@@ -156,4 +162,48 @@ function toggleRightSidebar() {
     rightSidebarContainer.className = "right-sidebar sidebar-expanded";
   }
 }
+
+// --------------------------------------------------------------------------------------------
+// JS for dark mode
+function setDarkMode(isDarkModeEnabled) {
+  var root = document.documentElement;
+  if (isDarkModeEnabled) {
+    root.classList.add("dark-mode");
+    // reload jisho
+    var jishoIframe = document.getElementById("sidebar-iframe");
+    jishoIframe.src = "https://jisho.org/?color_theme=dark";
+    
+  } else {
+    root.classList.remove("dark-mode");
+    // reload jisho
+    var jishoIframe = document.getElementById("sidebar-iframe");
+    jishoIframe.src = "https://jisho.org/?color_theme=light";
+    
+  }
+}
+
+function toggleDarkMode() {
+  var root = document.documentElement;
+  var isDarkModeEnabled = root.classList.contains("dark-mode");
+
+  // invert the boolean
+  isDarkModeEnabled = !isDarkModeEnabled;
+
+  // Call function that updates dark mode class on root
+  setDarkMode(isDarkModeEnabled);
+
+  // Store state in local storage
+  localStorage.setItem("darkModeEnabled", isDarkModeEnabled);
+
+
+}
+
+// Set initial dark mode state based on local storage
+function initializeDarkMode() {
+  var isDarkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
+  setDarkMode(isDarkModeEnabled);
+}
+
+// Call initializeDarkMode on page load
+initializeDarkMode();
 

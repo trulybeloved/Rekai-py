@@ -107,4 +107,7 @@ output.zip
 .vs/Kudasai/v17/.wsuo
 
 ## lib
-lib/
+lib
+
+## log files
+.log

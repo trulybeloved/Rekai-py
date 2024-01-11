@@ -67,7 +67,7 @@ class GenerateHtml:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
-            paragraph_raw = paragraph_object.paragraph_raw
+            paragraph_raw = paragraph_object.raw_text
 
             # CARD MASTER START
             output_html = f'<div id="{paragraph_id}" class="line-card-master">'
@@ -103,7 +103,7 @@ class GenerateHtml:
 
             line_object = input_rekai_line_object
             line_id = f'P{paragraph_number}_L{line_number}'
-            line_raw = line_object.line_raw
+            line_raw = line_object.raw_text
 
             audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
             jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
@@ -157,7 +157,7 @@ class GenerateHtml:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
-            paragraph_raw = paragraph_object.paragraph_raw
+            paragraph_raw = paragraph_object.raw_text
 
             # CARD MASTER START
             output_html = f'<div id="{paragraph_id}" class="line-card-master">'
@@ -184,7 +184,7 @@ class GenerateHtml:
                 </div>'''
 
             # GENERATE SLAVE CARDS
-            for (line_number, line_object) in input_rekai_paragraph_object.list_of_line_object_tuples:
+            for (line_number, line_object) in input_rekai_paragraph_object.numbered_lines:
                 output_html += f'{GenerateHtml.RekaiHtmlBlock.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
 
             # CARD MASTER END
@@ -224,7 +224,7 @@ class GenerateHtml:
 
             output_html = '<div id="card-coloumn" class="card-coloumn">'
 
-            for (index, paragraph_object) in input_rekai_text_object.list_of_paragraph_object_tuples:
+            for (index, paragraph_object) in input_rekai_text_object.numbered_paragraphs:
                 if paragraph_object.unparsable:
                     output_html += GenerateHtml.RekaiHtmlBlock.para_card_unparsable(
                         input_rekai_paragraph_object=paragraph_object,

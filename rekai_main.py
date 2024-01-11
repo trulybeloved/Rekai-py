@@ -22,6 +22,8 @@ import os.path
 
 import gradio as gr
 
+import sys
+
 from appconfig import AppConfig
 from custom_dataclasses import RekaiText
 from processors import Process
@@ -77,6 +79,21 @@ class CustomTest:
 
         GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
+# Main Function
+def main(input_japanese_text):
+    timestamp = get_current_timestamp()
+    output_directory = AppConfig.output_directory
+
+    final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
+
+    rekai_text_object = RekaiText(input_text=input_japanese_text)
+
+    Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+    Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+
+    GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
+
+
 
 # Frontend
 with gr.Blocks() as demo:
@@ -101,6 +118,13 @@ with gr.Blocks() as demo:
 
     # Event Listeners
 
-if __name__ == '__main__':
 
-    demo.launch()
+if __name__ == '__main__':
+    # Condition checks whether to go into gradio mode or follow "normal" routine (sys.argv is always at least 1 long)
+    if len(sys.argv)==1:
+        demo.launch()
+    else:
+        location = sys.argv[1]
+        #error handling in python is for chumps
+        with open(location, "r", encoding="utf-8") as file:
+            main(file.read())

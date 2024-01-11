@@ -94,14 +94,11 @@ dmypy.json
 ## Directories used by popular Python packages and tools
 __pypackages__/
 
-## Rules for KiJiKu
-kijiku_rules.json
-
 ## Output files
-output/
+outputs/
 output.zip
 
-## Visual Studio shit
+## Visual Studio
 .vs/slnx.sqlite-journal
 .vs/slnx.sqlite
 .vs/ProjectSettings.json

@@ -9,63 +9,58 @@ from appconfig import AppConfig
 @dataclass
 class Line:
     # Instance variables
-    line_raw: str
+    raw_text: str
     list_of_clauses: list
     number_of_clauses: int
 
-    def __init__(self, input_line):
+    def __init__(self, input_line: str):
 
-        self.line_raw = input_line
+        self.raw_text = input_line
         self.list_of_clauses = JNLP.TextSplitter.split_line_to_list_of_clauses(input_line)
         self.number_of_clauses = len(self.list_of_clauses)
-        if self.number_of_clauses > 1:
-            self.single_clause = False
-        else:
-            self.single_clause = True
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
+        
+    def single_clause(self):
+        '''Checks if line has only one clause'''
+        not self.number_of_clauses > 1
 
 
 @dataclass
 class Paragraph:
     # Instance variables
-    paragraph_raw: str
+    raw_text: str
     list_of_lines: list
-    number_of_lines: int
-    single_line: bool
-    list_of_line_object_tuples: list[tuple[int, Line]]
+    line_count: int
+    numbered_lines: list[tuple[int, Line]]
     unparsable: bool
     paragraph_type: str
 
-    def __init__(self, input_paragraph):
+    def __init__(self, input_paragraph: str):
 
         # assert "\n" not in input_paragraph
 
-        self.paragraph_raw = input_paragraph
+        self.raw_text = input_paragraph
         self.list_of_lines = JNLP.TextSplitter.split_para_to_list_of_lines(input_paragraph)
-        self.number_of_lines = len(self.list_of_lines)
+        self.line_count = len(self.list_of_lines)
 
-        # check if the paragraph has only one line
-        if self.number_of_lines > 1:
-            self.single_line = False
-        else:
-            self.single_line = True
-
-        self.list_of_line_object_tuples = [(index + 1, Line(line)) for index, line in enumerate(self.list_of_lines)]
+        self.numbered_lines = [(index + 1, Line(line)) for index, line in enumerate(self.list_of_lines)]
 
         # check if the paragraph is unparsable
         # THIS FUNCTION IS PRESENTLY AN ARBITARY RULE THAT WORKS FOR MOST CASES NEEDS IMPROVEMENT
-        if JNLP.Classifier.contains_no_parsable_ja_text(self.paragraph_raw):
-            self.unparsable = True
-        else:
-            self.unparsable = False
+        self.unparsable = JNLP.Classifier.contains_no_parsable_ja_text(self.raw_text)
+
 
         # PARAGRAPH CLASSIFIER GOES HERE
         self.paragraph_type = 'Unclassified'
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
+    
+    def single_line(self):
+        '''Checks if paragraph has only one line'''
+        not self.line_count > 1
 
 
 @dataclass
@@ -75,10 +70,8 @@ class RekaiText:
     # Instance variables (needed for dataclasses base methods to function)
     raw_text: str
     text_header: str
-    list_of_paragraph_tuples: list[tuple[int, str]]
-    number_of_paragraphs: int
-    list_of_paragraph_object_tuples: list[tuple[int, Paragraph]]
-    list_of_parsable_paragraph_object_tuples: list[tuple[int, Paragraph]]
+    paragraph_count: int
+    numbered_paragraphs: list[tuple[int, Paragraph]]
 
     def __init__(self, input_text: str, text_header: str = ''):
         # validation
@@ -91,13 +84,16 @@ class RekaiText:
         paragraphs: list = BasicNLP.TextSplitter.splitlines_to_list(
             self.raw_text, keepends=False, strip_each_line=True, trim_list=True)
 
-        self.list_of_paragraph_tuples = [(index + 1, para) for index, para in enumerate(paragraphs)]
-        self.number_of_paragraphs = len(self.list_of_paragraph_tuples)
-        self.list_of_paragraph_object_tuples = [(index + 1, Paragraph(para)) for index, para in enumerate(paragraphs)]
-
-        self.list_of_parsable_paragraph_object_tuples = [(int, paragraph_object) for (int, paragraph_object) in
-                                                         self.list_of_paragraph_object_tuples if
-                                                         paragraph_object.unparsable is False]
+        self.paragraph_count = len(paragraphs)
+        self.numbered_paragraphs = [(index + 1, Paragraph(para)) for index, para in enumerate(paragraphs)]
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
+
+    def raw_paragraphs(self) -> list[str]:
+        '''Returns List of the raw text of all paragraphs'''
+        return [paragraph.raw_text for (_, paragraph) in self.numbered_paragraphs]
+    
+    def parsable_paragraphs(self) -> tuple[int, Paragraph]:
+        '''Returns Numbered List of all paragraphs that are parsable'''
+        return list(filter(lambda e: not e[1].unparsable, self.numbered_paragraphs))

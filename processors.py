@@ -16,12 +16,12 @@ class Process:
         function_name = 'Jisho Parser'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object
-        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.list_of_parsable_paragraph_object_tuples
+        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.parsable_paragraphs()
 
         list_of_lines_for_transmutation = []
 
         # Check if already in database
-        for (index, paragraph_object) in list_of_paragraph_object_tuples:
+        for (_, paragraph_object) in list_of_paragraph_object_tuples:
             list_of_lines: list = paragraph_object.list_of_lines
             for line in list_of_lines:
                 if line in db_interface.get_raw_lines_dict():
@@ -45,12 +45,12 @@ class Process:
         function_name = 'Google Cloud TTS'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object
-        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.list_of_parsable_paragraph_object_tuples
+        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.parsable_paragraphs()
 
         list_of_lines_for_transmutation = []
 
         # Check if already in database
-        for (index, paragraph_object) in list_of_paragraph_object_tuples:
+        for (_, paragraph_object) in list_of_paragraph_object_tuples:
             list_of_lines: list = paragraph_object.list_of_lines
             for line in list_of_lines:
                 if line in db_interface.get_raw_lines_dict():

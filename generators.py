@@ -204,7 +204,6 @@ class GenerateHtml:
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>{html_title}</title>
 
-                <link rel="stylesheet" href="css/jishoparse.css">
                 <link rel="stylesheet" href="css/styles.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -276,8 +275,8 @@ class GenerateHtml:
                             <button class="top-bar-button top-bar-button-generic">Button</button>
                         </div>
                         <div class="top-bar-end-section">
-                            <button id="toggle-sidebar-button" class="top-bar-button top-bar-button-generic"
-                                onclick="toggleRightSidebar()">Hide Sidebar</button>
+                            <button id="toggle-light-dark-mode-button" class="top-bar-button top-bar-button-generic" onclick="toggleDarkMode()">Light|Dark</button>
+                            <button id="toggle-sidebar-button" class="top-bar-button top-bar-button-generic" onclick="toggleRightSidebar()">Hide Sidebar</button>
                         </div>
                     </div>
                 </div>

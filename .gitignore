@@ -110,4 +110,4 @@ output.zip
 lib
 
 ## log files
-.log
+*.log

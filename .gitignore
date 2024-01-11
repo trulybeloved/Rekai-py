@@ -96,7 +96,6 @@ dmypy.json
 __pypackages__/
 
 ## Output files
-outputs/
 output.zip
 
 ## Visual Studio

@@ -82,10 +82,10 @@ class Transmute:
             list_of_jisho_parsed_html_tuples = [(line, html.replace('/search/', 'https://jisho.org/search/'))
                                                 for (line, html) in list_of_jisho_parsed_html_tuples]
 
-            list_of_jisho_parsed_html_tuples = [(line, html.replace('class="current"', 'class="||placeholder||"'))
+            list_of_jisho_parsed_html_tuples = [(line, html.replace('class="current"', 'class=""'))
                                                 for (line, html) in list_of_jisho_parsed_html_tuples]
 
-            list_of_jisho_parsed_html_tuples = [(line, html.replace('class="||placeholder||"', 'class="jisho-link"'))
+            list_of_jisho_parsed_html_tuples = [(line, html.replace('class=""', 'class="jisho-link"'))
                                                 for (line, html) in list_of_jisho_parsed_html_tuples]
 
         else:

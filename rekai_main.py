@@ -116,15 +116,31 @@ with gr.Blocks() as demo:
         with gr.Column():
             Tab0_run_btn = gr.Button('Run')
 
-    # Event Listeners
+    ## Event Listeners
+    html_generate_button.click(fn=main, inputs=[html_input_text_box],outputs=[])
 
 
 if __name__ == '__main__':
-    # Condition checks whether to go into gradio mode or follow "normal" routine (sys.argv is always at least 1 long)
-    if len(sys.argv)==1:
-        demo.launch()
+
+    ## typically you want to check if sys.argv is greater than 1 since the first argument is the python file itself
+    
+    ## argument with txt file
+    if len(sys.argv) == 2:
+
+        file_path = sys.argv[1]
+    
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                main(file.read())
+
+        except FileNotFoundError:
+            print(f"File not found at {file_path}")
+
+            input("Press any key to exit.")
+
+            raise FileNotFoundError(f"File not found at {file_path}")
+        
+
+    ## gradio webgui
     else:
-        location = sys.argv[1]
-        #error handling in python is for chumps
-        with open(location, "r", encoding="utf-8") as file:
-            main(file.read())
+        demo.launch()

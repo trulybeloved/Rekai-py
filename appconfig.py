@@ -64,3 +64,21 @@ class AppConfig:
         # options.setBinary('/path/to/chrome/binary')
         # PROFILES ARE NOT WORKING RIGHT NOW
         # options.add_argument(f'--user-data-dir={user_profile_path}')
+
+
+@dataclass
+class RunConfig:
+    # This class is called by default by RekaiText.
+    preprocess: bool
+    run_jisho_parse: bool
+    run_tts: bool
+
+    def __init__(self,
+                 preprocess=False,
+                 run_jisho_parse=True,
+                 run_tts=True):
+
+        self.preprocess = preprocess
+        self.run_jisho_parse = run_jisho_parse
+        self.run_tts = run_tts
+

@@ -4,7 +4,7 @@ from loguru import logger
 from bs4 import BeautifulSoup
 
 from custom_dataclasses import RekaiText, Paragraph, Line
-from appconfig import AppConfig
+from appconfig import AppConfig, RunConfig
 from fetchers import Fetch
 
 
@@ -44,6 +44,19 @@ class GenerateHtml:
 
     class RekaiHtmlBlock:
 
+        # Run configuration
+        config_preprocess: bool
+        config_include_jisho_parse: bool
+        config_include_tts: bool
+
+        def __init__(self, run_config_object: RunConfig):
+            self.set_config(run_config_object=run_config_object)
+
+        def set_config(self, run_config_object: RunConfig):
+            self.config_preprocess = run_config_object.preprocess
+            self.config_include_jisho_parse = run_config_object.run_jisho_parse
+            self.config_include_tts = run_config_object.run_tts
+
         # Inner Elements ===========================================
         @staticmethod
         def audio_button(line_id: str, line_raw: str, output_directory: str) -> str:
@@ -62,8 +75,7 @@ class GenerateHtml:
             return output_html
 
         # Card Blocks ==============================================
-        @staticmethod
-        def para_card_unparsable(paragraph_number: int, input_rekai_paragraph_object: Paragraph) -> str:
+        def para_card_unparsable(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph) -> str:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
@@ -75,7 +87,7 @@ class GenerateHtml:
             # CARD MASTER HEADER
             output_html += f''' 
                <div class="card-header">
-                   <div class="card-header-left-half">
+                   <div class="card-header-left-half">
                        <p class="card-para-number">{paragraph_number}</p>
                        <p class="card-para-type">{paragraph_object.paragraph_type}</p>
                    </div>
@@ -98,14 +110,17 @@ class GenerateHtml:
 
             return output_html
 
-        @staticmethod
-        def line_card(paragraph_number: int, line_number: int, input_rekai_line_object: Line, output_directory: str) -> str:
+        def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line, output_directory: str) -> str:
 
             line_object = input_rekai_line_object
             line_id = f'P{paragraph_number}_L{line_number}'
             line_raw = line_object.raw_text
 
-            audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
+            if self.config_include_tts:
+                audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
+            else:
+                audio_button_html = ''
+
             jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
 
 
@@ -152,8 +167,7 @@ class GenerateHtml:
 
             return output_html
 
-        @staticmethod
-        def para_card(paragraph_number: int, input_rekai_paragraph_object: Paragraph, output_directory: str) -> str:
+        def para_card(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph, output_directory: str) -> str:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
@@ -185,7 +199,7 @@ class GenerateHtml:
 
             # GENERATE SLAVE CARDS
             for (line_number, line_object) in input_rekai_paragraph_object.numbered_lines:
-                output_html += f'{GenerateHtml.RekaiHtmlBlock.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
+                output_html += f'{self.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
 
             # CARD MASTER END
             output_html += f'</div>'
@@ -193,8 +207,7 @@ class GenerateHtml:
             return output_html
 
         # Page Blocks ==============================================
-        @staticmethod
-        def html_head(html_title: str) -> str:
+        def html_head(self, html_title: str) -> str:
             html_head = f'''
             <!DOCTYPE html>
             <html>
@@ -213,23 +226,21 @@ class GenerateHtml:
             '''
             return html_head
 
-        @staticmethod
-        def html_body_prefix() -> str:
+        def html_body_prefix(self, ) -> str:
             output_html = f'''<body><main><div id="primary" class="primary">'''
             return output_html
 
-        @staticmethod
-        def html_body_main(input_rekai_text_object: RekaiText, output_directory: str) -> str:
+        def html_body_main(self, input_rekai_text_object: RekaiText, output_directory: str) -> str:
 
             output_html = '<div id="card-coloumn" class="card-coloumn">'
 
             for (index, paragraph_object) in input_rekai_text_object.numbered_paragraphs:
                 if paragraph_object.unparsable:
-                    output_html += GenerateHtml.RekaiHtmlBlock.para_card_unparsable(
+                    output_html += self.para_card_unparsable(
                         input_rekai_paragraph_object=paragraph_object,
                         paragraph_number=index)
                 else:
-                    output_html += GenerateHtml.RekaiHtmlBlock.para_card(
+                    output_html += self.para_card(
                         input_rekai_paragraph_object=paragraph_object,
                         paragraph_number=index,
                         output_directory=output_directory)
@@ -238,8 +249,7 @@ class GenerateHtml:
 
             return output_html
 
-        @staticmethod
-        def html_body_suffix() -> str:
+        def html_body_suffix(self) -> str:
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
                         <div id="sidebar-placeholder" class="sidebar-placeholder">
@@ -290,14 +300,16 @@ class GenerateHtml:
 
     class RekaiHtml:
         @staticmethod
-        def full_html(html_title: str, input_rekai_text_object: RekaiText, output_directory: str, prettify: bool = False) -> None:
+        def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText, output_directory: str, prettify: bool = False) -> None:
 
             GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
-            html = GenerateHtml.RekaiHtmlBlock.html_head(html_title=html_title)
-            html += GenerateHtml.RekaiHtmlBlock.html_body_prefix()
-            html += GenerateHtml.RekaiHtmlBlock.html_body_main(input_rekai_text_object=input_rekai_text_object, output_directory=output_directory)
-            html += GenerateHtml.RekaiHtmlBlock.html_body_suffix()
+            generate = GenerateHtml.RekaiHtmlBlock(run_config_object=run_config_object)
+
+            html = generate.html_head(html_title=html_title)
+            html += generate.html_body_prefix()
+            html += generate.html_body_main(input_rekai_text_object=input_rekai_text_object, output_directory=output_directory)
+            html += generate.html_body_suffix()
 
             if prettify:
                 soup = BeautifulSoup(html, 'html.parser')

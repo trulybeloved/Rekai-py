@@ -11,20 +11,20 @@ class Line:
     # Instance variables
     raw_text: str
     list_of_clauses: list
-    number_of_clauses: int
+    clause_count: int
 
     def __init__(self, input_line: str):
 
         self.raw_text = input_line
         self.list_of_clauses = JNLP.TextSplitter.split_line_to_list_of_clauses(input_line)
-        self.number_of_clauses = len(self.list_of_clauses)
+        self.clause_count = len(self.list_of_clauses)
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
         
-    def single_clause(self):
-        '''Checks if line has only one clause'''
-        not self.number_of_clauses > 1
+    def is_single_clause(self) -> bool:
+        """Checks if line has only one clause"""
+        return not self.clause_count > 1
 
 
 @dataclass
@@ -58,9 +58,9 @@ class Paragraph:
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
     
-    def single_line(self):
-        '''Checks if paragraph has only one line'''
-        not self.line_count > 1
+    def is_single_line(self) -> bool:
+        """Checks if paragraph has only one line"""
+        return not self.line_count > 1
 
 
 @dataclass
@@ -72,6 +72,7 @@ class RekaiText:
     text_header: str
     paragraph_count: int
     numbered_paragraphs: list[tuple[int, Paragraph]]
+    numbered_parsable_paragraphs: list[tuple[int, Paragraph]]
 
     def __init__(self, input_text: str, text_header: str = ''):
         # validation
@@ -86,14 +87,15 @@ class RekaiText:
 
         self.paragraph_count = len(paragraphs)
         self.numbered_paragraphs = [(index + 1, Paragraph(para)) for index, para in enumerate(paragraphs)]
+        self.numbered_parsable_paragraphs = self.get_parsable_paragraphs()
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
 
-    def raw_paragraphs(self) -> list[str]:
-        '''Returns List of the raw text of all paragraphs'''
+    def get_raw_paragraphs(self) -> list[str]:
+        """Returns List of the raw text of all paragraphs"""
         return [paragraph.raw_text for (_, paragraph) in self.numbered_paragraphs]
     
-    def parsable_paragraphs(self) -> tuple[int, Paragraph]:
-        '''Returns Numbered List of all paragraphs that are parsable'''
+    def get_parsable_paragraphs(self) -> list[tuple[int, Paragraph]]:
+        """Returns Numbered List of all paragraphs that are parsable"""
         return list(filter(lambda e: not e[1].unparsable, self.numbered_paragraphs))

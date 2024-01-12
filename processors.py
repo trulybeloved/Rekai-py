@@ -16,7 +16,7 @@ class Process:
         function_name = 'Jisho Parser'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object
-        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.parsable_paragraphs()
+        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.numbered_parsable_paragraphs
 
         list_of_lines_for_transmutation = []
 
@@ -45,7 +45,7 @@ class Process:
         function_name = 'Google Cloud TTS'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object
-        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.parsable_paragraphs()
+        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.numbered_parsable_paragraphs
 
         list_of_lines_for_transmutation = []
 

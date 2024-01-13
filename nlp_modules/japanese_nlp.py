@@ -5,7 +5,7 @@ import re
 from bs4 import BeautifulSoup
 from loguru import logger
 import pykakasi
-import MeCab
+# import MeCab
 from sudachipy import Dictionary
 
 from nlp_modules.basic_nlp import FundamentalPatterns
@@ -25,7 +25,7 @@ class Classifier:
         # further checks on the remaining string
         same_kana_repeated = bool(re.match(Regex.same_hiragana_repeated, input_text))
         if same_kana_repeated:
-            input_text = ''
+            return True
         # Needs an additional dictionary based check
         return bool(len(input_text) < 1)
 
@@ -207,78 +207,78 @@ class Parser:
 
         return list_of_word_pos_tuples
 
-    @staticmethod
-    def add_type_to_words(japanese_text):
-        pos_mapping = {
-            '名詞': 'Noun',
-            '動詞': 'Verb',
-            '形容詞': 'Adjective',
-            '副詞': 'Adverb',
-            '助詞': 'Particle',
-            '助動詞': 'Auxiliary verb',
-            '記号': 'Symbol',
-            'フィラー': 'Filler',
-            '接続詞': 'Conjunction',
-            '接頭詞': 'Prefix',
-            '感動詞': 'Interjection',
-            '未知語': 'Unknown',
-            'その他': 'Other'
-        }
-        # Create an instance of the MeCab Tagger
-        tagger = MeCab.Tagger('-r /dictionaries -d /dictionaries/mydic')
-
-        # Parse the Japanese text
-        parsed_text = tagger.parse(japanese_text)
-
-        # Split the parsed text into individual lines
-        lines = parsed_text.split('\n')
-
-        # Process each line to extract the word and convert it to Romaji
-        processed_lines = []
-        for line in lines:
-            if line == 'EOS':
-                break
-            else:
-                # Split the line by tabs to extract the word and its features
-                parts = line.split('\t')
-
-                # Extract the word from the parts
-                word = parts[0]
-
-                # Extract the features from the parts
-                features = parts[1].split(',')
-
-                # Extract the most common meaning (part-of-speech) from the features
-                pos = features[0]
-
-                # Map the Japanese part-of-speech to its English equivalent
-                english_pos = pos_mapping.get(pos)
-
-                # Add the English part-of-speech in brackets after the word
-                word_with_meaning = f"{word} ({english_pos})"
-
-                # Append the processed line to the list
-                processed_lines.append(word_with_meaning)
-
-        # Join the processed lines to form the final text
-        final_text = ' '.join(processed_lines)
-
-        return final_text
-
-    @staticmethod
-    def tag_pos(text):
-        mecab = MeCab.Tagger("-Ochasen")
-        node = mecab.parse(text).split('\n')
-        result = []
-
-        for i in node[:-2]:
-            col = i.split('\t')
-            word = col[0]
-            pos = col[3].split('-')[0]
-            result.append(f'{word}({pos})')
-
-        return ' '.join(result)
-
+    # @staticmethod
+    # def add_type_to_words(japanese_text):
+    #     pos_mapping = {
+    #         '名詞': 'Noun',
+    #         '動詞': 'Verb',
+    #         '形容詞': 'Adjective',
+    #         '副詞': 'Adverb',
+    #         '助詞': 'Particle',
+    #         '助動詞': 'Auxiliary verb',
+    #         '記号': 'Symbol',
+    #         'フィラー': 'Filler',
+    #         '接続詞': 'Conjunction',
+    #         '接頭詞': 'Prefix',
+    #         '感動詞': 'Interjection',
+    #         '未知語': 'Unknown',
+    #         'その他': 'Other'
+    #     }
+    #     # Create an instance of the MeCab Tagger
+    #     tagger = MeCab.Tagger('-r /dictionaries -d /dictionaries/mydic')
+    #
+    #     # Parse the Japanese text
+    #     parsed_text = tagger.parse(japanese_text)
+    #
+    #     # Split the parsed text into individual lines
+    #     lines = parsed_text.split('\n')
+    #
+    #     # Process each line to extract the word and convert it to Romaji
+    #     processed_lines = []
+    #     for line in lines:
+    #         if line == 'EOS':
+    #             break
+    #         else:
+    #             # Split the line by tabs to extract the word and its features
+    #             parts = line.split('\t')
+    #
+    #             # Extract the word from the parts
+    #             word = parts[0]
+    #
+    #             # Extract the features from the parts
+    #             features = parts[1].split(',')
+    #
+    #             # Extract the most common meaning (part-of-speech) from the features
+    #             pos = features[0]
+    #
+    #             # Map the Japanese part-of-speech to its English equivalent
+    #             english_pos = pos_mapping.get(pos)
+    #
+    #             # Add the English part-of-speech in brackets after the word
+    #             word_with_meaning = f"{word} ({english_pos})"
+    #
+    #             # Append the processed line to the list
+    #             processed_lines.append(word_with_meaning)
+    #
+    #     # Join the processed lines to form the final text
+    #     final_text = ' '.join(processed_lines)
+    #
+    #     return final_text
+    #
+    # @staticmethod
+    # def tag_pos(text):
+    #     mecab = MeCab.Tagger("-Ochasen")
+    #     node = mecab.parse(text).split('\n')
+    #     result = []
+    #
+    #     for i in node[:-2]:
+    #         col = i.split('\t')
+    #         word = col[0]
+    #         pos = col[3].split('-')[0]
+    #         result.append(f'{word}({pos})')
+    #
+    #     return ' '.join(result)
+    #
     @staticmethod
     def tag_pos_sudachi(text):
         dict_obj = Dictionary(dict_type='full')

@@ -17,7 +17,7 @@ class Classifier:
     @staticmethod
     def contains_no_parsable_ja_text(input_text: str) -> bool:
 
-        print(input_text)
+        # print(input_text)
         replacement_set = Charsets.EXPRESSIONS | Charsets.PUNCTUATION
         for char in replacement_set:
             input_text = input_text.replace(char, '')

@@ -2,7 +2,6 @@ import concurrent.futures
 import asyncio
 
 import deepl
-from deepl import TextResult
 from loguru import logger
 
 from selenium import webdriver
@@ -186,6 +185,8 @@ class Transmute:
     # DeepL API translation
     @staticmethod
     def translate_string_with_deepl_api(line: str, index: str = 0, source_lang: str = 'JA', target_lang: str = 'EN-US') -> tuple[str, str]:
+
+        """DOCSTRING PENDING"""
 
         translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
 

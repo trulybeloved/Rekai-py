@@ -1,5 +1,4 @@
 from loguru import logger
-import concurrent.futures
 import asyncio
 import time
 
@@ -92,41 +91,41 @@ class Process:
             db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
         db_interface.close_connection()
 
-        @staticmethod
-        def deepl_tl(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> None:
+    @staticmethod
+    def deepl_tl(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> None:
 
-            db_interface = DeeplTlDBM()
-            function_name = 'DeepL Translation'  # for logging
+        db_interface = DeeplTlDBM()
+        function_name = 'DeepL Translation'  # for logging
 
-            # Extract parsable paragraphs in RekaiText Object
-            list_of_paragraph_object_tuples: list[
-                tuple[int, Paragraph]] = input_rekai_text_object.numbered_parsable_paragraphs
+        # Extract parsable paragraphs in RekaiText Object
+        list_of_paragraph_object_tuples: list[
+            tuple[int, Paragraph]] = input_rekai_text_object.numbered_parsable_paragraphs
 
-            list_of_lines_for_transmutation = []
+        list_of_lines_for_transmutation = []
 
-            # Check if already in database
-            for (_, paragraph_object) in list_of_paragraph_object_tuples:
-                list_of_lines: list = paragraph_object.list_of_lines
-                for line in list_of_lines:
-                    if line in db_interface.get_raw_lines_dict():
-                        continue
-                    else:
-                        list_of_lines_for_transmutation.append(line)
+        # Check if already in database
+        for (_, paragraph_object) in list_of_paragraph_object_tuples:
+            list_of_lines: list = paragraph_object.list_of_lines
+            for line in list_of_lines:
+                if line in db_interface.get_raw_lines_dict():
+                    continue
+                else:
+                    list_of_lines_for_transmutation.append(line)
 
-            logger.info(f'{function_name} - Lines to transmute: {len(list_of_lines_for_transmutation)}')
+        logger.info(f'{function_name} - Lines to transmute: {len(list_of_lines_for_transmutation)}')
 
-            # Transmutation
-            start_time = time.time()
-            if parallel_process:
-                list_of_transmuted_lines: list[tuple] = asyncio.run(
-                    Transmute.async_translate_list_with_deepl_api(list_of_lines_for_transmutation))
-            else:
-                list_of_transmuted_lines = [Transmute.translate_string_with_deepl_api(line) for line in
-                                            list_of_lines_for_transmutation]
-            end_time = time.time()
-            logger.success(f'TIME TAKEN FOR {function_name} API calls: {end_time - start_time}')
+        # Transmutation
+        start_time = time.time()
+        if parallel_process:
+            list_of_transmuted_lines: list[tuple] = asyncio.run(
+                Transmute.async_translate_list_with_deepl_api(list_of_lines_for_transmutation))
+        else:
+            list_of_transmuted_lines = [Transmute.translate_string_with_deepl_api(line) for line in
+                                        list_of_lines_for_transmutation]
+        end_time = time.time()
+        logger.success(f'TIME TAKEN FOR {function_name} API calls: {end_time - start_time}')
 
-            # Database update
-            for (raw_line, transmuted_data) in list_of_transmuted_lines:
-                db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
-            db_interface.close_connection()
+        # Database update
+        for (raw_line, transmuted_data) in list_of_transmuted_lines:
+            db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
+        db_interface.close_connection()

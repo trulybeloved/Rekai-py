@@ -76,9 +76,10 @@ class RunConfig:
     def __init__(self,
                  preprocess=False,
                  run_jisho_parse=True,
-                 run_tts=True):
+                 run_tts=True,
+                 run_deepl_tl=True):
 
-        self.preprocess = preprocess
-        self.run_jisho_parse = run_jisho_parse
-        self.run_tts = run_tts
-
+        self.preprocess: bool = preprocess
+        self.run_jisho_parse: bool = run_jisho_parse
+        self.run_tts: bool = run_tts
+        self.run_deepl_tl: bool = run_deepl_tl

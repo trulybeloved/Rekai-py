@@ -1,18 +1,29 @@
 from loguru import logger
+import concurrent.futures
+import asyncio
+import time
 
+from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph, Line
 from transmutors import Transmute
 from db_management import JishoParseDBM, TextToSpeechDBM
 
+class Wrapper:
+    @staticmethod
+    async def async_process(async_function, list_of_arguments: list):
+        async_loop = asyncio.get_event_loop()
+
+        tasks = [async_loop.create_task(async_function(args)) for args in list_of_arguments]
+        results = await asyncio.gather(*tasks)
+        return results
+
 
 class Process:
 
-    jisho_parse_db_interface = JishoParseDBM()
-    tts_db_interface = TextToSpeechDBM()
-
     @staticmethod
-    def jisho_parse(input_rekai_text_object: RekaiText, db_interface: JishoParseDBM = jisho_parse_db_interface) -> None:
+    def jisho_parse(input_rekai_text_object: RekaiText,  parallel_process: bool = True) -> None:
 
+        db_interface = JishoParseDBM()
         function_name = 'Jisho Parser'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object
@@ -32,7 +43,13 @@ class Process:
         logger.info(f'{function_name} - Lines to transmute: {len(list_of_lines_for_transmutation)}')
 
         # Transmutation
-        list_of_transmuted_lines = Transmute.parse_list_with_jisho(list_of_lines_for_transmutation)
+        start_time = time.time()
+        if parallel_process:
+            list_of_transmuted_lines = Transmute.parse_list_with_jisho(list_of_lines_for_transmutation)
+        else:
+            list_of_transmuted_lines = [Transmute.parse_string_with_jisho(line) for line in list_of_lines_for_transmutation]
+        end_time = time.time()
+        logger.success(f'TIME TAKEN FOR {function_name} API calls: {end_time - start_time}')
 
         # Database update
         for (raw_line, transmuted_data) in list_of_transmuted_lines:
@@ -40,8 +57,9 @@ class Process:
         db_interface.close_connection()
 
     @staticmethod
-    def gcloud_tts(input_rekai_text_object: RekaiText, db_interface: TextToSpeechDBM = tts_db_interface) -> None:
+    def gcloud_tts(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> None:
 
+        db_interface = TextToSpeechDBM()
         function_name = 'Google Cloud TTS'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object
@@ -61,10 +79,15 @@ class Process:
         logger.info(f'{function_name} - Lines to transmute: {len(list_of_lines_for_transmutation)}')
 
         # Transmutation
-        list_of_transmuted_lines: list[tuple] = Transmute.tts_list_with_google_api(list_of_lines_for_transmutation)
+        start_time = time.time()
+        if parallel_process:
+            list_of_transmuted_lines: list[tuple] = asyncio.run(Transmute.async_tts_list_with_google_api(list_of_lines_for_transmutation))
+        else:
+            list_of_transmuted_lines = [Transmute.tts_string_with_google_api(line) for line in list_of_lines_for_transmutation]
+        end_time = time.time()
+        logger.success(f'TIME TAKEN FOR {function_name} API calls: {end_time - start_time}')
 
         # Database update
         for (raw_line, transmuted_data) in list_of_transmuted_lines:
             db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
         db_interface.close_connection()
-

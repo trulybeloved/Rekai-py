@@ -9,6 +9,8 @@ from appconfig import AppConfig, RunConfig
 class Clause:
     # Instance Variables
     raw_text: str
+    tl_google: str
+    tl_deepl: str
 
     def __init__(self, input_clause: str):
         self.raw_text = input_clause
@@ -21,6 +23,9 @@ class Clause:
 class Line:
     # Instance variables
     raw_text: str
+    tl_google: str
+    tl_deepl: str
+    gpt4_analysis: str
     list_of_clauses: list
     clause_count: int
     numbered_clauses: list[tuple[int, Clause]]

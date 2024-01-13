@@ -4,7 +4,7 @@ from custom_modules.custom_exceptions import CustomExceptions
 from loguru import logger
 
 # TODO
-
+# Implement deeplTL DBM
 
 class JishoParseDBM:
     """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
@@ -334,3 +334,7 @@ class TextToSpeechDBM:
 
     def close_connection(self) -> None:
         self.db_connection.close()
+
+
+class DeeplTlDBM:
+    pass

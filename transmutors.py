@@ -1,6 +1,8 @@
 import concurrent.futures
 import asyncio
 
+import deepl
+from deepl import TextResult
 from loguru import logger
 
 from selenium import webdriver
@@ -16,6 +18,13 @@ from google.cloud import texttospeech
 
 from appconfig import AppConfig
 from nlp_modules.japanese_nlp import Classifier
+import api_keys
+
+class ApiKeyHandler:
+
+    @staticmethod
+    def get_deepl_api_key() -> str:
+        return api_keys.deepl_api_key
 
 
 class Transmute:
@@ -103,10 +112,10 @@ class Transmute:
 
         driver = webdriver.Chrome()
 
-        deepl_translated_text = str()
+        translated_text = str()
 
         if Classifier.contains_no_parsable_ja_text(line):
-            deepl_translated_text += 'unparsable'
+            translated_text += 'unparsable'
 
         else:
             logger.info(f'Trying to translate line {index}')
@@ -139,19 +148,19 @@ class Transmute:
                         (By.CSS_SELECTOR,
                          "div[contenteditable='true'][role='textbox'][aria-labelledby='translation-target-heading']")))
 
-                deepl_translated_text = output_div_element.find_element(By.TAG_NAME, "p").text
+                translated_text = output_div_element.find_element(By.TAG_NAME, "p").text
 
-                logger.info(f'Translated text extracted: {deepl_translated_text}')
+                logger.info(f'Translated text extracted: {translated_text}')
 
-                deepl_translated_text = deepl_translated_text.strip()
+                translated_text = translated_text.strip()
 
-                return deepl_translated_text
+                return translated_text
 
             except (NoSuchElementException, TimeoutException, Exception) as e:
 
-                deepl_translated_text = f'Translation failed as {str(e)}'
+                translated_text = f'Translation failed as {str(e)}'
                 logger.error(f'{str(e)}')
-                return deepl_translated_text
+                return translated_text
 
     @staticmethod
     def translate_list_with_deepl_web(list_of_lines: list) -> list:
@@ -173,6 +182,34 @@ class Transmute:
             raise TypeError(f"JISHO AutoParse: argument was not a list but {str(type(list_of_lines))}")
 
         return list_of_deepl_translated_lines
+
+    # DeepL API translation
+    @staticmethod
+    def translate_string_with_deepl_api(line: str, index: str = 0, source_lang: str = 'JA', target_lang: str = 'EN-US') -> tuple[str, str]:
+
+        translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
+
+        result = translator.translate_text(text=line, source_lang=source_lang, target_lang=target_lang)
+
+        return (line, result.text)
+
+
+    @staticmethod
+    async def async_translate_list_with_deepl_api(list_of_lines: list) -> list[tuple[str, str]]:
+
+        """DOCSTRING PENDING"""
+
+        loop = asyncio.get_event_loop()
+
+        async def async_translate_string_with_deepl_api(line: str):
+            return await loop.run_in_executor(None, Transmute.translate_string_with_deepl_api, line)
+
+        if isinstance(list_of_lines, list):
+            tasks = [async_translate_string_with_deepl_api(line) for line in list_of_lines]
+            list_of_line_translation_tuples = await asyncio.gather(*tasks)
+
+        return list_of_line_translation_tuples
+
 
     # Google cloud text-to-speech
     @staticmethod
@@ -217,6 +254,7 @@ class Transmute:
 
         return (line, api_response.audio_content)
 
+    @staticmethod
     async def async_tts_list_with_google_api(list_of_lines: list) -> list[tuple[str, bytes]]:
 
         """DOCSTRING PENDING"""

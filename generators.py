@@ -1,15 +1,30 @@
 import os.path
 import shutil
+
 from loguru import logger
 from bs4 import BeautifulSoup
+import minify_html
 
 from custom_dataclasses import RekaiText, Paragraph, Line
 from appconfig import AppConfig, RunConfig
 from fetchers import Fetch
 
 
-class GenerateHtml:
+class HtmlUtilities:
 
+    @staticmethod
+    def minify(input_code: str) -> str:
+        """Can minify css and js as well"""
+        minifed_code = minify_html.minify(code=input_code, do_not_minify_doctype=True)
+        return minifed_code
+
+    @staticmethod
+    def prettify_html(input_html: str) -> str:
+        soup = BeautifulSoup(input_html, 'html.parser')
+        prettified_html = soup.prettify()
+        return prettified_html
+
+class GenerateHtml:
     class Config:
         pass
 
@@ -63,7 +78,8 @@ class GenerateHtml:
 
             tts_file_output_folder_name = AppConfig.tts_output_folder_name
             tts_file_output_directory_path = os.path.join(output_directory, tts_file_output_folder_name)
-            tts_file_name = GenerateHtml.FileOutput.tts(line_id=line_id, line_raw=line_raw, output_directory=tts_file_output_directory_path)
+            tts_file_name = GenerateHtml.FileOutput.tts(line_id=line_id, line_raw=line_raw,
+                                                        output_directory=tts_file_output_directory_path)
             line_tts_relative_path = f'{tts_file_output_folder_name}/{tts_file_name}'
 
             output_html = f'''
@@ -110,19 +126,20 @@ class GenerateHtml:
 
             return output_html
 
-        def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line, output_directory: str) -> str:
+        def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line,
+                      output_directory: str) -> str:
 
             line_object = input_rekai_line_object
             line_id = f'P{paragraph_number}_L{line_number}'
             line_raw = line_object.raw_text
 
             if self.config_include_tts:
-                audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
+                audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw,
+                                                                             output_directory=output_directory)
             else:
                 audio_button_html = ''
 
             jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
-
 
             # CARD SLAVE START
             output_html = f'<div id="{line_id}" class="line-card-slave">'
@@ -167,7 +184,8 @@ class GenerateHtml:
 
             return output_html
 
-        def para_card(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph, output_directory: str) -> str:
+        def para_card(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph,
+                      output_directory: str) -> str:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
@@ -300,7 +318,8 @@ class GenerateHtml:
 
     class RekaiHtml:
         @staticmethod
-        def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText, output_directory: str, prettify: bool = False) -> None:
+        def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
+                      output_directory: str, post_process: str = 'minify') -> None:
 
             GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
@@ -308,12 +327,14 @@ class GenerateHtml:
 
             html = generate.html_head(html_title=html_title)
             html += generate.html_body_prefix()
-            html += generate.html_body_main(input_rekai_text_object=input_rekai_text_object, output_directory=output_directory)
+            html += generate.html_body_main(input_rekai_text_object=input_rekai_text_object,
+                                            output_directory=output_directory)
             html += generate.html_body_suffix()
 
-            if prettify:
-                soup = BeautifulSoup(html, 'html.parser')
-                html = soup.prettify()
+            if post_process == 'prettify':
+                html = HtmlUtilities.prettify_html(html)
+            elif post_process == 'minify':
+                html = HtmlUtilities.minify(html)
 
             output_html_file_path = os.path.join(output_directory, 'rekai.html')
 
@@ -323,5 +344,3 @@ class GenerateHtml:
             os.startfile(output_html_file_path)
 
             logger.info('RekaiHTML file generated sucessfully')
-
-

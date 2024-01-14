@@ -3,13 +3,14 @@ from loguru import logger
 
 import nlp_modules.basic_nlp as BasicNLP
 import nlp_modules.japanese_nlp as JNLP
-from appconfig import AppConfig
-
+from appconfig import AppConfig, RunConfig
 
 @dataclass
 class Clause:
     # Instance Variables
     raw_text: str
+    tl_google: str
+    tl_deepl: str
 
     def __init__(self, input_clause: str):
         self.raw_text = input_clause
@@ -22,6 +23,9 @@ class Clause:
 class Line:
     # Instance variables
     raw_text: str
+    tl_google: str
+    tl_deepl: str
+    gpt4_analysis: str
     list_of_clauses: list
     clause_count: int
     numbered_clauses: list[tuple[int, Clause]]
@@ -39,6 +43,7 @@ class Line:
     def is_single_clause(self) -> bool:
         """Checks if line has only one clause"""
         return not self.clause_count > 1
+
 
 
 @dataclass
@@ -87,7 +92,12 @@ class RekaiText:
     numbered_paragraphs: list[tuple[int, Paragraph]]
     numbered_parsable_paragraphs: list[tuple[int, Paragraph]]
 
-    def __init__(self, input_text: str, text_header: str = ''):
+    # Run configuration
+    config_preprocess: bool
+    config_run_jisho_parse: bool
+    config_run_tts: bool
+
+    def __init__(self, input_text: str, run_config_object: RunConfig, text_header: str = ''):
         # validation
         assert isinstance(input_text, str), f'Input text is not a valid string object'
         assert input_text != '', f'Input text is an empty string'
@@ -102,8 +112,17 @@ class RekaiText:
         self.numbered_paragraphs = [(index + 1, Paragraph(para)) for index, para in enumerate(paragraphs)]
         self.numbered_parsable_paragraphs = self.get_parsable_paragraphs()
 
+        # The run_configuration parameters pertaining to generation and processing can be sent along with the RekaiText
+        # object.
+        self.set_config(run_config_object)
+
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
+
+    def set_config(self, run_config_object: RunConfig):
+        self.config_preprocess = run_config_object.preprocess
+        self.config_run_jisho_parse = run_config_object.run_jisho_parse
+        self.config_run_tts = run_config_object.run_tts
 
     def get_raw_paragraphs(self) -> list[str]:
         """Returns List of the raw text of all paragraphs"""
@@ -112,3 +131,4 @@ class RekaiText:
     def get_parsable_paragraphs(self) -> list[tuple[int, Paragraph]]:
         """Returns Numbered List of all paragraphs that are parsable"""
         return list(filter(lambda e: not e[1].unparsable, self.numbered_paragraphs))
+

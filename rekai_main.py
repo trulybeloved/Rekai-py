@@ -24,7 +24,7 @@ import gradio as gr
 
 import sys
 
-from appconfig import AppConfig
+from appconfig import AppConfig, RunConfig
 from custom_dataclasses import RekaiText
 from processors import Process
 from generators import GenerateHtml
@@ -72,26 +72,34 @@ class CustomTest:
 
         final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
 
-        rekai_text_object = RekaiText(input_text=input_japanese_text)
+        run_config = RunConfig()
 
-        Process.jisho_parse(input_rekai_text_object=rekai_text_object)
-        Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+        rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
 
-        GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
+        if run_config.run_jisho_parse:
+            Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+        if run_config.run_tts:
+            Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+
+        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
 # Main Function
 def main(input_japanese_text):
     timestamp = get_current_timestamp()
     output_directory = AppConfig.output_directory
 
+    run_config = RunConfig()
+
     final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
 
-    rekai_text_object = RekaiText(input_text=input_japanese_text)
+    rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
 
-    Process.jisho_parse(input_rekai_text_object=rekai_text_object)
-    Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+    if run_config.run_jisho_parse:
+        Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+    if run_config.run_tts:
+        Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
 
-    GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
+    GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
 
 
@@ -143,4 +151,5 @@ if __name__ == '__main__':
 
     ## gradio webgui
     else:
-        demo.launch()
+        # demo.launch()
+        CustomTest.rekai_test()

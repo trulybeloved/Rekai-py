@@ -109,5 +109,5 @@ output.zip
 ## lib
 lib
 
-## log files
-*.log
+## api_keys
+/api_keys.py

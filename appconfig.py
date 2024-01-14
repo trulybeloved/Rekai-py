@@ -31,6 +31,7 @@ class AppConfig:
     jisho_parse_db_path: str = os.path.join(datastores_directory, 'jisho_parse.db')
     deepl_tl_db_path: str = os.path.join(datastores_directory, 'deepl_tl.db')
     je_tts_db: str = os.path.join(datastores_directory, 'je_text_to_speech.db')
+    translations_db_path: str = os.path.join(datastores_directory, 'translations.db')
 
     # paths pertaining to generator outputs
     output_directory = os.path.join(current_working_directory, 'outputs')
@@ -64,3 +65,22 @@ class AppConfig:
         # options.setBinary('/path/to/chrome/binary')
         # PROFILES ARE NOT WORKING RIGHT NOW
         # options.add_argument(f'--user-data-dir={user_profile_path}')
+
+
+@dataclass
+class RunConfig:
+    # This class is called by default by RekaiText.
+    preprocess: bool
+    run_jisho_parse: bool
+    run_tts: bool
+
+    def __init__(self,
+                 preprocess=False,
+                 run_jisho_parse=True,
+                 run_tts=True,
+                 run_deepl_tl=True):
+
+        self.preprocess: bool = preprocess
+        self.run_jisho_parse: bool = run_jisho_parse
+        self.run_tts: bool = run_tts
+        self.run_deepl_tl: bool = run_deepl_tl

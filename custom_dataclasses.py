@@ -50,7 +50,7 @@ class Line:
 class Paragraph:
     # Instance variables
     raw_text: str
-    list_of_lines: list
+    list_of_raw_lines: list[str]
     line_count: int
     numbered_lines: list[tuple[int, Line]]
     unparsable: bool
@@ -60,10 +60,10 @@ class Paragraph:
         # assert "\n" not in input_paragraph
 
         self.raw_text = input_paragraph
-        self.list_of_lines = JNLP.TextSplitter.split_para_to_list_of_lines(input_paragraph)
-        self.line_count = len(self.list_of_lines)
+        self.list_of_raw_lines = JNLP.TextSplitter.split_para_to_list_of_lines(input_paragraph)
+        self.line_count = len(self.list_of_raw_lines)
 
-        self.numbered_lines = [(index + 1, Line(line)) for index, line in enumerate(self.list_of_lines)]
+        self.numbered_lines = [(index + 1, Line(line)) for index, line in enumerate(self.list_of_raw_lines)]
 
         # check if the paragraph is unparsable
         # THIS FUNCTION IS PRESENTLY AN ARBITARY RULE THAT WORKS FOR MOST CASES NEEDS IMPROVEMENT

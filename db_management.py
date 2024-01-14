@@ -23,7 +23,7 @@ class DBM:
             [_main_table_name, ['id', _key_column_name]],
             [_archive_table_name, ['id', _key_column_name]]
         ]
-    -db_data_types = {}
+    _db_data_types = {}
     _main_table_create_query = ''
     _archive_table_create_query = ''
 
@@ -108,7 +108,7 @@ class JishoParseDBM(DBM):
             [_archive_table_name, ['id', 'raw_line', 'parsed_html']]
         ]
 
-    -db_data_types = {
+    _db_data_types = {
         'id': 'TEXT',
         'raw_line': 'TEXT',
         'parsed_html': 'TEXT'
@@ -216,7 +216,7 @@ class TextToSpeechDBM(DBM):
             [_archive_table_name, ['id', _key_column_name, 'tts_bytes']]
         ]
 
-    -db_data_types = {
+    _db_data_types = {
         'id': 'TEXT',
         'raw_line': 'TEXT',
         'tts_bytes': 'BLOB'
@@ -323,7 +323,7 @@ class TranslationDBM(DBM):
             [_main_table_name, ['id', _key_column_name, 'preprocessed', 'deepl_tl', 'google_tl', 'gpt_analysis']],
             [_archive_table_name, ['id', _key_column_name, 'preprocessed', 'deepl_tl', 'google_tl', 'gpt_analysis']]
         ]
-    -db_data_types = {
+    _db_data_types = {
         'id': 'TEXT',
         'raw_line': 'TEXT',
         'preprocessed': 'TEXT',

@@ -5,7 +5,7 @@ import time
 from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph, Line
 from transmutors import Transmute
-from db_management import JishoParseDBM, TextToSpeechDBM, DeeplTlDBM
+from db_management import JishoParseDBM, TextToSpeechDBM, TranslationDBM
 
 class Wrapper:
     @staticmethod
@@ -94,7 +94,7 @@ class Process:
     @staticmethod
     def deepl_tl(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> None:
 
-        db_interface = DeeplTlDBM()
+        db_interface = TranslationDBM()
         function_name = 'DeepL Translation'  # for logging
 
         # Extract parsable paragraphs in RekaiText Object

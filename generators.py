@@ -103,9 +103,9 @@ class GenerateHtml:
             # CARD MASTER HEADER
             output_html += f''' 
                <div class="card-header">
-                   <div class="card-header-left-half">
-                       <p class="card-para-number">{paragraph_number}</p>
-                       <p class="card-para-type">{paragraph_object.paragraph_type}</p>
+                   <div class="card-header-left-half">
+                       <div class="card-para-number"><span>{paragraph_number}</span></div>
+                       <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
                    </div>
                    <div class="card-header-right-half">
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
@@ -142,7 +142,7 @@ class GenerateHtml:
             jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
 
             # CARD SLAVE START
-            output_html = f'<div id="{line_id}" class="line-card-slave">'
+            output_html = f'<div id="{line_id}" class="line-card-slave collapsed">'
 
             # CARD SLAVE HEADER
             output_html += f'''
@@ -198,8 +198,9 @@ class GenerateHtml:
             output_html += f''' 
                <div class="card-header">
                    <div class="card-header-left-half">
-                       <p class="card-para-number">{paragraph_number}</p>
-                       <p class="card-para-type">{paragraph_object.paragraph_type}</p>
+                       <div class="card-para-number"><span>{paragraph_number}</span></div>
+                       <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
+                       <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Expand</div>
                    </div>
                    <div class="card-header-right-half">
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"

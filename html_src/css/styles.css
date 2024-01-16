@@ -65,11 +65,21 @@
   --audio-button-font-color: #000000;
   --audio-button-hover-font-color: #000000;
 
+  /* Expand|Collapse Button */
+  --expand-collapse-font-color: #00000044;
+  --expand-collapse-hover-font-color: #000000d0;
+  --expand-collapse-background: #0000002e;
+  --expand-collapse-hover-background: rgba(0, 0, 0, 0.326);
+
   /* ========== FONT SIZES =============*/
   --label-button-font-size: 14px;
-  --card-raw-font-size: 20px;
-  --jisho-parse-font-size: 16px;
+  --card-raw-font-size: 18px;
+  --jisho-parse-font-size: 14px;
   --preprocessor-tags-font-size: 16px;
+
+  /* ========== DISPLAY PROPERTIES =============*/
+  --line-card-master-display: flex;
+  --line-card-slave-display: flex;
 }
 
 .dark-mode {
@@ -134,12 +144,17 @@
   --audio-button-font-color: #ffffffd0;
   --audio-button-hover-font-color: #ffffffd0;
 
+  /* Expand|Collapse Button */
+  --expand-collapse-font-color: #ffffff28;
+  --expand-collapse-hover-font-color: #ffffff;
+  --expand-collapse-background: #dedede;
+  --expand-collapse-hover-background: #00556b;
 }
 
 * {
   margin: 0px;
   padding: 0px;
-  /* transition: background-color 0.5s, color 0.5s; 
+  /* transition: background-color 0.5s, color 0.5s;
   transition: border-color 0.5s; */
 }
 
@@ -173,6 +188,7 @@ body {
 
 div {
   border-radius: 5px;
+  transition: display 0.3s;
 }
 
 
@@ -187,11 +203,12 @@ button {
   transition: 0.3s ease;
 }
 
+
 /* child of main. style for div that contains the cards */
 .card-coloumn {
+  display: flex;
   margin-top: 10px;
   flex: 1;
-  display: flex;
   flex-direction: column;
   transition: 0.3s ease;
 }
@@ -220,7 +237,7 @@ button {
 }
 
 .line-card-slave {
-  display: flex;
+  display: var(--line-card-slave-display);
   flex-direction: column;
   margin: 0px 5px 5px 5px;
   border: 1px;
@@ -230,6 +247,10 @@ button {
   background-color: var(--line-card-background-color);
   height: fit-content;
   border-radius: 5px;
+}
+
+.collapsed {
+  display: none;
 }
 
 .card-header {
@@ -244,6 +265,7 @@ button {
   flex: 1;
   justify-content: start;
 }
+
 
 .card-header-right-half {
   display: flex;
@@ -331,8 +353,6 @@ rt {
   width: fit-content;
   height: fit-content;
   padding: 3px;
-  align-items: center;
-  justify-content: center;
   font-size: var(--label-button-font-size);
   cursor: default;
 }
@@ -345,8 +365,6 @@ rt {
   width: fit-content;
   height: fit-content;
   padding: 3px;
-  align-items: center;
-  justify-content: center;
   font-size: var(--label-button-font-size);
   cursor: default;
 }
@@ -359,10 +377,27 @@ rt {
   width: fit-content;
   height: fit-content;
   padding: 3px;
-  align-items: center;
-  justify-content: center;
   font-size: var(--label-button-font-size);
   cursor: default;
+}
+
+.expand-collapse-button {
+  border-radius: 5px;
+  margin: 5px 0px 5px 5px;
+  padding: 3px;
+  color: var(--expand-collapse-font-color);
+  width: 100%;
+  height: fit-content;
+  font-size: var(--label-button-font-size);
+  cursor: default;
+  transition: 0.15s ease;
+  cursor: pointer;
+  align-items: center;
+}
+
+.expand-collapse-button:hover {
+  background: var(--expand-collapse-hover-background);
+  color: var(--expand-collapse-hover-font-color);
 }
 
 .raw-copy-button {
@@ -383,11 +418,7 @@ rt {
 }
 
 /* ------------------------------------------------------------------------- */
-/* Audio Button */
-/* .audioPlayer {
-  display: inline;
-  width: 300px;
-} */
+/* Audio Button Styling ------ */
 
 .audioButton {
   margin: 5px 5px 5px 0px;
@@ -408,7 +439,7 @@ rt {
 }
 
 .audioButton-play:hover {
-  background-color: var(--audio-button-play-hover-background); 
+  background-color: var(--audio-button-play-hover-background);
   color: var(--audio-button-hover-font-color);
 }
 
@@ -463,11 +494,11 @@ rt {
   .primary {
     margin-bottom: 30vh;
   }
-  
+
   .sidebar-placeholder {
     flex: 0 0 0%;
   }
-  
+
   .right-sidebar {
     display: var(--sidebar-display);
     position: fixed;
@@ -637,7 +668,7 @@ rt {
 
   --tooltip-bg-color: #333333;
   --tooltip-text-color: #ffffff;
-  
+
   --zen-bar-a-color: #333;
 
   --zen-bar-li-noun-color: #000000;
@@ -710,7 +741,7 @@ rt {
 
   --zen-bar-li-adverb-color: #dadada;
   --zen-bar-li-adverb-border: 1px solid #00cfbe;
-  
+
   --zen-bar-li-particle-color: #d40000;
   --zen-bar-li-particle-border: 1px solid #ab0000;
 

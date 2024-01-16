@@ -9,19 +9,7 @@ from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph, Line
 from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, TextToSpeechDBM, TranslationDBM
-
-
-## WRAPPERS
-def log_process_time(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        logger.success(f"{func.__name__} took {execution_time:.5f} seconds to execute.")
-        return result
-
-    return wrapper
+from custom_modules.utilities import log_process_time
 
 
 class Process:

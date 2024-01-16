@@ -29,6 +29,7 @@ from custom_dataclasses import RekaiText
 from processors import Process
 from generators import GenerateHtml
 from custom_modules.utilities import get_current_timestamp
+from custom_modules.utilities import log_process_time
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -40,6 +41,7 @@ from custom_modules.utilities import get_current_timestamp
 
 class CustomTest:
     @staticmethod
+    @log_process_time
     def rekai_test():
         input_japanese_text = '''
         

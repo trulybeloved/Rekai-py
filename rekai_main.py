@@ -94,10 +94,14 @@ def main(input_japanese_text):
 
     rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
 
+    # These dicts are not yet used but are a clearer way to pass data to the HTML generator than it fetching it manually.
+    jisho_dict = None
+    tts_dict = None
+
     if run_config.run_jisho_parse:
-        Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+        jisho_dict = Process.jisho_parse(input_rekai_text_object=rekai_text_object)
     if run_config.run_tts:
-        Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+        tts_dict = Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
 
     GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 

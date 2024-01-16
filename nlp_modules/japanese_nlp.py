@@ -62,7 +62,7 @@ class TextSplitter:
 
     @staticmethod
     def split_para_to_list_of_lines(input_text: str, *, strip_each_line: bool = True, trim_list: bool = True,
-                                    delimiter: str = '。') -> list:
+                                    delimiter: str = '。') -> list[str]:
 
         if delimiter in input_text:
             list_of_lines = input_text.split(delimiter)

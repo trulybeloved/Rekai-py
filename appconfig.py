@@ -23,6 +23,7 @@ class AppConfig:
     logging_directory: str = os.path.join(current_working_directory, 'logs')
     rekai_log_path: str = os.path.join(logging_directory, 'rekai_log.log')
     db_log_path: str = os.path.join(logging_directory, 'db_log.log')
+    deep_log_databases: bool = False
     dataclasses_log_path: str = os.path.join(logging_directory, 'dataclasses.log')
     deep_log_dataclasses: bool = False
 

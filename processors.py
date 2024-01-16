@@ -52,7 +52,7 @@ class Process:
 
         # Database update
         for (raw_line, transmuted_data) in list_of_transmuted_lines:
-            db_interface.insert(raw_line=raw_line, parsed_html=transmuted_data)
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data)
         db_interface.close_connection()
 
     @staticmethod
@@ -88,7 +88,7 @@ class Process:
 
         # Database update
         for (raw_line, transmuted_data) in list_of_transmuted_lines:
-            db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data)
         db_interface.close_connection()
 
     @staticmethod
@@ -127,5 +127,5 @@ class Process:
 
         # Database update
         for (raw_line, transmuted_data) in list_of_transmuted_lines:
-            db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data)
         db_interface.close_connection()

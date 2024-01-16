@@ -217,7 +217,7 @@ class GenerateHtml:
                 </div>'''
 
             # GENERATE SLAVE CARDS
-            for (line_number, line_object) in input_rekai_paragraph_object.numbered_lines:
+            for (line_number, line_object) in input_rekai_paragraph_object.numbered_line_objects:
                 output_html += f'{self.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
 
             # CARD MASTER END
@@ -253,7 +253,7 @@ class GenerateHtml:
 
             output_html = '<div id="card-coloumn" class="card-coloumn">'
 
-            for (index, paragraph_object) in input_rekai_text_object.numbered_paragraphs:
+            for (index, paragraph_object) in input_rekai_text_object.numbered_paragraph_objects:
                 if paragraph_object.unparsable:
                     output_html += self.para_card_unparsable(
                         input_rekai_paragraph_object=paragraph_object,

@@ -177,7 +177,7 @@ class DBM:
     def reconnect(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
 
-    def get_raw_lines_dict(self) -> dict:
+    def get_dict_of_keystrings_in_db(self) -> dict:
         if self.db_updated:
             self.update_cached_dict_of_raw_lines()
             self.db_updated = False

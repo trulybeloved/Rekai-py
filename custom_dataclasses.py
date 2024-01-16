@@ -9,6 +9,7 @@ from appconfig import AppConfig, RunConfig
 class Clause:
     # Instance Variables
     raw_text: str
+    preprocessed_text: str
     tl_google: str
     tl_deepl: str
 
@@ -23,19 +24,20 @@ class Clause:
 class Line:
     # Instance variables
     raw_text: str
+    preprocessed_text: str
     tl_google: str
     tl_deepl: str
     gpt4_analysis: str
     list_of_clauses: list
     clause_count: int
-    numbered_clauses: list[tuple[int, Clause]]
+    numbered_clause_objects: list[tuple[int, Clause]]
 
     def __init__(self, input_line: str):
         self.raw_text = input_line
         self.list_of_clauses = JNLP.TextSplitter.split_line_to_list_of_clauses(input_line)
         self.clause_count = len(self.list_of_clauses)
 
-        self.numbered_clauses = [(index + 1, Clause(clause)) for index, clause in enumerate(self.list_of_clauses)]
+        self.numbered_clause_objects = [(index + 1, Clause(clause)) for index, clause in enumerate(self.list_of_clauses)]
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
@@ -50,9 +52,10 @@ class Line:
 class Paragraph:
     # Instance variables
     raw_text: str
+    preprocessed_text: str
     list_of_raw_lines: list[str]
     line_count: int
-    numbered_lines: list[tuple[int, Line]]
+    numbered_line_objects: list[tuple[int, Line]]
     unparsable: bool
     paragraph_type: str
 
@@ -63,7 +66,7 @@ class Paragraph:
         self.list_of_raw_lines = JNLP.TextSplitter.split_para_to_list_of_lines(input_paragraph)
         self.line_count = len(self.list_of_raw_lines)
 
-        self.numbered_lines = [(index + 1, Line(line)) for index, line in enumerate(self.list_of_raw_lines)]
+        self.numbered_line_objects = [(index + 1, Line(line)) for index, line in enumerate(self.list_of_raw_lines)]
 
         # check if the paragraph is unparsable
         # THIS FUNCTION IS PRESENTLY AN ARBITARY RULE THAT WORKS FOR MOST CASES NEEDS IMPROVEMENT
@@ -87,10 +90,11 @@ class RekaiText:
 
     # Instance variables (needed for dataclasses base methods to function)
     raw_text: str
+    preprocessed_text: str
     text_header: str
     paragraph_count: int
-    numbered_paragraphs: list[tuple[int, Paragraph]]
-    numbered_parsable_paragraphs: list[tuple[int, Paragraph]]
+    numbered_paragraph_objects: list[tuple[int, Paragraph]]
+    numbered_parsable_paragraph_objects: list[tuple[int, Paragraph]]
 
     # Run configuration
     config_preprocess: bool
@@ -109,8 +113,8 @@ class RekaiText:
             self.raw_text, keepends=False, strip_each_line=True, trim_list=True)
 
         self.paragraph_count = len(paragraphs)
-        self.numbered_paragraphs = [(index + 1, Paragraph(para)) for index, para in enumerate(paragraphs)]
-        self.numbered_parsable_paragraphs = self.get_parsable_paragraphs()
+        self.numbered_paragraph_objects = [(index + 1, Paragraph(para)) for index, para in enumerate(paragraphs)]
+        self.numbered_parsable_paragraph_objects = self.get_parsable_paragraphs()
 
         # The run_configuration parameters pertaining to generation and processing can be sent along with the RekaiText
         # object.
@@ -126,9 +130,9 @@ class RekaiText:
 
     def get_raw_paragraphs(self) -> list[str]:
         """Returns List of the raw text of all paragraphs"""
-        return [paragraph.raw_text for (_, paragraph) in self.numbered_paragraphs]
+        return [paragraph.raw_text for (_, paragraph) in self.numbered_paragraph_objects]
 
     def get_parsable_paragraphs(self) -> list[tuple[int, Paragraph]]:
         """Returns Numbered List of all paragraphs that are parsable"""
-        return list(filter(lambda e: not e[1].unparsable, self.numbered_paragraphs))
+        return list(filter(lambda e: not e[1].unparsable, self.numbered_paragraph_objects))
 

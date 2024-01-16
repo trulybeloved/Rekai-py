@@ -104,10 +104,10 @@ output.zip
 .vs/slnx.sqlite
 .vs/ProjectSettings.json
 .vs/VSWorkspaceState.json
-.vs/Kudasai/v17/.wsuo
 
 ## lib
 lib
 
 ## api_keys
 /api_keys.py
+sample_text.py

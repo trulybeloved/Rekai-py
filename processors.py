@@ -32,7 +32,7 @@ class Process:
         result = Process.process_with(input_rekai_text_object, TextToSpeechDBM(), Transmute.tts_string_with_google_api)
         logger.info("Finished Google Cloud TTS processing")
         return result
-    
+
     @staticmethod
     def deepl_tl(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, str]:
         logger.info("Starting DeepL processing")
@@ -73,7 +73,7 @@ class Process:
 
         # Database update
         for (raw_line, transmuted_data) in list_of_transmuted_lines:
-            db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data)
         db_interface.close_connection()
         
         all_processed_lines.update(list_of_transmuted_lines)

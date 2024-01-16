@@ -3,7 +3,7 @@
 
 // Function to copy text from a specific element to clipboard and show a tooltip
 function copyTextByElementId(elementId, buttonId) {
-  var textToCopy = document.getElementById(elementId).textContent;
+  var textToCopy = document.getElementById(elementId).textContent.trim();
   var copyButton = document.getElementById(buttonId);
   navigator.clipboard.writeText(textToCopy);
 
@@ -125,7 +125,6 @@ audioButtons.forEach(function (audioButton) {
 
 // --------------------------------------------------------------------------------------------
 // JS for Top Bar Toggle Buttons
-
 function toggleElementDisplay(buttonId, elementClass, displayType, showText, hideText) {
   var containers =
     document.querySelectorAll(elementClass);
@@ -165,6 +164,7 @@ function toggleRightSidebar() {
 
 // --------------------------------------------------------------------------------------------
 // JS for dark mode
+
 function setDarkMode(isDarkModeEnabled) {
   var root = document.documentElement;
   if (isDarkModeEnabled) {
@@ -172,13 +172,14 @@ function setDarkMode(isDarkModeEnabled) {
     // reload jisho
     var jishoIframe = document.getElementById("sidebar-iframe");
     jishoIframe.src = "https://jisho.org/?color_theme=dark";
-    
+    localStorage.setItem("darkModeEnabled", true)
+
   } else {
     root.classList.remove("dark-mode");
     // reload jisho
     var jishoIframe = document.getElementById("sidebar-iframe");
     jishoIframe.src = "https://jisho.org/?color_theme=light";
-    
+    localStorage.setItem("darkModeEnabled", false)
   }
 }
 
@@ -191,19 +192,40 @@ function toggleDarkMode() {
 
   // Call function that updates dark mode class on root
   setDarkMode(isDarkModeEnabled);
-
-  // Store state in local storage
-  localStorage.setItem("darkModeEnabled", isDarkModeEnabled);
-
-
 }
 
 // Set initial dark mode state based on local storage
 function initializeDarkMode() {
-  var isDarkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
-  setDarkMode(isDarkModeEnabled);
+  var isDarkModeEnabled = localStorage.getItem("darkModeEnabled");
+
+  if (isDarkModeEnabled) {
+    setDarkMode(true);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setDarkMode(true);
+  } else {
+    setDarkMode(false);
+  }
 }
 
 // Call initializeDarkMode on page load
 initializeDarkMode();
 
+// --------------------------------------------------------------------------------------------
+
+// JS for expanding and collapsing cards
+function expandCollapseCard(cardID) {
+  const masterCard = document.getElementById(cardID);
+  const slaveCards = masterCard.querySelectorAll(".line-card-slave");
+
+  slaveCards.forEach((slaveCard) => {
+    slaveCard.classList.toggle("collapsed");
+
+    if (slaveCard.classList.contains("collapsed")) {
+      button = masterCard.querySelector(".expand-collapse-button");
+      button.textContent = "Expand";
+    } else {
+      button = masterCard.querySelector(".expand-collapse-button");
+      button.textContent = "Collapse";
+    }
+  });
+}

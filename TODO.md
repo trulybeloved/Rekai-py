@@ -7,7 +7,7 @@
 - Implement clause by clause analysis - Clause class, splitting function
     - Clause wise TTS and copy buttons
     - Clause wise translations
-- Implement DeepL TL via API
+- ~~Implement DeepL TL via API~~
 - Refactor to improve readability and organization
 - Better API handling
 - Option to use API keys for google cloud
@@ -15,7 +15,7 @@
 - Need to implement Backoff/retry for transmutors
 
 ## Rekai_HTML
-- HTML - cards need to be collapsiple to make the page appear less cluttered with info
+- ~~HTML - cards need to be collapsible to make the page appear less cluttered with info~~
 - Update HTML source and generator functions for translations and associated functionality and layout
 - Incorporate adjustable fonts and colors
 - Tooltips for buttons

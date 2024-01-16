@@ -227,7 +227,8 @@ class JishoParseDBM(DBM):
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        logger.info(f'An instance of {self._database_name} db interface class was initialized')
+        if AppConfig.deep_log_databases:
+            logger.info(f'An instance of {self._database_name} was initialized')
 
 
 class TextToSpeechDBM(DBM):
@@ -272,7 +273,8 @@ class TextToSpeechDBM(DBM):
         self.db_connection = sqlite3.connect(self._db_path)
         # self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        logger.info(f'An instance of {self._database_name} db interface class was initialized')
+        if AppConfig.deep_log_databases:
+            logger.info(f'An instance of {self._database_name} was initialized')
 
 
 class TranslationDBM(DBM):
@@ -319,4 +321,5 @@ class TranslationDBM(DBM):
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        logger.info(f'An instance of {self._database_name} db interface class was initialized')
+        if AppConfig.deep_log_databases:
+            logger.info(f'An instance of {self._database_name} was initialized')

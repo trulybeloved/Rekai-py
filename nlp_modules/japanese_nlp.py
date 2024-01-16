@@ -4,9 +4,9 @@ import re
 
 from bs4 import BeautifulSoup
 from loguru import logger
-import pykakasi
+# import pykakasi
 # import MeCab
-from sudachipy import Dictionary
+# from sudachipy import Dictionary
 
 from nlp_modules.basic_nlp import FundamentalPatterns
 from nlp_modules.patterns import Regex, Charsets
@@ -279,72 +279,72 @@ class Parser:
     #
     #     return ' '.join(result)
     #
-    @staticmethod
-    def tag_pos_sudachi(text):
-        dict_obj = Dictionary(dict_type='full')
-        tokenizer_obj = dict_obj.create()
+    # @staticmethod
+    # def tag_pos_sudachi(text):
+    #     dict_obj = Dictionary(dict_type='full')
+    #     tokenizer_obj = dict_obj.create()
+    #
+    #     # Manual mapping from Japanese POS tags to English equivalents
+    #     pos_map = {
+    #         "名詞": "Noun",
+    #         "動詞": "Verb",
+    #         "形容詞": "Adjective",
+    #         "副詞": "Adverb",
+    #         "接続詞": "Conjunction",
+    #         "助詞": "Particle",
+    #         "助動詞": "Auxiliary verb",
+    #         "感動詞": "Interjection",
+    #         "記号": "Symbol",
+    #         "連体詞": "Adnominal",
+    #         "代名詞": "Pronoun",
+    #         "フィラー": "Filler",
+    #         "未知語": "Unknown",
+    #         "補助記号": "Symbol",
+    #         "形状詞": "Na-adjective"
+    #     }
+    #
+    #     result = []
+    #
+    #     tokens = tokenizer_obj.tokenize(text)
+    #     # print(tokens.get_internal_cost())
+    #     # print(tokens.__repr__())
+    #     # token = tokens[0]
+    #     # print(token.__repr__())
+    #     # print(f'SURFACE: {token.surface()}')
+    #     # print(f'RAW SURFACE: {token.raw_surface()}')
+    #     # print(f'DICTIONARY_FORM: {token.dictionary_form()}')
+    #     # print(f'DICTIONARY ID: {token.dictionary_id()}')
+    #     # print(f'NORMALIZED FORM: {token.normalized_form()}')
+    #
+    #     for token in tokenizer_obj.tokenize(text):
+    #         word = token.surface()
+    #         pos_japanese = token.part_of_speech()[0]
+    #
+    #         # Map the Japanese POS tag to an English equivalent if possible
+    #         pos_english = pos_map.get(pos_japanese, pos_japanese)
+    #         result.append((word, pos_english))
+    #     print(''.join(f'{word}:{pos_english}' for (word, pos_english) in result))
+    #
+    #     return result
 
-        # Manual mapping from Japanese POS tags to English equivalents
-        pos_map = {
-            "名詞": "Noun",
-            "動詞": "Verb",
-            "形容詞": "Adjective",
-            "副詞": "Adverb",
-            "接続詞": "Conjunction",
-            "助詞": "Particle",
-            "助動詞": "Auxiliary verb",
-            "感動詞": "Interjection",
-            "記号": "Symbol",
-            "連体詞": "Adnominal",
-            "代名詞": "Pronoun",
-            "フィラー": "Filler",
-            "未知語": "Unknown",
-            "補助記号": "Symbol",
-            "形状詞": "Na-adjective"
-        }
-
-        result = []
-
-        tokens = tokenizer_obj.tokenize(text)
-        # print(tokens.get_internal_cost())
-        # print(tokens.__repr__())
-        # token = tokens[0]
-        # print(token.__repr__())
-        # print(f'SURFACE: {token.surface()}')
-        # print(f'RAW SURFACE: {token.raw_surface()}')
-        # print(f'DICTIONARY_FORM: {token.dictionary_form()}')
-        # print(f'DICTIONARY ID: {token.dictionary_id()}')
-        # print(f'NORMALIZED FORM: {token.normalized_form()}')
-
-        for token in tokenizer_obj.tokenize(text):
-            word = token.surface()
-            pos_japanese = token.part_of_speech()[0]
-
-            # Map the Japanese POS tag to an English equivalent if possible
-            pos_english = pos_map.get(pos_japanese, pos_japanese)
-            result.append((word, pos_english))
-        print(''.join(f'{word}:{pos_english}' for (word, pos_english) in result))
-
-        return result
-
-    @staticmethod
-    def get_furigana(input_text):
-        transmuter = pykakasi.Kakasi()
-        transmuted_results = transmuter.convert(input_text)
-        print(transmuted_results)
-        for item in transmuted_results:
-            return f'{item["hira"]}'
-
-    @staticmethod
-    def get_hepburn(input_text):
-        transmuter = pykakasi.Kakasi()
-        transmuted_results = transmuter.convert(input_text)
-        print(transmuted_results)
-        hepburn = ''
-        for item in transmuted_results:
-            hepburn += f'{item["hepburn"]} '
-        hepburn = hepburn.strip()
-        return hepburn
+    # @staticmethod
+    # def get_furigana(input_text):
+    #     transmuter = pykakasi.Kakasi()
+    #     transmuted_results = transmuter.convert(input_text)
+    #     print(transmuted_results)
+    #     for item in transmuted_results:
+    #         return f'{item["hira"]}'
+    #
+    # @staticmethod
+    # def get_hepburn(input_text):
+    #     transmuter = pykakasi.Kakasi()
+    #     transmuted_results = transmuter.convert(input_text)
+    #     print(transmuted_results)
+    #     hepburn = ''
+    #     for item in transmuted_results:
+    #         hepburn += f'{item["hepburn"]} '
+    #     hepburn = hepburn.strip()
+    #     return hepburn
 
 # print(Parser.get_hepburn('違いすぎていた'))
 

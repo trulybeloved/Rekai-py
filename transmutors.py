@@ -19,6 +19,7 @@ from appconfig import AppConfig
 from nlp_modules.japanese_nlp import Classifier
 import api_keys
 
+
 class ApiKeyHandler:
 
     @staticmethod
@@ -68,123 +69,17 @@ class Transmute:
 
             driver.quit()
 
+            jisho_parsed_html_element = jisho_parsed_html_element.replace('/search/', 'https://jisho.org/search/')
+            jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
+            jisho_parsed_html_element = jisho_parsed_html_element.replace('class=""', 'class="jisho-link"')
+
         return (line, jisho_parsed_html_element)
 
-    @staticmethod
-    def parse_list_with_jisho(list_of_lines: list) -> list[tuple[str, str]]:
-
-        """DOCSTING PENDING"""
-
-        logger.info('JISHO AutoParse initialized')
-
-        if isinstance(list_of_lines, list):
-
-            with concurrent.futures.ProcessPoolExecutor(max_workers=AppConfig.jisho_multipro_max_workers) as executor:
-                index_list = [index for index, line in enumerate(list_of_lines)]
-                list_of_jisho_parsed_html_tuples = list(
-                    executor.map(Transmute.parse_string_with_jisho, list_of_lines, index_list))
-
-            logger.info("JISHO AutoParse: All lines parsed")
-
-            # Replace Jisho relative ref urls with full urls and add classes to open jisho links in embedded iframe
-            # This will be better if shifted up or moved out to a separate postprocessing function
-            list_of_jisho_parsed_html_tuples = [(line, html.replace('/search/', 'https://jisho.org/search/'))
-                                                for (line, html) in list_of_jisho_parsed_html_tuples]
-
-            list_of_jisho_parsed_html_tuples = [(line, html.replace('class="current"', 'class=""'))
-                                                for (line, html) in list_of_jisho_parsed_html_tuples]
-
-            list_of_jisho_parsed_html_tuples = [(line, html.replace('class=""', 'class="jisho-link"'))
-                                                for (line, html) in list_of_jisho_parsed_html_tuples]
-
-        else:
-            logger.error(f"JISHO AUTOPARSE:Type ERROR: argument was not a list but {str(type(list_of_lines))}")
-            raise TypeError(f"JISHO AutoParse: argument was not a list but {str(type(list_of_lines))}")
-
-        return list_of_jisho_parsed_html_tuples
-
-    # Deepl web scrape and translate
-    @staticmethod
-    def translate_string_with_deepl_web(line: str, index: str = 0) -> str:
-
-        """DOCSTRING PENDING"""
-
-        driver = webdriver.Chrome()
-
-        translated_text = str()
-
-        if Classifier.contains_no_parsable_ja_text(line):
-            translated_text += 'unparsable'
-
-        else:
-            logger.info(f'Trying to translate line {index}')
-
-            driver.get(f'https://deepl.com/translator#ja/en/{line}')
-            logger.info('Webdriver initiated')
-
-            try:
-
-                input_div_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located(
-                        (By.CSS_SELECTOR,
-                         "div[contenteditable='true'][role='textbox'][aria-labelledby='translation-source-heading']")))
-
-                # Clear input <div> from previous input
-                input_div_element.clear()
-
-                # Send the current sentence to be translated to DeepL
-                input_div_element.send_keys(line)
-
-                # logging
-                logger.info(f'Input text sent: {line}')
-
-                # Wait for output to be generated
-                sleep(5)
-
-                # Identify the output <div> using CSS tag
-                output_div_element = WebDriverWait(driver, 10).until(
-                    ec.visibility_of_element_located(
-                        (By.CSS_SELECTOR,
-                         "div[contenteditable='true'][role='textbox'][aria-labelledby='translation-target-heading']")))
-
-                translated_text = output_div_element.find_element(By.TAG_NAME, "p").text
-
-                logger.info(f'Translated text extracted: {translated_text}')
-
-                translated_text = translated_text.strip()
-
-                return translated_text
-
-            except (NoSuchElementException, TimeoutException, Exception) as e:
-
-                translated_text = f'Translation failed as {str(e)}'
-                logger.error(f'{str(e)}')
-                return translated_text
-
-    @staticmethod
-    def translate_list_with_deepl_web(list_of_lines: list) -> list:
-
-        """DOCSTRING PENDING"""
-
-        logger.info('DeepL web translator function initialized')
-
-        if isinstance(list_of_lines, list):
-            with concurrent.futures.ProcessPoolExecutor(max_workers=AppConfig.deepl_multipro_max_workers) as executor:
-                index_list = [index for index, line in enumerate(list_of_lines)]
-                list_of_deepl_translated_lines = list(
-                    executor.map(Transmute.translate_string_with_deepl_web, list_of_lines, index_list))
-
-            logger.info("All lines translated with DeepL web")
-
-        else:
-            logger.error(f"JISHO AUTOPARSE:Type ERROR: argument was not a list but {str(type(list_of_lines))}")
-            raise TypeError(f"JISHO AutoParse: argument was not a list but {str(type(list_of_lines))}")
-
-        return list_of_deepl_translated_lines
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(line: str, index: str = 0, source_lang: str = 'JA', target_lang: str = 'EN-US') -> tuple[str, str]:
+    def translate_string_with_deepl_api(line: str, index: str = 0, source_lang: str = 'JA',
+                                        target_lang: str = 'EN-US') -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -193,24 +88,6 @@ class Transmute:
         result = translator.translate_text(text=line, source_lang=source_lang, target_lang=target_lang)
 
         return (line, result.text)
-
-
-    @staticmethod
-    async def async_translate_list_with_deepl_api(list_of_lines: list) -> list[tuple[str, str]]:
-
-        """DOCSTRING PENDING"""
-
-        loop = asyncio.get_event_loop()
-
-        async def async_translate_string_with_deepl_api(line: str):
-            return await loop.run_in_executor(None, Transmute.translate_string_with_deepl_api, line)
-
-        if isinstance(list_of_lines, list):
-            tasks = [async_translate_string_with_deepl_api(line) for line in list_of_lines]
-            list_of_line_translation_tuples = await asyncio.gather(*tasks)
-
-        return list_of_line_translation_tuples
-
 
     # Google cloud text-to-speech
     @staticmethod
@@ -254,19 +131,3 @@ class Transmute:
         logger.info(f'TTS_API_CALL for {line} was sucessful')
 
         return (line, api_response.audio_content)
-
-    @staticmethod
-    async def async_tts_list_with_google_api(list_of_lines: list) -> list[tuple[str, bytes]]:
-
-        """DOCSTRING PENDING"""
-
-        loop = asyncio.get_event_loop()
-
-        async def async_tts_string_with_google_api(line: str):
-            return await loop.run_in_executor(None, Transmute.tts_string_with_google_api, line)
-
-        if isinstance(list_of_lines, list):
-            tasks = [async_tts_string_with_google_api(line) for line in list_of_lines]
-            list_of_line_tts_tuples = await asyncio.gather(*tasks)
-
-        return list_of_line_tts_tuples

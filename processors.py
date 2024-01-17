@@ -15,11 +15,11 @@ from custom_modules.utilities import log_process_time
 class Process:
     @staticmethod
     @log_process_time
-    def jisho_parse(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, str]:
+    def jisho_parse(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, str]:
         logger.info("Starting Jisho processing")
 
         list_of_strings_to_transmute = SubProcess.prepare_data(
-            input_rekai_text_object=input_rekai_text_object,
+            rekai_text_object=rekai_text_object,
             db_interface=JishoParseDBM(),
             preprocess=False,
             transmute_paragraphs=False,
@@ -41,11 +41,11 @@ class Process:
 
     @staticmethod
     @log_process_time
-    def gcloud_tts(input_rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+    def gcloud_tts(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
         logger.info("Starting Google Cloud TTS processing")
 
         list_of_strings_to_transmute = SubProcess.prepare_data(
-            input_rekai_text_object=input_rekai_text_object,
+            rekai_text_object=rekai_text_object,
             db_interface=TextToSpeechDBM(),
             preprocess=False,
             transmute_paragraphs=False,
@@ -69,7 +69,9 @@ class Process:
 class SubProcess:
 
     @staticmethod
-    def sync_transmute(list_of_strings_to_transmute: list, transmutor: Callable[[str], tuple[str, str]]) -> list:
+    def sync_transmute(
+            list_of_strings_to_transmute: list,
+            transmutor: Callable[[str], tuple[str, Union[str, bytes]]]) -> list[tuple[str,Union[str, bytes]]]:
 
         list_of_transmuted_data = [transmutor(string) for string in list_of_strings_to_transmute]
 
@@ -92,7 +94,7 @@ class SubProcess:
     @staticmethod
     def parallel_transmute(list_of_strings_to_transmute: list,
                            transmutor: Callable[[str], tuple[str, str]],
-                           max_workers=AppConfig.general_multipro_max_workers) -> list[tuple[str, any]]:
+                           max_workers=AppConfig.general_multipro_max_workers) -> list[tuple[str, Union[str, bytes]]]:
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
             list_of_transmuted_data = list(executor.map(transmutor, list_of_strings_to_transmute))
@@ -100,12 +102,12 @@ class SubProcess:
         return list_of_transmuted_data
 
     @staticmethod
-    def prepare_data(input_rekai_text_object: RekaiText,
+    def prepare_data(rekai_text_object: RekaiText,
                      db_interface: DBM,
                      preprocess: bool,
                      transmute_paragraphs: bool = False,
                      transmute_lines: bool = True,
-                     transmute_clauses: bool = False) -> list:
+                     transmute_clauses: bool = False) -> list[str]:
 
         dict_of_keystrings_in_db = db_interface.get_dict_of_keystrings_in_db()
 
@@ -113,7 +115,7 @@ class SubProcess:
 
         # Extract parsable paragraphs in RekaiText Object
         list_of_paragraph_object_tuples: list[
-            tuple[int, Paragraph]] = input_rekai_text_object.numbered_parsable_paragraph_objects
+            tuple[int, Paragraph]] = rekai_text_object.numbered_parsable_paragraph_objects
 
         # Conditionals for level of transmutation and check if already in database
         if transmute_paragraphs:

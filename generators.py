@@ -98,7 +98,7 @@ class GenerateHtml:
             paragraph_raw = paragraph_object.raw_text
 
             # CARD MASTER START
-            output_html = f'<div id="{paragraph_id}" class="line-card-master">'
+            output_html = f'<div id="{paragraph_id}" class="para-card">'
 
             # CARD MASTER HEADER
             output_html += f''' 
@@ -142,7 +142,7 @@ class GenerateHtml:
             jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
 
             # CARD SLAVE START
-            output_html = f'<div id="{line_id}" class="line-card-slave collapsed">'
+            output_html = f'<div id="{line_id}" class="line-card collapsed">'
 
             # CARD SLAVE HEADER
             output_html += f'''
@@ -192,7 +192,7 @@ class GenerateHtml:
             paragraph_raw = paragraph_object.raw_text
 
             # CARD MASTER START
-            output_html = f'<div id="{paragraph_id}" class="line-card-master">'
+            output_html = f'<div id="{paragraph_id}" class="para-card">'
 
             # CARD MASTER HEADER
             output_html += f''' 

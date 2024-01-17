@@ -10,6 +10,59 @@ function copyTextByElementId(elementId, buttonId) {
   showTooltip(copyButton, "Copied!");
 }
 
+var clauseSubcards = document.querySelectorAll(".clause-subcard");
+
+clauseSubcards.forEach(function (clauseSubcard) {
+
+  clauseSubcard.addEventListener("keydown", function (event) {
+    if (event.ctrlKey || event.metaKey) {
+      handleMouseOver(event, this);
+      this.focus();
+    }
+  });
+
+  clauseSubcard.addEventListener("keyup", function (event) {
+    handleMouseOut(event, this);
+    this.focus();
+  });
+
+  clauseSubcard.addEventListener("mouseover", function (event) {
+    clauseSubcard.setAttribute("tabindex", "0");
+    this.focus();
+    handleMouseOver(event, this);
+  });
+
+  clauseSubcard.addEventListener("mouseout", function (event) {
+    handleMouseOut(event, this);
+    this.removeAttribute("tabindex");
+  });
+
+  clauseSubcard.addEventListener("click", function (event) {
+    copyTextOnClick(event, this);
+  });
+
+})
+
+
+function copyTextOnClick(event, element) {
+  // Check if the Control (or Command) key is pressed
+  if (event.ctrlKey || event.metaKey) {
+    var textToCopy = element.textContent.trim();
+    navigator.clipboard.writeText(textToCopy);
+    showTooltip(element, "Copied!");
+  }
+}
+
+function handleMouseOver(event, element) {
+  if (event.ctrlKey || event.metaKey) {
+    element.classList.add("hovered");
+  }
+}
+
+function handleMouseOut(event, element) {
+    element.classList.remove("hovered");
+}
+
 // --------------------------------------------------------------------------------------------
 // JS for Tooltip
 
@@ -144,6 +197,8 @@ function toggleElementDisplay(buttonId, elementClass, displayType, showText, hid
   }
 }
 
+toggleElementDisplay('toggle-raw-para-button','.slave-raw','flex', 'Show RAW Para', 'Hide RAW Para');
+
 function toggleRightSidebar() {
   const root = document.documentElement;
   const rightSidebarContainer = document.getElementById("right-sidebar");
@@ -215,7 +270,7 @@ initializeDarkMode();
 // JS for expanding and collapsing cards
 function expandCollapseCard(cardID) {
   const masterCard = document.getElementById(cardID);
-  const slaveCards = masterCard.querySelectorAll(".line-card-slave");
+  const slaveCards = masterCard.querySelectorAll(".line-card");
 
   slaveCards.forEach((slaveCard) => {
     slaveCard.classList.toggle("collapsed");

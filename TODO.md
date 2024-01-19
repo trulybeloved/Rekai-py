@@ -19,3 +19,7 @@
 - Update HTML source and generator functions for translations and associated functionality and layout
 - Incorporate adjustable fonts and colors
 - Tooltips for buttons
+- Controls and functionality for changing TTS playback rate 
+- Chapter Search iframe
+- Click to send to chapter search feature
+

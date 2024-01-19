@@ -8,7 +8,7 @@ from typing import Union
 from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph, Line
 from transmutors import Transmute
-from db_management import DBM, JishoParseDBM, TextToSpeechDBM, TranslationDBM
+from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.utilities import log_process_time
 
 
@@ -26,10 +26,15 @@ class Process:
             transmute_lines=True,
             transmute_clauses=False)
 
-        list_of_transmuted_data_tuples = SubProcess.parallel_transmute(
-            list_of_strings_to_transmute=list_of_strings_to_transmute,
-            transmutor=Transmute.parse_string_with_jisho,
-            max_workers=AppConfig.jisho_multipro_max_workers)
+        if parallel_process:
+            list_of_transmuted_data_tuples = SubProcess.parallel_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.parse_string_with_jisho,
+                max_workers=AppConfig.jisho_multipro_max_workers)
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.parse_string_with_jisho)
 
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
@@ -52,9 +57,14 @@ class Process:
             transmute_lines=True,
             transmute_clauses=False)
 
-        list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
-            list_of_strings_to_transmute=list_of_strings_to_transmute,
-            transmutor=Transmute.tts_string_with_google_api))
+        if parallel_process:
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.tts_string_with_google_api))
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.tts_string_with_google_api)
 
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
@@ -64,6 +74,66 @@ class Process:
 
         return
 
+    @staticmethod
+    @log_process_time
+    def deepl_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+        logger.info("Starting DeepL Translation")
+
+        list_of_strings_to_transmute = SubProcess.prepare_data(
+            rekai_text_object=rekai_text_object,
+            db_interface=DeepLDBM(),
+            preprocess=True,
+            transmute_paragraphs=False,
+            transmute_lines=True,
+            transmute_clauses=True)
+
+        if parallel_process:
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_deepl_api))
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_deepl_api)
+
+        SubProcess.update_database(
+            list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
+            db_interface=DeepLDBM())
+
+        logger.info('Finished DeepL Translation')
+
+        return
+
+
+    @staticmethod
+    @log_process_time
+    def google_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+        logger.info("Starting Google Translation")
+
+        list_of_strings_to_transmute = SubProcess.prepare_data(
+            rekai_text_object=rekai_text_object,
+            db_interface=GoogleTLDBM(),
+            preprocess=True,
+            transmute_paragraphs=False,
+            transmute_lines=True,
+            transmute_clauses=True)
+
+        if parallel_process:
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_google_tl_api))
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_google_tl_api)
+
+        SubProcess.update_database(
+            list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
+            db_interface=GoogleTLDBM())
+
+        logger.info('Finished Google Translation')
+
+        return
 
 
 class SubProcess:
@@ -168,8 +238,14 @@ class SubProcess:
         return list_of_strings_for_transmutation
 
     @staticmethod
-    def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM) -> None:
+    def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM, column_name: Union[str, None] = None) -> None:
 
         for (raw_line, transmuted_data) in list_of_transmuted_data_tuples:
-            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data)
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name)
         db_interface.close_connection()
+
+    @staticmethod
+    def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:
+
+        result = db_interface.query(raw_line=key, column_name=column_name)
+        return result

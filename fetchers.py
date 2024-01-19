@@ -1,7 +1,8 @@
 from loguru import logger
 
 from db_management import JishoParseDBM, TextToSpeechDBM
-from custom_modules.custom_exceptions import CustomExceptions
+from custom_modules.custom_exceptions import EntryNotFound
+
 
 
 class Fetch:
@@ -13,7 +14,7 @@ class Fetch:
         try:
             parsed_html = db_interface.query(raw_line=raw_line)
             return parsed_html
-        except CustomExceptions.EntryNotFound as e:
+        except EntryNotFound as e:
             logger.exception(e)
             raise e
 
@@ -24,6 +25,6 @@ class Fetch:
         try:
             tts_bytes = db_interface.query(raw_line=raw_line)
             return tts_bytes
-        except CustomExceptions.EntryNotFound as e:
+        except EntryNotFound as e:
             logger.exception(e)
             raise e

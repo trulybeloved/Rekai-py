@@ -27,6 +27,13 @@ class AppConfig:
     dataclasses_log_path: str = os.path.join(logging_directory, 'dataclasses.log')
     deep_log_dataclasses: bool = False
 
+    # paths to dictionary files
+    dictionary_directory: str = os.path.join(current_working_directory, 'dictionaries')
+    path_to_katakana_words: str = os.path.join(dictionary_directory, 'katakana_words.txt')
+
+    # path to replacement json
+    path_to_replacements_json: str = os.path.join(dictionary_directory, 'replacements.json')
+
     # paths pertaining to databases
     datastores_directory: str = os.path.join(current_working_directory, 'datastores')
     jisho_parse_db_path: str = os.path.join(datastores_directory, 'jisho_parse.db')

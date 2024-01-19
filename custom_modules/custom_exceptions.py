@@ -1,6 +1,9 @@
 
 
-class CustomExceptions:
 
-    class EntryNotFound(Exception):
-        pass
+
+class EntryNotFound(Exception):
+    pass
+
+class KairyouException(Exception):
+    pass

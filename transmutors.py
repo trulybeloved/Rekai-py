@@ -18,7 +18,7 @@ from google.cloud import texttospeech
 from appconfig import AppConfig
 from nlp_modules.japanese_nlp import Classifier
 import api_keys
-
+from nlp_modules.kairyou_preprocessor import Kairyou
 
 class ApiKeyHandler:
 
@@ -57,7 +57,7 @@ class Transmute:
                 zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
                 zen_outer_html = zen_bar_element.get_attribute('outerHTML')
 
-                # Selenium also extracts linebreaks that mess with the html when assigned to a string
+                # Selenium also extracts linebreaks that mess with the html when assigned to a string_list
                 zen_html = str(zen_outer_html).replace('\n', "").strip()
 
                 jisho_parsed_html_element += zen_html
@@ -131,3 +131,10 @@ class Transmute:
         logger.info(f'TTS_API_CALL for {line} was sucessful')
 
         return (line, api_response.audio_content)
+
+    @staticmethod
+    def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict):
+        preprocessor = Kairyou(text_to_preprocess=input_string, replacements_json=input_replacements_dict)
+        preprocessor.preprocess()
+        output = preprocessor.text_to_preprocess
+        return output

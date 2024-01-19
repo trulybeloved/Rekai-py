@@ -89,7 +89,7 @@ class Transmute:
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(line: str, index: str = 0, ) -> str:
+    def translate_string_with_google_tl_api(line: str, index: str = 0, ) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API can accept a list.
@@ -116,9 +116,9 @@ class Transmute:
         result = [translation.translated_text for translation in response.translations]
 
         if len(result) == 1:
-            return str(result[0])
+            return line, str(result[0])
         else:
-            return ''.join(result)
+            return line, ''.join(result)
 
     # Google Cloud Text-to-Speech
     @staticmethod

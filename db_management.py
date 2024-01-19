@@ -1,6 +1,6 @@
 import sqlite3
 from appconfig import AppConfig
-from custom_modules.custom_exceptions import CustomExceptions
+from custom_modules.custom_exceptions import EntryNotFound
 from loguru import logger
 from typing import Union
 
@@ -73,7 +73,7 @@ class DBM:
                 if AppConfig.deep_log_databases:
                     logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
-    def query(self, raw_line: str, column_name: str = None) -> str:
+    def query(self, raw_line: str, column_name: str = None) -> Union[str, bytes]:
 
         if column_name is None:
             column_name = self._output_column_name
@@ -90,7 +90,7 @@ class DBM:
         else:
             if AppConfig.deep_log_databases:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
-            raise CustomExceptions.EntryNotFound
+            raise EntryNotFound
 
     def insert(self, raw_line: str, transmuted_data: Union[str, bytes], column_name: str = None) -> None:
         cursor = self.db_connection.cursor()

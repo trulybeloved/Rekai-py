@@ -1,6 +1,4 @@
-import concurrent.futures
-import asyncio
-
+from typing import Union
 import deepl
 from loguru import logger
 
@@ -10,11 +8,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
-from time import sleep
 
 # Google Cloud
 from google.cloud import texttospeech
-
+from google.cloud import translate
 from appconfig import AppConfig
 from nlp_modules.japanese_nlp import Classifier
 import api_keys
@@ -75,21 +72,55 @@ class Transmute:
 
         return (line, jisho_parsed_html_element)
 
-
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(line: str, index: str = 0, source_lang: str = 'JA',
-                                        target_lang: str = 'EN-US') -> tuple[str, str]:
+    def translate_string_with_deepl_api(line: str, index: str = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+        source_lang = AppConfig.DeeplTranslateConfig.source_language_code
+        target_lang = AppConfig.GoogleTranslateConfig.target_language_code
 
         translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
 
         result = translator.translate_text(text=line, source_lang=source_lang, target_lang=target_lang)
 
-        return (line, result.text)
+        return line, result.text
 
-    # Google cloud text-to-speech
+    # Google Cloud Translate API
+    @staticmethod
+    def translate_string_with_google_tl_api(line: str, index: str = 0, ) -> str:
+
+        """DOCSTRING PENDING
+        This API can accept a list.
+        """
+
+        source_lang = AppConfig.GoogleTranslateConfig.source_language_code
+        target_lang = AppConfig.GoogleTranslateConfig.target_language_code
+        location = AppConfig.GoogleTranslateConfig.location
+        project_id = api_keys.google_tl_project_id
+        parent = f"projects/{project_id}/locations/{location}"
+
+        client = translate.TranslationServiceClient()
+
+        response = client.translate_text(
+            request={
+                "parent": parent,
+                "contents": [line],
+                "mime_type": "text/plain",
+                "source_language_code": source_lang,
+                "target_language_code": target_lang,
+            }
+        )
+
+        result = [translation.translated_text for translation in response.translations]
+
+        if len(result) == 1:
+            return str(result[0])
+        else:
+            return ''.join(result)
+
+    # Google Cloud Text-to-Speech
     @staticmethod
     def tts_string_with_google_api(line: str) -> tuple[str, bytes]:
 

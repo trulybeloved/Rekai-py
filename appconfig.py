@@ -65,6 +65,15 @@ class AppConfig:
         pitch: float = 0.0
         volume_gain_db: float = 0.0
 
+    class GoogleTranslateConfig:
+        source_language_code: str = 'ja-JP'
+        target_language_code: str = 'en_US'
+        location: str = 'global'
+
+    class DeeplTranslateConfig:
+        source_language_code: str = 'JA'
+        target_language_code: str = 'EN_US'
+
     # Selenium Webdriver configuration
     class ChromeOptions:
         options = Options()
@@ -83,7 +92,7 @@ class RunConfig:
     run_tts: bool
 
     def __init__(self,
-                 preprocess=False,
+                 preprocess=True,
                  run_jisho_parse=True,
                  run_tts=True,
                  run_deepl_tl=True):

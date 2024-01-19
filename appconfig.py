@@ -38,6 +38,7 @@ class AppConfig:
     datastores_directory: str = os.path.join(current_working_directory, 'datastores')
     jisho_parse_db_path: str = os.path.join(datastores_directory, 'jisho_parse.db')
     deepl_tl_db_path: str = os.path.join(datastores_directory, 'deepl_tl.db')
+    google_tl_db_path: str = os.path.join(datastores_directory, 'google_tl.db')
     je_tts_db: str = os.path.join(datastores_directory, 'je_text_to_speech.db')
     translations_db_path: str = os.path.join(datastores_directory, 'translations.db')
 

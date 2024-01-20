@@ -5,7 +5,7 @@ from loguru import logger
 from bs4 import BeautifulSoup
 import minify_html
 
-from custom_dataclasses import RekaiText, Paragraph, Line
+from custom_dataclasses import RekaiText, Paragraph, Line, Clause
 from appconfig import AppConfig, RunConfig
 from fetchers import Fetch
 
@@ -63,14 +63,33 @@ class GenerateHtml:
         config_preprocess: bool
         config_include_jisho_parse: bool
         config_include_tts: bool
+        config_include_line_deepl_tl: bool
+        config_include_clause_analysis: bool
+        config_include_clause_deepl_tl: bool
+        config_include_clause_google_tl: bool
 
         def __init__(self, run_config_object: RunConfig):
             self.set_config(run_config_object=run_config_object)
 
         def set_config(self, run_config_object: RunConfig):
+
             self.config_preprocess = run_config_object.preprocess
-            self.config_include_jisho_parse = run_config_object.run_jisho_parse
+
+            self.config_include_jisho_parse = (run_config_object.run_jisho_parse
+                                               and run_config_object.include_jisho_parse)
+
             self.config_include_tts = run_config_object.run_tts
+
+            self.config_include_line_deepl_tl = (run_config_object.run_deepl_tl
+                                                 and run_config_object.deepl_tl_lines)
+
+            self.config_include_clause_analysis = run_config_object.include_clause_analysis
+
+            self.config_include_clause_deepl_tl = (run_config_object.include_clause_analysis
+                                                   and run_config_object.deepl_tl_clauses)
+
+            self.config_include_clause_google_tl = (run_config_object.include_clause_analysis
+                                                    and run_config_object.google_tl_clauses)
 
         # Inner Elements ===========================================
         @staticmethod
@@ -126,20 +145,71 @@ class GenerateHtml:
 
             return output_html
 
+        def clause_card_lables(self) -> str:
+
+            output_html = '<div class="clause-subcard-labels">'
+
+            if self.config_preprocess:
+                default_label = 'Preprocessed'
+            else:
+                default_label = 'Raw'
+
+            output_html += f'<div class="clause-subcard-label">{default_label}</div>'
+
+            if self.config_include_clause_deepl_tl:
+                output_html += f'<div class="clause-subcard-label">DeepL</div>'
+
+            if self.config_include_clause_google_tl:
+                output_html += f'<div class="clause-subcard-label">Google</div>'
+
+            output_html += '</div>'
+
+            return output_html
+
+        def clause_card(self, paragraph_number: int, line_number: int, clause_number: int, input_rekai_clause_object: Clause) -> str:
+
+            clause_object = input_rekai_clause_object
+            clause_id = f'P{paragraph_number}_L{line_number}_C{clause_number}'
+            clause_raw = clause_object.raw_text
+            clause_preprocessed = clause_object.preprocessed_text
+
+            # If clause analysis is enabled, include the clause split structure by default.
+            output_html = f'''<div id="{clause_id}" class="clause-card">'''
+            output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed">{clause_preprocessed}</div>'''
+
+            # If preprocess option is enabled, use preprocessed japanese text to query the db, else use raw
+            if self.config_preprocess:
+                clause_key = clause_preprocessed
+            else:
+                clause_key = clause_raw
+
+            if self.config_include_clause_deepl_tl:
+                clause_deepl_tl = Fetch.deepl_tl(raw_line=clause_key)
+                output_html += f'''<div id="{clause_id}-deepl_tl" class="clause-subcard subcard-contents-deepl">{clause_deepl_tl}</div>'''
+
+            if self.config_include_clause_google_tl:
+                clause_google_tl = Fetch.google_tl(raw_line=clause_key)
+                output_html += f'''<div id="{clause_id}-google_tl" class="clause-subcard subcard-contents-googletl">{clause_google_tl}</div>'''
+
+            # END OF CLAUSE CARD
+            output_html += f'</div>'
+
+            return output_html
+
+
         def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line,
                       output_directory: str) -> str:
 
             line_object = input_rekai_line_object
             line_id = f'P{paragraph_number}_L{line_number}'
             line_raw = line_object.raw_text
+            line_preprocessed = line_object.preprocessed_text
 
             if self.config_include_tts:
                 audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw,
                                                                              output_directory=output_directory)
             else:
                 audio_button_html = ''
-
-            jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
 
             # CARD SLAVE START
             output_html = f'<div id="{line_id}" class="line-card collapsed">'
@@ -169,16 +239,51 @@ class GenerateHtml:
                 </div>
             '''
 
-            # CARD SLAVE JISHO PARSE
-            output_html += f'''
-                <div id="{line_id}-jisho-parse" class="card-contents-jisho-parse">
-                    <div class="card-contents-jisho-parse-text">
-                    {jisho_parsed_html}
-                    </div>
-                </div>        
-            '''
+            if self.config_include_jisho_parse:
+                jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
+                # CARD SLAVE JISHO PARSE
+                output_html += f'''
+                    <div id="{line_id}-jisho-parse" class="card-contents-jisho-parse">
+                        <div class="card-contents-jisho-parse-text">
+                        {jisho_parsed_html}
+                        </div>
+                    </div>        
+                '''
 
-            # CARD SLAVE END
+            if self.config_preprocess:
+                line_key = line_preprocessed
+            else:
+                line_key = line_raw
+
+            # LINE CARD FULL DEEPL TL
+            if self.config_include_line_deepl_tl:
+                line_deepl_tl = Fetch.deepl_tl(raw_line=line_key)
+                output_html += f'''
+                    <div class="clause-subcard-label">DeepL</div>
+                    <div class="card-contents-line-deepl" id={line_id}-deepl onclick="copyTextOnClick(event, this)">{line_deepl_tl}</div>
+                '''
+
+            # LINE CARD FULL GOOGLE TL
+            if self.config_include_clause_google_tl:
+                line_google_tl = Fetch.google_tl(raw_line=line_key)
+                output_html += f'''
+                    <div class="clause-subcard-label">Google</div>
+                    <div class="card-contents-line-google-tl" id={line_id}-google-tl onclick="copyTextOnClick(event, this)">{line_google_tl}</div>
+                '''
+
+            # LINE CARD CLAUSE BY CLAUSE
+            if self.config_include_clause_analysis:
+                if line_object.is_single_clause():
+                    pass
+                else:
+                    # CLAUSE ANALYSIS CARD LABELS
+                    output_html += f'{self.clause_card_lables()}'
+
+                    # CLAUSE CARDS
+                    for (clause_number, clause_object) in line_object.numbered_clause_objects:
+                        output_html += f'{self.clause_card(paragraph_number=paragraph_number, line_number=line_number, clause_number=clause_number, input_rekai_clause_object=clause_object)}'
+
+            # LINE CARD END
             output_html += f'''
             </div>'''
 
@@ -269,6 +374,9 @@ class GenerateHtml:
             return output_html
 
         def html_body_suffix(self) -> str:
+
+            top_bar_title = 'TITLE'
+
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
                         <div id="sidebar-placeholder" class="sidebar-placeholder">
@@ -289,7 +397,7 @@ class GenerateHtml:
                                 <div>RE:KAI</div>
                             </div>
                             <div class="top-bar-chapter-title">
-                                <div>Arc 8 - C 25</div>
+                                <div>{top_bar_title}</div>
                             </div>
                         </div>
                         <div class="top-bar-mid-section">
@@ -300,7 +408,7 @@ class GenerateHtml:
                             <button id="toggle-jisho-button" class="top-bar-button top-bar-button-generic"
                                 onclick="toggleElementDisplay('toggle-jisho-button','.card-contents-jisho-parse','flex', 'Show JishoParse', 'Hide JishoParse')">Hide
                                 JishoParse</button>
-                            <button id="toggle-inner-raw-button" class="top-bar-button top-bar-button-generic" onclick="toggleElementDisplay('toggle-inner-raw-button', '.japanese-raw-line', 'block', 'Show Inner Raw', 'Hide Inner Raw')">ToggleInnerRAw</button>
+                            <button id="toggle-inner-raw-button" class="top-bar-button top-bar-button-generic" onclick="toggleElementDisplay('toggle-inner-raw-button', '.slave-raw', 'block', 'Show Inner Raw', 'Hide Inner Raw')">ToggleInnerRAw</button>
                             <button class="top-bar-button top-bar-button-generic">Button</button>
                         </div>
                         <div class="top-bar-end-section">
@@ -345,3 +453,4 @@ class GenerateHtml:
             os.startfile(output_html_file_path)
 
             logger.info('RekaiHTML file generated sucessfully')
+

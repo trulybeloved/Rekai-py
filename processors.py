@@ -235,14 +235,17 @@ class SubProcess:
 
         logger.info(f'Lines to transmute: {len(list_of_strings_for_transmutation)}')
 
-        return list_of_strings_for_transmutation
+        # As single clause lines and single line paragraphs being included can possibly result in duplicates
+        list_of_unique_strings_for_transmutation = list(set(list_of_strings_for_transmutation))
+
+        return list_of_unique_strings_for_transmutation
 
     @staticmethod
     def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM, column_name: Union[str, None] = None) -> None:
 
         for (raw_line, transmuted_data) in list_of_transmuted_data_tuples:
             db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name)
-        db_interface.close_connection()
+        # db_interface.close_connection()
 
     @staticmethod
     def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:

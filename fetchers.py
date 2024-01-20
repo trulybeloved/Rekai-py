@@ -1,6 +1,6 @@
 from loguru import logger
 
-from db_management import JishoParseDBM, TextToSpeechDBM
+from db_management import JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.custom_exceptions import EntryNotFound
 
 
@@ -28,3 +28,27 @@ class Fetch:
         except EntryNotFound as e:
             logger.exception(e)
             raise e
+
+    @staticmethod
+    def deepl_tl(raw_line: str) -> bytes:
+
+        db_interface = DeepLDBM()
+        try:
+            result = db_interface.query(raw_line=raw_line)
+            return result
+        except EntryNotFound as e:
+            logger.exception(e)
+            raise e
+
+    @staticmethod
+    def google_tl(raw_line: str) -> bytes:
+
+        db_interface = GoogleTLDBM()
+        try:
+            result = db_interface.query(raw_line=raw_line)
+            return result
+        except EntryNotFound as e:
+            logger.exception(e)
+            raise e
+
+

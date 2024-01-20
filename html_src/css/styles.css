@@ -29,7 +29,7 @@
   --japanese-raw-text-color: #474747;
   --jisho-parse-font-color: #474747;
   --clause-subcard-font-color: #4b4b4b;
-  --clause-subcard-label-font-color: #4b4b4b;
+  --clause-subcard-label-font-color: #ababab;
 
   --top-bar-title-font-color: #000000;
   --top-bar-title-hover-font-color: #6e008a;
@@ -117,7 +117,7 @@
   --japanese-raw-text-color:#d6d6d6;
   --jisho-parse-font-color: #d6d6d6;
   --clause-subcard-font-color: #9b9b9b;
-  --clause-subcard-label-font-color: #9b9b9b;
+  --clause-subcard-label-font-color: #686868;
 
   --top-bar-title-font-color: #F5F5F5;
   --top-bar-title-hover-font-color: #b700e4;
@@ -373,10 +373,19 @@ button {
   display: flex;
   flex-direction: column;
   padding: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
   color: var(--clause-subcard-font-color);
 }
 
-.card-contents-line-deepl:hover
+.card-contents-line-google-tl {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: var(--clause-subcard-font-color);
+}
 
 .slave-raw {
   display: none;

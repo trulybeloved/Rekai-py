@@ -79,11 +79,11 @@ class Transmute:
         """DOCSTRING PENDING"""
 
         source_lang = AppConfig.DeeplTranslateConfig.source_language_code
-        target_lang = AppConfig.GoogleTranslateConfig.target_language_code
+        target_lang = AppConfig.DeeplTranslateConfig.target_language_code
 
         translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
 
-        result = translator.translate_text(text=line, source_lang=source_lang, target_lang=target_lang)
+        result = translator.translate_text(text=line, source_lang=source_lang, target_lang="EN-US")
 
         return line, result.text
 
@@ -169,3 +169,4 @@ class Transmute:
         preprocessor.preprocess()
         output = preprocessor.text_to_preprocess
         return output
+

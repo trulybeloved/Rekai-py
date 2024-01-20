@@ -91,14 +91,54 @@ class RunConfig:
     preprocess: bool
     run_jisho_parse: bool
     run_tts: bool
+    run_deepl_tl: bool
+    run_google_tl: bool
+    run_gpt4_analysis: bool
+
+    include_jisho_parse: bool
+    include_clause_analysis: bool
+
+    deepl_tl_paragraphs: bool
+    deepl_tl_lines: bool
+    deepl_tl_clauses: bool
+
+    google_tl_paragraphs: bool
+    google_tl_lines: bool
+    google_tl_clauses: bool
 
     def __init__(self,
                  preprocess=True,
                  run_jisho_parse=True,
                  run_tts=True,
-                 run_deepl_tl=True):
+                 run_deepl_tl=True,
+                 run_google_tl=True,
+                 run_gpt4_analysis=False,
 
-        self.preprocess: bool = preprocess
-        self.run_jisho_parse: bool = run_jisho_parse
-        self.run_tts: bool = run_tts
-        self.run_deepl_tl: bool = run_deepl_tl
+                 include_jisho_parse=True,
+                 include_clause_analysis=True,
+
+                 deepl_tl_paragraphs=False,
+                 deepl_tl_lines=True,
+                 deepl_tl_clauses=True,
+
+                 google_tl_paragraphs=False,
+                 google_tl_lines=True,
+                 google_tl_clauses=True):
+
+        self.preprocess = preprocess
+        self.run_jisho_parse = run_jisho_parse
+        self.run_tts = run_tts
+        self.run_deepl_tl = run_deepl_tl
+        self.run_google_tl = run_google_tl
+        self.run_gpt4_analysis = run_gpt4_analysis
+
+        self.include_jisho_parse = include_jisho_parse and run_jisho_parse
+        self.include_clause_analysis = include_clause_analysis
+
+        self.deepl_tl_paragraphs = deepl_tl_paragraphs and run_deepl_tl
+        self.deepl_tl_lines = deepl_tl_lines and run_deepl_tl
+        self.deepl_tl_clauses = deepl_tl_clauses and run_deepl_tl
+
+        self.google_tl_paragraphs = google_tl_paragraphs and run_google_tl
+        self.google_tl_lines = google_tl_lines and run_google_tl
+        self.google_tl_clauses = google_tl_clauses and run_google_tl

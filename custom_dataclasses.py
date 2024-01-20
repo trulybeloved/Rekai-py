@@ -7,6 +7,25 @@ import nlp_modules.basic_nlp as BasicNLP
 import nlp_modules.japanese_nlp as JNLP
 from appconfig import AppConfig, RunConfig
 from transmutors import Transmute
+from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
+
+
+class RekaiTextCommon:
+    """UNDER CONSTRUCTON"""
+
+    raw_text: str
+    preprocessed_text: str
+
+    # jisho_parse_html: str
+    # tl_google: str
+    # tl_deepl: str
+    # gpt4_analysis: str
+
+    db_interface: DBM
+
+    def query_database(self, key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:
+        result = db_interface.query(raw_line=key, column_name=column_name)
+        return result
 
 
 @dataclass
@@ -14,8 +33,8 @@ class Clause:
     # Instance Variables
     raw_text: str
     preprocessed_text: str
-    tl_google: str
-    tl_deepl: str
+    # tl_google: str
+    # tl_deepl: str
 
     def __init__(self, input_clause: str, input_prepro_clause: str):
         self.raw_text = input_clause
@@ -30,22 +49,23 @@ class Line:
     # Instance variables
     raw_text: str
     preprocessed_text: str
-    tl_google: str
-    tl_deepl: str
-    gpt4_analysis: str
+    # tl_google: str
+    # tl_deepl: str
+    # gpt4_analysis: str
     list_of_clauses: list
     clause_count: int
     numbered_clause_objects: list[tuple[int, Clause]]
 
     def __init__(self, input_line: str, input_prepro_line: Union[str, None]):
+
         self.raw_text = input_line
         self.list_of_clauses = JNLP.TextSplitter.split_line_to_list_of_clauses(input_line)
         self.clause_count = len(self.list_of_clauses)
 
         if input_prepro_line:
             self.preprocessed_text = input_prepro_line
-            list_of_preprocessed_lines = JNLP.TextSplitter.split_para_to_list_of_lines(self.preprocessed_text)
-            self.generate_child_objects(Clause, self.list_of_clauses, list_of_preprocessed_lines)
+            list_of_preprocessed_lines = JNLP.TextSplitter.split_line_to_list_of_clauses(self.preprocessed_text)
+            self.generate_child_objects(Clause, string_list=self.list_of_clauses, prepro_string_list=list_of_preprocessed_lines)
         else:
             self.generate_child_objects(Clause, self.list_of_clauses, None)
 
@@ -58,11 +78,12 @@ class Line:
 
     def generate_child_objects(self, child_object, string_list: list, prepro_string_list: Union[list, None]):
         if prepro_string_list:
-            self.numbered_clause_objects = [(index + 1, child_object(para, prepro_para)) for index, (para, prepro_para)
-                                            in enumerate(zip(string_list, prepro_string_list))]
+            self.numbered_clause_objects = [(index + 1, child_object(string, prepro_string)) for
+                                          index, (string, prepro_string)
+                                          in enumerate(zip(string_list, prepro_string_list))]
         else:
-            self.numbered_clause_objects = [(index + 1, child_object(para, None)) for index, para in
-                                            enumerate(string_list)]
+            self.numbered_clause_objects = [(index + 1, child_object(string, None)) for index, string in enumerate(string_list)]
+
 
 
 @dataclass
@@ -95,6 +116,12 @@ class Paragraph:
             else:
                 self.generate_child_objects(Line, self.list_of_raw_lines, None)
 
+        else:
+            self.preprocessed_text = ''
+            self.numbered_line_objects = []
+            self.line_count = 0
+
+
         # PARAGRAPH CLASSIFIER GOES HERE
         self.paragraph_type = 'N/A'
 
@@ -108,11 +135,11 @@ class Paragraph:
     def generate_child_objects(self, child_object, string_list: list, prepro_string_list: Union[list, None]):
         if prepro_string_list:
             self.numbered_line_objects = [(index + 1, child_object(string, prepro_string)) for
-                                          index, (string, prepro_string)
-                                          in enumerate(zip(string_list, prepro_string_list))]
+                                               index, (string, prepro_string)
+                                               in enumerate(zip(string_list, prepro_string_list))]
         else:
-            self.numbered_line_objects = [(index + 1, child_object(string, None)) for index, string in
-                                          enumerate(string_list)]
+            self.numbered_line_objects = [(index + 1, child_object(string, None)) for index, string in enumerate(string_list)]
+
 
 
 @dataclass
@@ -162,13 +189,26 @@ class RekaiText:
                 # check if the number of elements in prepro matches that in raw para list
                 if len(paragraphs) == len(prepro_paragraphs):
                     self.preprocessed_text = input_preprocessed_text
+                else:
+                    logger.error(f'Provided preprocessed text failed to match with raw text. Using native preprocessor')
+
+                    self.preprocessed_text = self.preprocess(input_string=self.raw_text)
+
+                    prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
+                        self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
+
             else:
                 logger.error(f'Provided preprocessed text failed to match with raw text. Using native preprocessor')
+
                 self.preprocessed_text = self.preprocess(input_string=self.raw_text)
 
-            prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
+                prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
                 self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
+
+            self.preprocessed_available = True
         else:
+            self.preprocessed_text = ''
+            self.preprocessed_available = False
             prepro_paragraphs = None
 
         # method below will set None to the propro arguments for all paragraph objects is prepro_lines is None
@@ -210,5 +250,4 @@ class RekaiText:
 
         preprocessed_text = Transmute.preprocess_with_kairyou(
             input_string=input_string, input_replacements_dict=replacements_dict)
-
         return preprocessed_text

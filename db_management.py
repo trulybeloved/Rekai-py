@@ -83,10 +83,10 @@ class DBM:
         cursor.execute(query_query, (raw_line,))
         query_results = cursor.fetchone()
         if query_results:
-            html_parse = query_results[0]
+            result = query_results[0]
             if AppConfig.deep_log_databases:
                 logger.info(f'{self._database_name}:{self._database_name} Query for {raw_line} successful')
-            return html_parse
+            return result
         else:
             if AppConfig.deep_log_databases:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
@@ -226,6 +226,7 @@ class JishoParseDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
+        self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if AppConfig.deep_log_databases:
             logger.info(f'An instance of {self._database_name} was initialized')
@@ -271,7 +272,7 @@ class TextToSpeechDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
-        # self.initialize_db_structure()
+        self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if AppConfig.deep_log_databases:
             logger.info(f'An instance of {self._database_name} was initialized')
@@ -317,6 +318,7 @@ class DeepLDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
+        self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if AppConfig.deep_log_databases:
             logger.info(f'An instance of {self._database_name} was initialized')
@@ -335,7 +337,7 @@ class GoogleTLDBM(DBM):
     _archive_table_name = 'google_tl_archive'
 
     _key_column_name = 'raw_line'  # the column in which the unique string that was transmuted is stored
-    _output_column_name = 'google-tl'
+    _output_column_name = 'google_tl'
     _db_structure = \
         [
             [_main_table_name, ['id', _key_column_name, 'google_tl']],
@@ -362,6 +364,7 @@ class GoogleTLDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
+        self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if AppConfig.deep_log_databases:
             logger.info(f'An instance of {self._database_name} was initialized')

@@ -1,70 +1,254 @@
+from collections.abc import Callable
 from loguru import logger
+import asyncio
+import concurrent.futures
+import time
+from typing import Union
 
-from Rekai.custom_dataclasses import RekaiText, Paragraph, Line
-from Rekai.transmutors import Transmute
-from Rekai.db_management import JishoParseDBM, TextToSpeechDBM
+from appconfig import AppConfig
+from custom_dataclasses import RekaiText, Paragraph, Line
+from transmutors import Transmute
+from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
+from custom_modules.utilities import log_process_time
 
 
 class Process:
+    @staticmethod
+    @log_process_time
+    def jisho_parse(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, str]:
+        logger.info("Starting Jisho processing")
 
-    jisho_parse_db_interface = JishoParseDBM()
-    tts_db_interface = TextToSpeechDBM()
+        list_of_strings_to_transmute = SubProcess.prepare_data(
+            rekai_text_object=rekai_text_object,
+            db_interface=JishoParseDBM(),
+            preprocess=False,
+            transmute_paragraphs=False,
+            transmute_lines=True,
+            transmute_clauses=False)
+
+        if parallel_process:
+            list_of_transmuted_data_tuples = SubProcess.parallel_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.parse_string_with_jisho,
+                max_workers=AppConfig.jisho_multipro_max_workers)
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.parse_string_with_jisho)
+
+        SubProcess.update_database(
+            list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
+            db_interface=JishoParseDBM())
+
+        logger.info("Finished Jisho processing")
+
+        return
 
     @staticmethod
-    def jisho_parse(input_rekai_text_object: RekaiText, db_interface: JishoParseDBM = jisho_parse_db_interface) -> None:
+    @log_process_time
+    def gcloud_tts(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+        logger.info("Starting Google Cloud TTS processing")
 
-        function_name = 'Jisho Parser'  # for logging
+        list_of_strings_to_transmute = SubProcess.prepare_data(
+            rekai_text_object=rekai_text_object,
+            db_interface=TextToSpeechDBM(),
+            preprocess=False,
+            transmute_paragraphs=False,
+            transmute_lines=True,
+            transmute_clauses=False)
 
-        # Extract parsable paragraphs in RekaiText Object
-        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.list_of_parsable_paragraph_object_tuples
+        if parallel_process:
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.tts_string_with_google_api))
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.tts_string_with_google_api)
 
-        list_of_lines_for_transmutation = []
+        SubProcess.update_database(
+            list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
+            db_interface=TextToSpeechDBM())
 
-        # Check if already in database
-        for (index, paragraph_object) in list_of_paragraph_object_tuples:
-            list_of_lines: list = paragraph_object.list_of_lines
-            for line in list_of_lines:
-                if line in db_interface.get_raw_lines_dict():
-                    continue
-                else:
-                    list_of_lines_for_transmutation.append(line)
+        logger.info("Finished Google Cloud TTS processing")
 
-        logger.info(f'{function_name} - Lines to transmute: {len(list_of_lines_for_transmutation)}')
-
-        # Transmutation
-        list_of_transmuted_lines = Transmute.parse_list_with_jisho(list_of_lines_for_transmutation)
-
-        # Database update
-        for (raw_line, transmuted_data) in list_of_transmuted_lines:
-            db_interface.insert(raw_line=raw_line, parsed_html=transmuted_data)
-        db_interface.close_connection()
+        return
 
     @staticmethod
-    def gcloud_tts(input_rekai_text_object: RekaiText, db_interface: TextToSpeechDBM = tts_db_interface) -> None:
+    @log_process_time
+    def deepl_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+        logger.info("Starting DeepL Translation")
 
-        function_name = 'Google Cloud TTS'  # for logging
+        list_of_strings_to_transmute = SubProcess.prepare_data(
+            rekai_text_object=rekai_text_object,
+            db_interface=DeepLDBM(),
+            preprocess=True,
+            transmute_paragraphs=False,
+            transmute_lines=True,
+            transmute_clauses=True)
+
+        if parallel_process:
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_deepl_api))
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_deepl_api)
+
+        SubProcess.update_database(
+            list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
+            db_interface=DeepLDBM())
+
+        logger.info('Finished DeepL Translation')
+
+        return
+
+
+    @staticmethod
+    @log_process_time
+    def google_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+        logger.info("Starting Google Translation")
+
+        list_of_strings_to_transmute = SubProcess.prepare_data(
+            rekai_text_object=rekai_text_object,
+            db_interface=GoogleTLDBM(),
+            preprocess=True,
+            transmute_paragraphs=False,
+            transmute_lines=True,
+            transmute_clauses=True)
+
+        if parallel_process:
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_google_tl_api))
+        else:
+            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+                list_of_strings_to_transmute=list_of_strings_to_transmute,
+                transmutor=Transmute.translate_string_with_google_tl_api)
+
+        SubProcess.update_database(
+            list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
+            db_interface=GoogleTLDBM())
+
+        logger.info('Finished Google Translation')
+
+        return
+
+
+class SubProcess:
+
+    @staticmethod
+    def sync_transmute(
+            list_of_strings_to_transmute: list,
+            transmutor: Callable[[str], tuple[str, Union[str, bytes]]]) -> list[tuple[str,Union[str, bytes]]]:
+
+        list_of_transmuted_data = [transmutor(string) for string in list_of_strings_to_transmute]
+
+        return list_of_transmuted_data
+
+    @staticmethod
+    async def async_transmute(list_of_strings_to_transmute: list,
+                              transmutor: Callable[[str], tuple[str, Union[str, bytes]]]) -> list[tuple[str, any]]:
+
+        loop = asyncio.get_event_loop()
+
+        async def async_func(transmutor, argument):
+            return await loop.run_in_executor(None, transmutor, argument)
+
+        tasks = [async_func(transmutor, string) for string in list_of_strings_to_transmute]
+        list_of_transmuted_data = await asyncio.gather(*tasks)
+
+        return list_of_transmuted_data
+
+    @staticmethod
+    def parallel_transmute(list_of_strings_to_transmute: list,
+                           transmutor: Callable[[str], tuple[str, str]],
+                           max_workers=AppConfig.general_multipro_max_workers) -> list[tuple[str, Union[str, bytes]]]:
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            list_of_transmuted_data = list(executor.map(transmutor, list_of_strings_to_transmute))
+
+        return list_of_transmuted_data
+
+    @staticmethod
+    def prepare_data(rekai_text_object: RekaiText,
+                     db_interface: DBM,
+                     preprocess: bool,
+                     transmute_paragraphs: bool = False,
+                     transmute_lines: bool = True,
+                     transmute_clauses: bool = False) -> list[str]:
+
+        dict_of_keystrings_in_db = db_interface.get_dict_of_keystrings_in_db()
+
+        list_of_strings_for_transmutation = []
 
         # Extract parsable paragraphs in RekaiText Object
-        list_of_paragraph_object_tuples: list[tuple[int, Paragraph]] = input_rekai_text_object.list_of_parsable_paragraph_object_tuples
+        list_of_paragraph_object_tuples: list[
+            tuple[int, Paragraph]] = rekai_text_object.numbered_parsable_paragraph_objects
 
-        list_of_lines_for_transmutation = []
-
-        # Check if already in database
-        for (index, paragraph_object) in list_of_paragraph_object_tuples:
-            list_of_lines: list = paragraph_object.list_of_lines
-            for line in list_of_lines:
-                if line in db_interface.get_raw_lines_dict():
-                    continue
+        # Conditionals for level of transmutation and check if already in database
+        if transmute_paragraphs:
+            for (_, paragraph_object) in list_of_paragraph_object_tuples:
+                if preprocess:
+                    if paragraph_object.preprocessed_text in dict_of_keystrings_in_db:
+                        continue
+                    else:
+                        list_of_strings_for_transmutation.append(paragraph_object.preprocessed_text)
                 else:
-                    list_of_lines_for_transmutation.append(line)
+                    if paragraph_object.raw_text in dict_of_keystrings_in_db:
+                        continue
+                    else:
+                        list_of_strings_for_transmutation.append(paragraph_object.raw_text)
 
-        logger.info(f'{function_name} - Lines to transmute: {len(list_of_lines_for_transmutation)}')
+        if transmute_lines:
+            for (_, paragraph_object) in list_of_paragraph_object_tuples:
+                list_of_line_objects_in_para = paragraph_object.numbered_line_objects
+                for (_, line_object) in list_of_line_objects_in_para:
+                    if preprocess:
+                        if line_object.preprocessed_text in dict_of_keystrings_in_db:
+                            continue
+                        else:
+                            list_of_strings_for_transmutation.append(line_object.preprocessed_text)
+                    else:
+                        if line_object.raw_text in dict_of_keystrings_in_db:
+                            continue
+                        else:
+                            list_of_strings_for_transmutation.append(line_object.raw_text)
 
-        # Transmutation
-        list_of_transmuted_lines: list[tuple] = Transmute.tts_list_with_google_api(list_of_lines_for_transmutation)
+        if transmute_clauses:
+            for (_, paragraph_object) in list_of_paragraph_object_tuples:
+                list_of_line_objects_in_para = paragraph_object.numbered_line_objects
+                for (_, line_object) in list_of_line_objects_in_para:
+                    list_of_clause_objects_in_line = line_object.numbered_clause_objects
+                    for (_, clause_object) in list_of_clause_objects_in_line:
+                        if preprocess:
+                            if clause_object.preprocessed_text in dict_of_keystrings_in_db:
+                                continue
+                            else:
+                                list_of_strings_for_transmutation.append(clause_object.preprocessed_text)
+                        else:
+                            if clause_object.raw_text in dict_of_keystrings_in_db:
+                                continue
+                            else:
+                                list_of_strings_for_transmutation.append(clause_object.raw_text)
 
-        # Database update
-        for (raw_line, transmuted_data) in list_of_transmuted_lines:
-            db_interface.insert(raw_line=raw_line, tts_bytes=transmuted_data)
-        db_interface.close_connection()
+        logger.info(f'Lines to transmute: {len(list_of_strings_for_transmutation)}')
 
+        # As single clause lines and single line paragraphs being included can possibly result in duplicates
+        list_of_unique_strings_for_transmutation = list(set(list_of_strings_for_transmutation))
+
+        return list_of_unique_strings_for_transmutation
+
+    @staticmethod
+    def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM, column_name: Union[str, None] = None) -> None:
+
+        for (raw_line, transmuted_data) in list_of_transmuted_data_tuples:
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name)
+        # db_interface.close_connection()
+
+    @staticmethod
+    def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:
+
+        result = db_interface.query(raw_line=key, column_name=column_name)
+        return result

@@ -4,12 +4,12 @@ import re
 
 from bs4 import BeautifulSoup
 from loguru import logger
-import pykakasi
-import MeCab
-from sudachipy import Dictionary
+# import pykakasi
+# import MeCab
+# from sudachipy import Dictionary
 
-from Rekai.nlp_modules.basic_nlp import FundamentalPatterns
-from Rekai.nlp_modules.patterns import Regex, Charsets
+from nlp_modules.basic_nlp import FundamentalPatterns
+from nlp_modules.patterns import Regex, Charsets
 
 
 class Classifier:
@@ -17,7 +17,7 @@ class Classifier:
     @staticmethod
     def contains_no_parsable_ja_text(input_text: str) -> bool:
 
-        print(input_text)
+        # print(input_text)
         replacement_set = Charsets.EXPRESSIONS | Charsets.PUNCTUATION
         for char in replacement_set:
             input_text = input_text.replace(char, '')
@@ -25,7 +25,7 @@ class Classifier:
         # further checks on the remaining string
         same_kana_repeated = bool(re.match(Regex.same_hiragana_repeated, input_text))
         if same_kana_repeated:
-            input_text = ''
+            return True
         # Needs an additional dictionary based check
         return bool(len(input_text) < 1)
 
@@ -38,11 +38,11 @@ class Classifier:
         else:
             return True
 
-print(Classifier.contains_no_parsable_ja_text('「「お客様――？」」'))
-print(Classifier.contains_no_parsable_ja_text('※※　※　※　※　※　※　※　※　※　※　※　※'))
-print(Classifier.contains_no_parsable_ja_text('　　　　　　　　　　　　　　　　△▼△▼△▼△'))
-print(Classifier.contains_no_parsable_ja_text('「たたたたたたたたたたたたたた――っ！！」'))
-print(Classifier.contains_no_parsable_ja_text('「――――」'))
+# print(Classifier.contains_no_parsable_ja_text('「「お客様――？」」'))
+# print(Classifier.contains_no_parsable_ja_text('※※　※　※　※　※　※　※　※　※　※　※　※'))
+# print(Classifier.contains_no_parsable_ja_text('　　　　　　　　　　　　　　　　△▼△▼△▼△'))
+# print(Classifier.contains_no_parsable_ja_text('「たたたたたたたたたたたたたた――っ！！」'))
+# print(Classifier.contains_no_parsable_ja_text('「――――」'))
 
 class Extractor:
     @staticmethod
@@ -62,7 +62,7 @@ class TextSplitter:
 
     @staticmethod
     def split_para_to_list_of_lines(input_text: str, *, strip_each_line: bool = True, trim_list: bool = True,
-                                    delimiter: str = '。') -> list:
+                                    delimiter: str = '。') -> list[str]:
 
         if delimiter in input_text:
             list_of_lines = input_text.split(delimiter)
@@ -207,144 +207,144 @@ class Parser:
 
         return list_of_word_pos_tuples
 
-    @staticmethod
-    def add_type_to_words(japanese_text):
-        pos_mapping = {
-            '名詞': 'Noun',
-            '動詞': 'Verb',
-            '形容詞': 'Adjective',
-            '副詞': 'Adverb',
-            '助詞': 'Particle',
-            '助動詞': 'Auxiliary verb',
-            '記号': 'Symbol',
-            'フィラー': 'Filler',
-            '接続詞': 'Conjunction',
-            '接頭詞': 'Prefix',
-            '感動詞': 'Interjection',
-            '未知語': 'Unknown',
-            'その他': 'Other'
-        }
-        # Create an instance of the MeCab Tagger
-        tagger = MeCab.Tagger('-r /dictionaries -d /dictionaries/mydic')
+    # @staticmethod
+    # def add_type_to_words(japanese_text):
+    #     pos_mapping = {
+    #         '名詞': 'Noun',
+    #         '動詞': 'Verb',
+    #         '形容詞': 'Adjective',
+    #         '副詞': 'Adverb',
+    #         '助詞': 'Particle',
+    #         '助動詞': 'Auxiliary verb',
+    #         '記号': 'Symbol',
+    #         'フィラー': 'Filler',
+    #         '接続詞': 'Conjunction',
+    #         '接頭詞': 'Prefix',
+    #         '感動詞': 'Interjection',
+    #         '未知語': 'Unknown',
+    #         'その他': 'Other'
+    #     }
+    #     # Create an instance of the MeCab Tagger
+    #     tagger = MeCab.Tagger('-r /dictionaries -d /dictionaries/mydic')
+    #
+    #     # Parse the Japanese text
+    #     parsed_text = tagger.parse(japanese_text)
+    #
+    #     # Split the parsed text into individual lines
+    #     lines = parsed_text.split('\n')
+    #
+    #     # Process each line to extract the word and convert it to Romaji
+    #     processed_lines = []
+    #     for line in lines:
+    #         if line == 'EOS':
+    #             break
+    #         else:
+    #             # Split the line by tabs to extract the word and its features
+    #             parts = line.split('\t')
+    #
+    #             # Extract the word from the parts
+    #             word = parts[0]
+    #
+    #             # Extract the features from the parts
+    #             features = parts[1].split(',')
+    #
+    #             # Extract the most common meaning (part-of-speech) from the features
+    #             pos = features[0]
+    #
+    #             # Map the Japanese part-of-speech to its English equivalent
+    #             english_pos = pos_mapping.get(pos)
+    #
+    #             # Add the English part-of-speech in brackets after the word
+    #             word_with_meaning = f"{word} ({english_pos})"
+    #
+    #             # Append the processed line to the list
+    #             processed_lines.append(word_with_meaning)
+    #
+    #     # Join the processed lines to form the final text
+    #     final_text = ' '.join(processed_lines)
+    #
+    #     return final_text
+    #
+    # @staticmethod
+    # def tag_pos(text):
+    #     mecab = MeCab.Tagger("-Ochasen")
+    #     node = mecab.parse(text).split('\n')
+    #     result = []
+    #
+    #     for i in node[:-2]:
+    #         col = i.split('\t')
+    #         word = col[0]
+    #         pos = col[3].split('-')[0]
+    #         result.append(f'{word}({pos})')
+    #
+    #     return ' '.join(result)
+    #
+    # @staticmethod
+    # def tag_pos_sudachi(text):
+    #     dict_obj = Dictionary(dict_type='full')
+    #     tokenizer_obj = dict_obj.create()
+    #
+    #     # Manual mapping from Japanese POS tags to English equivalents
+    #     pos_map = {
+    #         "名詞": "Noun",
+    #         "動詞": "Verb",
+    #         "形容詞": "Adjective",
+    #         "副詞": "Adverb",
+    #         "接続詞": "Conjunction",
+    #         "助詞": "Particle",
+    #         "助動詞": "Auxiliary verb",
+    #         "感動詞": "Interjection",
+    #         "記号": "Symbol",
+    #         "連体詞": "Adnominal",
+    #         "代名詞": "Pronoun",
+    #         "フィラー": "Filler",
+    #         "未知語": "Unknown",
+    #         "補助記号": "Symbol",
+    #         "形状詞": "Na-adjective"
+    #     }
+    #
+    #     result = []
+    #
+    #     tokens = tokenizer_obj.tokenize(text)
+    #     # print(tokens.get_internal_cost())
+    #     # print(tokens.__repr__())
+    #     # token = tokens[0]
+    #     # print(token.__repr__())
+    #     # print(f'SURFACE: {token.surface()}')
+    #     # print(f'RAW SURFACE: {token.raw_surface()}')
+    #     # print(f'DICTIONARY_FORM: {token.dictionary_form()}')
+    #     # print(f'DICTIONARY ID: {token.dictionary_id()}')
+    #     # print(f'NORMALIZED FORM: {token.normalized_form()}')
+    #
+    #     for token in tokenizer_obj.tokenize(text):
+    #         word = token.surface()
+    #         pos_japanese = token.part_of_speech()[0]
+    #
+    #         # Map the Japanese POS tag to an English equivalent if possible
+    #         pos_english = pos_map.get(pos_japanese, pos_japanese)
+    #         result.append((word, pos_english))
+    #     print(''.join(f'{word}:{pos_english}' for (word, pos_english) in result))
+    #
+    #     return result
 
-        # Parse the Japanese text
-        parsed_text = tagger.parse(japanese_text)
-
-        # Split the parsed text into individual lines
-        lines = parsed_text.split('\n')
-
-        # Process each line to extract the word and convert it to Romaji
-        processed_lines = []
-        for line in lines:
-            if line == 'EOS':
-                break
-            else:
-                # Split the line by tabs to extract the word and its features
-                parts = line.split('\t')
-
-                # Extract the word from the parts
-                word = parts[0]
-
-                # Extract the features from the parts
-                features = parts[1].split(',')
-
-                # Extract the most common meaning (part-of-speech) from the features
-                pos = features[0]
-
-                # Map the Japanese part-of-speech to its English equivalent
-                english_pos = pos_mapping.get(pos)
-
-                # Add the English part-of-speech in brackets after the word
-                word_with_meaning = f"{word} ({english_pos})"
-
-                # Append the processed line to the list
-                processed_lines.append(word_with_meaning)
-
-        # Join the processed lines to form the final text
-        final_text = ' '.join(processed_lines)
-
-        return final_text
-
-    @staticmethod
-    def tag_pos(text):
-        mecab = MeCab.Tagger("-Ochasen")
-        node = mecab.parse(text).split('\n')
-        result = []
-
-        for i in node[:-2]:
-            col = i.split('\t')
-            word = col[0]
-            pos = col[3].split('-')[0]
-            result.append(f'{word}({pos})')
-
-        return ' '.join(result)
-
-    @staticmethod
-    def tag_pos_sudachi(text):
-        dict_obj = Dictionary(dict_type='full')
-        tokenizer_obj = dict_obj.create()
-
-        # Manual mapping from Japanese POS tags to English equivalents
-        pos_map = {
-            "名詞": "Noun",
-            "動詞": "Verb",
-            "形容詞": "Adjective",
-            "副詞": "Adverb",
-            "接続詞": "Conjunction",
-            "助詞": "Particle",
-            "助動詞": "Auxiliary verb",
-            "感動詞": "Interjection",
-            "記号": "Symbol",
-            "連体詞": "Adnominal",
-            "代名詞": "Pronoun",
-            "フィラー": "Filler",
-            "未知語": "Unknown",
-            "補助記号": "Symbol",
-            "形状詞": "Na-adjective"
-        }
-
-        result = []
-
-        tokens = tokenizer_obj.tokenize(text)
-        # print(tokens.get_internal_cost())
-        # print(tokens.__repr__())
-        # token = tokens[0]
-        # print(token.__repr__())
-        # print(f'SURFACE: {token.surface()}')
-        # print(f'RAW SURFACE: {token.raw_surface()}')
-        # print(f'DICTIONARY_FORM: {token.dictionary_form()}')
-        # print(f'DICTIONARY ID: {token.dictionary_id()}')
-        # print(f'NORMALIZED FORM: {token.normalized_form()}')
-
-        for token in tokenizer_obj.tokenize(text):
-            word = token.surface()
-            pos_japanese = token.part_of_speech()[0]
-
-            # Map the Japanese POS tag to an English equivalent if possible
-            pos_english = pos_map.get(pos_japanese, pos_japanese)
-            result.append((word, pos_english))
-        print(''.join(f'{word}:{pos_english}' for (word, pos_english) in result))
-
-        return result
-
-    @staticmethod
-    def get_furigana(input_text):
-        transmuter = pykakasi.Kakasi()
-        transmuted_results = transmuter.convert(input_text)
-        print(transmuted_results)
-        for item in transmuted_results:
-            return f'{item["hira"]}'
-
-    @staticmethod
-    def get_hepburn(input_text):
-        transmuter = pykakasi.Kakasi()
-        transmuted_results = transmuter.convert(input_text)
-        print(transmuted_results)
-        hepburn = ''
-        for item in transmuted_results:
-            hepburn += f'{item["hepburn"]} '
-        hepburn = hepburn.strip()
-        return hepburn
+    # @staticmethod
+    # def get_furigana(input_text):
+    #     transmuter = pykakasi.Kakasi()
+    #     transmuted_results = transmuter.convert(input_text)
+    #     print(transmuted_results)
+    #     for item in transmuted_results:
+    #         return f'{item["hira"]}'
+    #
+    # @staticmethod
+    # def get_hepburn(input_text):
+    #     transmuter = pykakasi.Kakasi()
+    #     transmuted_results = transmuter.convert(input_text)
+    #     print(transmuted_results)
+    #     hepburn = ''
+    #     for item in transmuted_results:
+    #         hepburn += f'{item["hepburn"]} '
+    #     hepburn = hepburn.strip()
+    #     return hepburn
 
 # print(Parser.get_hepburn('違いすぎていた'))
 

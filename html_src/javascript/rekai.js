@@ -3,11 +3,64 @@
 
 // Function to copy text from a specific element to clipboard and show a tooltip
 function copyTextByElementId(elementId, buttonId) {
-  var textToCopy = document.getElementById(elementId).textContent;
+  var textToCopy = document.getElementById(elementId).textContent.trim();
   var copyButton = document.getElementById(buttonId);
   navigator.clipboard.writeText(textToCopy);
 
   showTooltip(copyButton, "Copied!");
+}
+
+var clauseSubcards = document.querySelectorAll(".clause-subcard");
+
+clauseSubcards.forEach(function (clauseSubcard) {
+
+  clauseSubcard.addEventListener("keydown", function (event) {
+    if (event.ctrlKey || event.metaKey) {
+      handleMouseOver(event, this);
+      this.focus();
+    }
+  });
+
+  clauseSubcard.addEventListener("keyup", function (event) {
+    handleMouseOut(event, this);
+    this.focus();
+  });
+
+  clauseSubcard.addEventListener("mouseover", function (event) {
+    clauseSubcard.setAttribute("tabindex", "0");
+    this.focus();
+    handleMouseOver(event, this);
+  });
+
+  clauseSubcard.addEventListener("mouseout", function (event) {
+    handleMouseOut(event, this);
+    this.removeAttribute("tabindex");
+  });
+
+  clauseSubcard.addEventListener("click", function (event) {
+    copyTextOnClick(event, this);
+  });
+
+})
+
+
+function copyTextOnClick(event, element) {
+  // Check if the Control (or Command) key is pressed
+  if (event.ctrlKey || event.metaKey) {
+    var textToCopy = element.textContent.trim();
+    navigator.clipboard.writeText(textToCopy);
+    showTooltip(element, "Copied!");
+  }
+}
+
+function handleMouseOver(event, element) {
+  if (event.ctrlKey || event.metaKey) {
+    element.classList.add("hovered");
+  }
+}
+
+function handleMouseOut(event, element) {
+    element.classList.remove("hovered");
 }
 
 // --------------------------------------------------------------------------------------------
@@ -48,7 +101,13 @@ jishoLinks.forEach(function (jishoLink) {
   jishoLink.onclick = function (event) {
     event.preventDefault();
     var iframe = document.getElementById("sidebar-iframe");
-    iframe.src = this.href;
+    var originalJishoLink = this.href;
+    if (localStorage.getItem("darkModeEnabled") === "true") {
+      var modifiedJishoLink = originalJishoLink + "?color_theme=dark";
+    } else {
+      var modifiedJishoLink = originalJishoLink + "?color_theme=light";
+    }
+    iframe.src = modifiedJishoLink;
   };
 });
 
@@ -119,7 +178,6 @@ audioButtons.forEach(function (audioButton) {
 
 // --------------------------------------------------------------------------------------------
 // JS for Top Bar Toggle Buttons
-
 function toggleElementDisplay(buttonId, elementClass, displayType, showText, hideText) {
   var containers =
     document.querySelectorAll(elementClass);
@@ -139,6 +197,8 @@ function toggleElementDisplay(buttonId, elementClass, displayType, showText, hid
   }
 }
 
+toggleElementDisplay('toggle-raw-para-button','.slave-raw','flex', 'Show RAW Para', 'Hide RAW Para');
+
 function toggleRightSidebar() {
   const root = document.documentElement;
   const rightSidebarContainer = document.getElementById("right-sidebar");
@@ -157,3 +217,70 @@ function toggleRightSidebar() {
   }
 }
 
+// --------------------------------------------------------------------------------------------
+// JS for dark mode
+
+function setDarkMode(isDarkModeEnabled) {
+  var root = document.documentElement;
+  if (isDarkModeEnabled) {
+    root.classList.add("dark-mode");
+    // reload jisho
+    var jishoIframe = document.getElementById("sidebar-iframe");
+    jishoIframe.src = "https://jisho.org/?color_theme=dark";
+    localStorage.setItem("darkModeEnabled", true)
+
+  } else {
+    root.classList.remove("dark-mode");
+    // reload jisho
+    var jishoIframe = document.getElementById("sidebar-iframe");
+    jishoIframe.src = "https://jisho.org/?color_theme=light";
+    localStorage.setItem("darkModeEnabled", false)
+  }
+}
+
+function toggleDarkMode() {
+  var root = document.documentElement;
+  var isDarkModeEnabled = root.classList.contains("dark-mode");
+
+  // invert the boolean
+  isDarkModeEnabled = !isDarkModeEnabled;
+
+  // Call function that updates dark mode class on root
+  setDarkMode(isDarkModeEnabled);
+}
+
+// Set initial dark mode state based on local storage
+function initializeDarkMode() {
+  var isDarkModeEnabled = localStorage.getItem("darkModeEnabled");
+
+  if (isDarkModeEnabled) {
+    setDarkMode(true);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setDarkMode(true);
+  } else {
+    setDarkMode(false);
+  }
+}
+
+// Call initializeDarkMode on page load
+initializeDarkMode();
+
+// --------------------------------------------------------------------------------------------
+
+// JS for expanding and collapsing cards
+function expandCollapseCard(cardID) {
+  const masterCard = document.getElementById(cardID);
+  const slaveCards = masterCard.querySelectorAll(".line-card");
+
+  slaveCards.forEach((slaveCard) => {
+    slaveCard.classList.toggle("collapsed");
+
+    if (slaveCard.classList.contains("collapsed")) {
+      button = masterCard.querySelector(".expand-collapse-button");
+      button.textContent = "Expand";
+    } else {
+      button = masterCard.querySelector(".expand-collapse-button");
+      button.textContent = "Collapse";
+    }
+  });
+}

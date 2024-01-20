@@ -4,12 +4,10 @@
 @author: beloved
 
 This app will take japanese text as input, carry out all the NLP tasks, and save everything in a structured database
-along with media files in proper folders, uniquely named folders.
+along with media files in proper folders
 
 Features:
 - gradio UI for interfacing
-- inputs - Option to input the respective text lines or
-- JP text line spliting
 - Incorporate Kudasai Preprocessor
 -
 
@@ -24,11 +22,14 @@ import os.path
 
 import gradio as gr
 
-from Rekai.appconfig import AppConfig
-from Rekai.custom_dataclasses import RekaiText
-from Rekai.processors import Process
-from Rekai.generators import GenerateHtml
-from Rekai.custom_modules.utilities import get_current_timestamp
+import sys
+
+from appconfig import AppConfig, RunConfig
+from custom_dataclasses import RekaiText
+from processors import Process
+from generators import GenerateHtml
+from custom_modules.utilities import get_current_timestamp
+from custom_modules.utilities import log_process_time
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -40,6 +41,7 @@ from Rekai.custom_modules.utilities import get_current_timestamp
 
 class CustomTest:
     @staticmethod
+    @log_process_time
     def rekai_test():
         input_japanese_text = '''
         
@@ -72,36 +74,88 @@ class CustomTest:
 
         final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
 
-        rekai_text_object = RekaiText(input_text=input_japanese_text)
+        run_config = RunConfig()
 
-        Process.jisho_parse(input_rekai_text_object=rekai_text_object)
-        Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+        rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
 
-        GenerateHtml.RekaiHtml.full_html(input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
+        if run_config.run_jisho_parse:
+            Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+        if run_config.run_tts:
+            Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
 
-class RekaiUI:
+        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
-    def gradio_web_ui(self):
+# Main Function
+def main(input_japanese_text):
+    timestamp = get_current_timestamp()
+    output_directory = AppConfig.output_directory
 
-        # Frontend
-        with gr.Blocks() as self.web_ui:
-            gr.Markdown("""# Re:KAI""")
+    run_config = RunConfig()
 
-            with gr.Tab("Preprocess") as self.preprocess_tab:
-                with gr.Column():
-                    Tab1_run_btn = gr.Button('Run')
+    final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
 
-            # Event Listeners
+    rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
+
+    # These dicts are not yet used but are a clearer way to pass data to the HTML generator than it fetching it manually.
+    jisho_dict = None
+    tts_dict = None
+
+    if run_config.run_jisho_parse:
+        jisho_dict = Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+    if run_config.run_tts:
+        tts_dict = Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+
+    GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 
 
-    def launch(self):
-        self.gradio_web_ui()
-        self.web_ui.launch(show_error=True)
+
+# Frontend
+with gr.Blocks() as demo:
+    gr.Markdown("""# Re:KAI""")
+
+    with gr.Tab('RekaiHTML') as rekai_html_tab:
+
+        gr.Markdown('''Generate RekaiHTML files for japanese text.''')
+
+        with gr.Row():
+            with gr.Column():
+                html_input_text_box = gr.Textbox(label='Japanese Raw Text', value='', lines=10, max_lines=20, visible=True, interactive=True,
+                                                 placeholder='Input Japanese Raw text here')
+                html_generate_button = gr.Button(value='Generate HTML', variant='primary', interactive=True, visible=True)
+                html_interrupt_button = gr.Button(value='Stop', variant='stop', interactive=False, visible=True)
+            with gr.Column():
+                rekai_html_log_area = gr.Textbox(label='Log', value='', lines=10, max_lines=20, visible=True, interactive=False)
+
+    with gr.Tab("Preprocess") as preprocess_tab:
+        with gr.Column():
+            Tab0_run_btn = gr.Button('Run')
+
+    ## Event Listeners
+    html_generate_button.click(fn=main, inputs=[html_input_text_box],outputs=[])
 
 
 if __name__ == '__main__':
 
-    try:
+    ## typically you want to check if sys.argv is greater than 1 since the first argument is the python file itself
+    
+    ## argument with txt file
+    if len(sys.argv) == 2:
+
+        file_path = sys.argv[1]
+    
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                main(file.read())
+
+        except FileNotFoundError:
+            print(f"File not found at {file_path}")
+
+            input("Press any key to exit.")
+
+            raise FileNotFoundError(f"File not found at {file_path}")
+        
+
+    ## gradio webgui
+    else:
+        # demo.launch()
         CustomTest.rekai_test()
-    except Exception as e:
-        print(e)

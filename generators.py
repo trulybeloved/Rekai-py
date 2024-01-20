@@ -1,15 +1,30 @@
 import os.path
 import shutil
+
 from loguru import logger
 from bs4 import BeautifulSoup
+import minify_html
 
-from Rekai.custom_dataclasses import RekaiText, Paragraph, Line
-from Rekai.appconfig import AppConfig
-from Rekai.fetchers import Fetch
+from custom_dataclasses import RekaiText, Paragraph, Line, Clause
+from appconfig import AppConfig, RunConfig
+from fetchers import Fetch
 
+
+class HtmlUtilities:
+
+    @staticmethod
+    def minify(input_code: str) -> str:
+        """Can minify css and js as well"""
+        minifed_code = minify_html.minify(code=input_code, do_not_minify_doctype=True)
+        return minifed_code
+
+    @staticmethod
+    def prettify_html(input_html: str) -> str:
+        soup = BeautifulSoup(input_html, 'html.parser')
+        prettified_html = soup.prettify()
+        return prettified_html
 
 class GenerateHtml:
-
     class Config:
         pass
 
@@ -44,13 +59,46 @@ class GenerateHtml:
 
     class RekaiHtmlBlock:
 
+        # Run configuration
+        config_preprocess: bool
+        config_include_jisho_parse: bool
+        config_include_tts: bool
+        config_include_line_deepl_tl: bool
+        config_include_clause_analysis: bool
+        config_include_clause_deepl_tl: bool
+        config_include_clause_google_tl: bool
+
+        def __init__(self, run_config_object: RunConfig):
+            self.set_config(run_config_object=run_config_object)
+
+        def set_config(self, run_config_object: RunConfig):
+
+            self.config_preprocess = run_config_object.preprocess
+
+            self.config_include_jisho_parse = (run_config_object.run_jisho_parse
+                                               and run_config_object.include_jisho_parse)
+
+            self.config_include_tts = run_config_object.run_tts
+
+            self.config_include_line_deepl_tl = (run_config_object.run_deepl_tl
+                                                 and run_config_object.deepl_tl_lines)
+
+            self.config_include_clause_analysis = run_config_object.include_clause_analysis
+
+            self.config_include_clause_deepl_tl = (run_config_object.include_clause_analysis
+                                                   and run_config_object.deepl_tl_clauses)
+
+            self.config_include_clause_google_tl = (run_config_object.include_clause_analysis
+                                                    and run_config_object.google_tl_clauses)
+
         # Inner Elements ===========================================
         @staticmethod
         def audio_button(line_id: str, line_raw: str, output_directory: str) -> str:
 
             tts_file_output_folder_name = AppConfig.tts_output_folder_name
             tts_file_output_directory_path = os.path.join(output_directory, tts_file_output_folder_name)
-            tts_file_name = GenerateHtml.FileOutput.tts(line_id=line_id, line_raw=line_raw, output_directory=tts_file_output_directory_path)
+            tts_file_name = GenerateHtml.FileOutput.tts(line_id=line_id, line_raw=line_raw,
+                                                        output_directory=tts_file_output_directory_path)
             line_tts_relative_path = f'{tts_file_output_folder_name}/{tts_file_name}'
 
             output_html = f'''
@@ -62,22 +110,21 @@ class GenerateHtml:
             return output_html
 
         # Card Blocks ==============================================
-        @staticmethod
-        def para_card_unparsable(paragraph_number: int, input_rekai_paragraph_object: Paragraph) -> str:
+        def para_card_unparsable(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph) -> str:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
-            paragraph_raw = paragraph_object.paragraph_raw
+            paragraph_raw = paragraph_object.raw_text
 
             # CARD MASTER START
-            output_html = f'<div id="{paragraph_id}" class="line-card-master">'
+            output_html = f'<div id="{paragraph_id}" class="para-card">'
 
             # CARD MASTER HEADER
             output_html += f''' 
                <div class="card-header">
                    <div class="card-header-left-half">
-                       <p class="card-para-number">{paragraph_number}</p>
-                       <p class="card-para-type">{paragraph_object.paragraph_type}</p>
+                       <div class="card-para-number"><span>{paragraph_number}</span></div>
+                       <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
                    </div>
                    <div class="card-header-right-half">
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
@@ -98,19 +145,74 @@ class GenerateHtml:
 
             return output_html
 
-        @staticmethod
-        def line_card(paragraph_number: int, line_number: int, input_rekai_line_object: Line, output_directory: str) -> str:
+        def clause_card_lables(self) -> str:
+
+            output_html = '<div class="clause-subcard-labels">'
+
+            if self.config_preprocess:
+                default_label = 'Preprocessed'
+            else:
+                default_label = 'Raw'
+
+            output_html += f'<div class="clause-subcard-label">{default_label}</div>'
+
+            if self.config_include_clause_deepl_tl:
+                output_html += f'<div class="clause-subcard-label">DeepL</div>'
+
+            if self.config_include_clause_google_tl:
+                output_html += f'<div class="clause-subcard-label">Google</div>'
+
+            output_html += '</div>'
+
+            return output_html
+
+        def clause_card(self, paragraph_number: int, line_number: int, clause_number: int, input_rekai_clause_object: Clause) -> str:
+
+            clause_object = input_rekai_clause_object
+            clause_id = f'P{paragraph_number}_L{line_number}_C{clause_number}'
+            clause_raw = clause_object.raw_text
+            clause_preprocessed = clause_object.preprocessed_text
+
+            # If clause analysis is enabled, include the clause split structure by default.
+            output_html = f'''<div id="{clause_id}" class="clause-card">'''
+            output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed">{clause_preprocessed}</div>'''
+
+            # If preprocess option is enabled, use preprocessed japanese text to query the db, else use raw
+            if self.config_preprocess:
+                clause_key = clause_preprocessed
+            else:
+                clause_key = clause_raw
+
+            if self.config_include_clause_deepl_tl:
+                clause_deepl_tl = Fetch.deepl_tl(raw_line=clause_key)
+                output_html += f'''<div id="{clause_id}-deepl_tl" class="clause-subcard subcard-contents-deepl">{clause_deepl_tl}</div>'''
+
+            if self.config_include_clause_google_tl:
+                clause_google_tl = Fetch.google_tl(raw_line=clause_key)
+                output_html += f'''<div id="{clause_id}-google_tl" class="clause-subcard subcard-contents-googletl">{clause_google_tl}</div>'''
+
+            # END OF CLAUSE CARD
+            output_html += f'</div>'
+
+            return output_html
+
+
+        def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line,
+                      output_directory: str) -> str:
 
             line_object = input_rekai_line_object
             line_id = f'P{paragraph_number}_L{line_number}'
-            line_raw = line_object.line_raw
+            line_raw = line_object.raw_text
+            line_preprocessed = line_object.preprocessed_text
 
-            audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
-            jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
-
+            if self.config_include_tts:
+                audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw,
+                                                                             output_directory=output_directory)
+            else:
+                audio_button_html = ''
 
             # CARD SLAVE START
-            output_html = f'<div id="{line_id}" class="line-card-slave">'
+            output_html = f'<div id="{line_id}" class="line-card collapsed">'
 
             # CARD SLAVE HEADER
             output_html += f'''
@@ -137,37 +239,73 @@ class GenerateHtml:
                 </div>
             '''
 
-            # CARD SLAVE JISHO PARSE
-            output_html += f'''
-                <div id="{line_id}-jisho-parse" class="card-contents-jisho-parse">
-                    <div class="card-contents-jisho-parse-text">
-                    {jisho_parsed_html}
-                    </div>
-                </div>        
-            '''
+            if self.config_include_jisho_parse:
+                jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
+                # CARD SLAVE JISHO PARSE
+                output_html += f'''
+                    <div id="{line_id}-jisho-parse" class="card-contents-jisho-parse">
+                        <div class="card-contents-jisho-parse-text">
+                        {jisho_parsed_html}
+                        </div>
+                    </div>        
+                '''
 
-            # CARD SLAVE END
+            if self.config_preprocess:
+                line_key = line_preprocessed
+            else:
+                line_key = line_raw
+
+            # LINE CARD FULL DEEPL TL
+            if self.config_include_line_deepl_tl:
+                line_deepl_tl = Fetch.deepl_tl(raw_line=line_key)
+                output_html += f'''
+                    <div class="clause-subcard-label">DeepL</div>
+                    <div class="card-contents-line-deepl" id={line_id}-deepl onclick="copyTextOnClick(event, this)">{line_deepl_tl}</div>
+                '''
+
+            # LINE CARD FULL GOOGLE TL
+            if self.config_include_clause_google_tl:
+                line_google_tl = Fetch.google_tl(raw_line=line_key)
+                output_html += f'''
+                    <div class="clause-subcard-label">Google</div>
+                    <div class="card-contents-line-google-tl" id={line_id}-google-tl onclick="copyTextOnClick(event, this)">{line_google_tl}</div>
+                '''
+
+            # LINE CARD CLAUSE BY CLAUSE
+            if self.config_include_clause_analysis:
+                if line_object.is_single_clause():
+                    pass
+                else:
+                    # CLAUSE ANALYSIS CARD LABELS
+                    output_html += f'{self.clause_card_lables()}'
+
+                    # CLAUSE CARDS
+                    for (clause_number, clause_object) in line_object.numbered_clause_objects:
+                        output_html += f'{self.clause_card(paragraph_number=paragraph_number, line_number=line_number, clause_number=clause_number, input_rekai_clause_object=clause_object)}'
+
+            # LINE CARD END
             output_html += f'''
             </div>'''
 
             return output_html
 
-        @staticmethod
-        def para_card(paragraph_number: int, input_rekai_paragraph_object: Paragraph, output_directory: str) -> str:
+        def para_card(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph,
+                      output_directory: str) -> str:
 
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
-            paragraph_raw = paragraph_object.paragraph_raw
+            paragraph_raw = paragraph_object.raw_text
 
             # CARD MASTER START
-            output_html = f'<div id="{paragraph_id}" class="line-card-master">'
+            output_html = f'<div id="{paragraph_id}" class="para-card">'
 
             # CARD MASTER HEADER
             output_html += f''' 
                <div class="card-header">
                    <div class="card-header-left-half">
-                       <p class="card-para-number">{paragraph_number}</p>
-                       <p class="card-para-type">{paragraph_object.paragraph_type}</p>
+                       <div class="card-para-number"><span>{paragraph_number}</span></div>
+                       <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
+                       <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Expand</div>
                    </div>
                    <div class="card-header-right-half">
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
@@ -184,8 +322,8 @@ class GenerateHtml:
                 </div>'''
 
             # GENERATE SLAVE CARDS
-            for (line_number, line_object) in input_rekai_paragraph_object.list_of_line_object_tuples:
-                output_html += f'{GenerateHtml.RekaiHtmlBlock.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
+            for (line_number, line_object) in input_rekai_paragraph_object.numbered_line_objects:
+                output_html += f'{self.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
 
             # CARD MASTER END
             output_html += f'</div>'
@@ -193,8 +331,7 @@ class GenerateHtml:
             return output_html
 
         # Page Blocks ==============================================
-        @staticmethod
-        def html_head(html_title: str) -> str:
+        def html_head(self, html_title: str) -> str:
             html_head = f'''
             <!DOCTYPE html>
             <html>
@@ -204,7 +341,6 @@ class GenerateHtml:
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>{html_title}</title>
 
-                <link rel="stylesheet" href="css/jishoparse.css">
                 <link rel="stylesheet" href="css/styles.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -214,23 +350,21 @@ class GenerateHtml:
             '''
             return html_head
 
-        @staticmethod
-        def html_body_prefix() -> str:
+        def html_body_prefix(self, ) -> str:
             output_html = f'''<body><main><div id="primary" class="primary">'''
             return output_html
 
-        @staticmethod
-        def html_body_main(input_rekai_text_object: RekaiText, output_directory: str) -> str:
+        def html_body_main(self, input_rekai_text_object: RekaiText, output_directory: str) -> str:
 
             output_html = '<div id="card-coloumn" class="card-coloumn">'
 
-            for (index, paragraph_object) in input_rekai_text_object.list_of_paragraph_object_tuples:
+            for (index, paragraph_object) in input_rekai_text_object.numbered_paragraph_objects:
                 if paragraph_object.unparsable:
-                    output_html += GenerateHtml.RekaiHtmlBlock.para_card_unparsable(
+                    output_html += self.para_card_unparsable(
                         input_rekai_paragraph_object=paragraph_object,
                         paragraph_number=index)
                 else:
-                    output_html += GenerateHtml.RekaiHtmlBlock.para_card(
+                    output_html += self.para_card(
                         input_rekai_paragraph_object=paragraph_object,
                         paragraph_number=index,
                         output_directory=output_directory)
@@ -239,8 +373,10 @@ class GenerateHtml:
 
             return output_html
 
-        @staticmethod
-        def html_body_suffix() -> str:
+        def html_body_suffix(self) -> str:
+
+            top_bar_title = 'TITLE'
+
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
                         <div id="sidebar-placeholder" class="sidebar-placeholder">
@@ -261,7 +397,7 @@ class GenerateHtml:
                                 <div>RE:KAI</div>
                             </div>
                             <div class="top-bar-chapter-title">
-                                <div>Arc 8 - C 25</div>
+                                <div>{top_bar_title}</div>
                             </div>
                         </div>
                         <div class="top-bar-mid-section">
@@ -272,12 +408,12 @@ class GenerateHtml:
                             <button id="toggle-jisho-button" class="top-bar-button top-bar-button-generic"
                                 onclick="toggleElementDisplay('toggle-jisho-button','.card-contents-jisho-parse','flex', 'Show JishoParse', 'Hide JishoParse')">Hide
                                 JishoParse</button>
-                            <button id="toggle-inner-raw-button" class="top-bar-button top-bar-button-generic" onclick="toggleElementDisplay('toggle-inner-raw-button', '.japanese-raw-line', 'block', 'Show Inner Raw', 'Hide Inner Raw')">ToggleInnerRAw</button>
+                            <button id="toggle-inner-raw-button" class="top-bar-button top-bar-button-generic" onclick="toggleElementDisplay('toggle-inner-raw-button', '.slave-raw', 'block', 'Show Inner Raw', 'Hide Inner Raw')">ToggleInnerRAw</button>
                             <button class="top-bar-button top-bar-button-generic">Button</button>
                         </div>
                         <div class="top-bar-end-section">
-                            <button id="toggle-sidebar-button" class="top-bar-button top-bar-button-generic"
-                                onclick="toggleRightSidebar()">Hide Sidebar</button>
+                            <button id="toggle-light-dark-mode-button" class="top-bar-button top-bar-button-generic" onclick="toggleDarkMode()">Light|Dark</button>
+                            <button id="toggle-sidebar-button" class="top-bar-button top-bar-button-generic" onclick="toggleRightSidebar()">Hide Sidebar</button>
                         </div>
                     </div>
                 </div>
@@ -291,18 +427,23 @@ class GenerateHtml:
 
     class RekaiHtml:
         @staticmethod
-        def full_html(html_title: str, input_rekai_text_object: RekaiText, output_directory: str, prettify: bool = False) -> None:
+        def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
+                      output_directory: str, post_process: str = 'minify') -> None:
 
             GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
-            html = GenerateHtml.RekaiHtmlBlock.html_head(html_title=html_title)
-            html += GenerateHtml.RekaiHtmlBlock.html_body_prefix()
-            html += GenerateHtml.RekaiHtmlBlock.html_body_main(input_rekai_text_object=input_rekai_text_object, output_directory=output_directory)
-            html += GenerateHtml.RekaiHtmlBlock.html_body_suffix()
+            generate = GenerateHtml.RekaiHtmlBlock(run_config_object=run_config_object)
 
-            if prettify:
-                soup = BeautifulSoup(html, 'html.parser')
-                html = soup.prettify()
+            html = generate.html_head(html_title=html_title)
+            html += generate.html_body_prefix()
+            html += generate.html_body_main(input_rekai_text_object=input_rekai_text_object,
+                                            output_directory=output_directory)
+            html += generate.html_body_suffix()
+
+            if post_process == 'prettify':
+                html = HtmlUtilities.prettify_html(html)
+            elif post_process == 'minify':
+                html = HtmlUtilities.minify(html)
 
             output_html_file_path = os.path.join(output_directory, 'rekai.html')
 
@@ -312,5 +453,4 @@ class GenerateHtml:
             os.startfile(output_html_file_path)
 
             logger.info('RekaiHTML file generated sucessfully')
-
 

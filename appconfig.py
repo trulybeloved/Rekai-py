@@ -62,7 +62,7 @@ class AppConfig:
         ssml_gender = texttospeech.SsmlVoiceGender.NEUTRAL
         voice_name: str = 'ja-JP-Wavenet-B'
         audio_encoding = texttospeech.AudioEncoding.OGG_OPUS
-        speaking_rate: float = 1.0
+        speaking_rate: float = 0.9
         pitch: float = 0.0
         volume_gain_db: float = 0.0
 
@@ -89,6 +89,7 @@ class AppConfig:
 class RunConfig:
     # This class is called by default by RekaiText.
     preprocess: bool
+    use_preprocessed_for_paragraphs: bool
     run_jisho_parse: bool
     run_tts: bool
     run_deepl_tl: bool
@@ -108,6 +109,7 @@ class RunConfig:
 
     def __init__(self,
                  preprocess=True,
+                 use_preprocessed_for_paragraphs=True,
                  run_jisho_parse=True,
                  run_tts=True,
                  run_deepl_tl=True,
@@ -126,6 +128,7 @@ class RunConfig:
                  google_tl_clauses=True):
 
         self.preprocess = preprocess
+        self.use_preprocessed_for_paragraphs = preprocess and use_preprocessed_for_paragraphs
         self.run_jisho_parse = run_jisho_parse
         self.run_tts = run_tts
         self.run_deepl_tl = run_deepl_tl

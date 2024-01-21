@@ -1,5 +1,7 @@
+import base64
 import os.path
 import shutil
+from typing import Union
 
 from loguru import logger
 from bs4 import BeautifulSoup
@@ -61,9 +63,16 @@ class GenerateHtml:
 
         # Run configuration
         config_preprocess: bool
+
         config_include_jisho_parse: bool
         config_include_tts: bool
+
+        config_include_preprocessed_para: bool
+        config_set_preprocessed_para_as_default: bool
+        config_include_preprocessed_line: bool
+
         config_include_line_deepl_tl: bool
+        config_include_line_google_tl: bool
         config_include_clause_analysis: bool
         config_include_clause_deepl_tl: bool
         config_include_clause_google_tl: bool
@@ -80,8 +89,17 @@ class GenerateHtml:
 
             self.config_include_tts = run_config_object.run_tts
 
+            self.config_include_preprocessed_para = run_config_object.preprocess
+
+            self.config_set_preprocessed_para_as_default = run_config_object.use_preprocessed_for_paragraphs
+
+            self.config_include_preprocessed_line = run_config_object.preprocess
+
             self.config_include_line_deepl_tl = (run_config_object.run_deepl_tl
                                                  and run_config_object.deepl_tl_lines)
+
+            self.config_include_line_google_tl = (run_config_object.run_google_tl
+                                                 and run_config_object.google_tl_lines)
 
             self.config_include_clause_analysis = run_config_object.include_clause_analysis
 
@@ -101,11 +119,15 @@ class GenerateHtml:
                                                         output_directory=tts_file_output_directory_path)
             line_tts_relative_path = f'{tts_file_output_folder_name}/{tts_file_name}'
 
+            tts_bytes = Fetch.tts_bytes(raw_line=line_raw)
+
+            base64ogg = base64.b64encode(tts_bytes).decode('utf-8')
+
             output_html = f'''
             <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
             </audioButton>
             <audio id="{line_id}-audioPlayer" class="audioPlayer"
-                src="{line_tts_relative_path}"></audio>
+                src="{line_tts_relative_path}" base64ogg="{base64ogg}"></audio>
             '''
             return output_html
 
@@ -116,10 +138,11 @@ class GenerateHtml:
             paragraph_id = f'P{paragraph_number}'
             paragraph_raw = paragraph_object.raw_text
 
-            # CARD MASTER START
+
+            # PARA CARD START
             output_html = f'<div id="{paragraph_id}" class="para-card">'
 
-            # CARD MASTER HEADER
+            # PARA CARD HEADER
             output_html += f''' 
                <div class="card-header">
                    <div class="card-header-left-half">
@@ -132,7 +155,7 @@ class GenerateHtml:
                    </div>
                </div>'''
 
-            # CARD MASTER CONTENTS
+            # PARA CARD CONTENTS
             output_html += f'''
                 <div class="card-contents-raw master-raw">
                     <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
@@ -140,27 +163,27 @@ class GenerateHtml:
                     </div>
                 </div>'''
 
-            # CARD MASTER END
+            # PARA CARD END
             output_html += f'</div>'
 
             return output_html
 
         def clause_card_lables(self) -> str:
 
-            output_html = '<div class="clause-subcard-labels">'
+            output_html = '<div class="clause-card-label-container">'
 
             if self.config_preprocess:
                 default_label = 'Preprocessed'
             else:
                 default_label = 'Raw'
 
-            output_html += f'<div class="clause-subcard-label">{default_label}</div>'
+            output_html += f'<div class="clause-card-label">{default_label}</div>'
 
             if self.config_include_clause_deepl_tl:
-                output_html += f'<div class="clause-subcard-label">DeepL</div>'
+                output_html += f'<div class="clause-card-label">DeepL</div>'
 
             if self.config_include_clause_google_tl:
-                output_html += f'<div class="clause-subcard-label">Google</div>'
+                output_html += f'<div class="clause-card-label">Google</div>'
 
             output_html += '</div>'
 
@@ -175,7 +198,7 @@ class GenerateHtml:
 
             # If clause analysis is enabled, include the clause split structure by default.
             output_html = f'''<div id="{clause_id}" class="clause-card">'''
-            output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed">{clause_preprocessed}</div>'''
+            output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed copy-on-click">{clause_preprocessed}</div>'''
 
             # If preprocess option is enabled, use preprocessed japanese text to query the db, else use raw
             if self.config_preprocess:
@@ -185,11 +208,11 @@ class GenerateHtml:
 
             if self.config_include_clause_deepl_tl:
                 clause_deepl_tl = Fetch.deepl_tl(raw_line=clause_key)
-                output_html += f'''<div id="{clause_id}-deepl_tl" class="clause-subcard subcard-contents-deepl">{clause_deepl_tl}</div>'''
+                output_html += f'''<div id="{clause_id}-deepl_tl" class="clause-subcard subcard-contents-deepl copy-on-click">{clause_deepl_tl}</div>'''
 
             if self.config_include_clause_google_tl:
                 clause_google_tl = Fetch.google_tl(raw_line=clause_key)
-                output_html += f'''<div id="{clause_id}-google_tl" class="clause-subcard subcard-contents-googletl">{clause_google_tl}</div>'''
+                output_html += f'''<div id="{clause_id}-google_tl" class="clause-subcard subcard-contents-googletl copy-on-click">{clause_google_tl}</div>'''
 
             # END OF CLAUSE CARD
             output_html += f'</div>'
@@ -198,8 +221,9 @@ class GenerateHtml:
 
 
         def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line,
-                      output_directory: str) -> str:
+                      output_directory: str, total_lines: int) -> str:
 
+            paragraph_id = f'P{paragraph_number}'
             line_object = input_rekai_line_object
             line_id = f'P{paragraph_number}_L{line_number}'
             line_raw = line_object.raw_text
@@ -212,13 +236,13 @@ class GenerateHtml:
                 audio_button_html = ''
 
             # CARD SLAVE START
-            output_html = f'<div id="{line_id}" class="line-card collapsed">'
+            output_html = f'<div id="{line_id}" class="line-card">'
 
             # CARD SLAVE HEADER
             output_html += f'''
                 <div class="card-header">
                     <div class="card-header-left-half">
-                        <p class="card-line-number">{line_number}</p>
+                        <p class="card-line-number" onclick="expandCollapseLineContents('{line_id}')">P{paragraph_number}: Line {line_number} of {total_lines}</p>
                     </div>
 
                     <div class="card-header-right-half">
@@ -229,7 +253,19 @@ class GenerateHtml:
                 </div>
             '''
 
-            # CARD SLAVE CONTENTS
+            # LINE CARD CONTENTS START
+            output_html += f'''<div class="line-card-contents-container">'''
+
+            # CARD TTS WAVESURFER WAVEFORM
+            output_html += f'''                        
+                <div class="line-card-audio-container">
+                    <div class="audio-waveform" id="waveform-{line_id}"></div>
+                    <div class="audio-hover"></div>
+                    <div class="time"></div>
+                    <div class="duration"></div>
+                </div>
+                '''
+
             # CARD SLAVE RAW
             output_html += f'''
                 <div class="card-contents-raw slave-raw">
@@ -255,21 +291,36 @@ class GenerateHtml:
             else:
                 line_key = line_raw
 
+            # LINE CARD PREPROCESSED
+            if self.config_include_preprocessed_line:
+                output_html += f'''
+                <div class="line-preprocessed-container">
+                    <div class="line-content-label">Preprocessed</div>
+                    <div class="card-contents-line-preprocessed copy-on-click" id={line_id}-deepl)">{line_preprocessed}</div>
+                </div>
+                '''
             # LINE CARD FULL DEEPL TL
             if self.config_include_line_deepl_tl:
                 line_deepl_tl = Fetch.deepl_tl(raw_line=line_key)
                 output_html += f'''
-                    <div class="clause-subcard-label">DeepL</div>
-                    <div class="card-contents-line-deepl" id={line_id}-deepl onclick="copyTextOnClick(event, this)">{line_deepl_tl}</div>
+                <div class="line-deepl-container">
+                    <div class="line-content-label">DeepL</div>
+                    <div class="card-contents-line-deepl copy-on-click" id={line_id}-deepl)">{line_deepl_tl}</div>
+                </div>
                 '''
 
             # LINE CARD FULL GOOGLE TL
-            if self.config_include_clause_google_tl:
+            if self.config_include_line_google_tl:
                 line_google_tl = Fetch.google_tl(raw_line=line_key)
                 output_html += f'''
-                    <div class="clause-subcard-label">Google</div>
-                    <div class="card-contents-line-google-tl" id={line_id}-google-tl onclick="copyTextOnClick(event, this)">{line_google_tl}</div>
+                <div class="line-google-tl-container">
+                    <div class="line-content-label">Google</div>
+                    <div class="card-contents-line-google-tl copy-on-click" id={line_id}-google-tl)">{line_google_tl}</div>
+                </div>
                 '''
+
+            # CLAUSE CARD CONTAINER START
+            output_html += '''<div class="clause-card-container">'''
 
             # LINE CARD CLAUSE BY CLAUSE
             if self.config_include_clause_analysis:
@@ -283,6 +334,12 @@ class GenerateHtml:
                     for (clause_number, clause_object) in line_object.numbered_clause_objects:
                         output_html += f'{self.clause_card(paragraph_number=paragraph_number, line_number=line_number, clause_number=clause_number, input_rekai_clause_object=clause_object)}'
 
+            # CLAUSE CARD CONTAINER END
+            output_html += '''</div>'''
+
+            # LINE CARD CONTENTS CONTAINER END
+            output_html += '''</div>'''
+
             # LINE CARD END
             output_html += f'''
             </div>'''
@@ -295,37 +352,85 @@ class GenerateHtml:
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
             paragraph_raw = paragraph_object.raw_text
+            paragraph_preprocessed = paragraph_object.preprocessed_text
+            line_count = input_rekai_paragraph_object.line_count
 
-            # CARD MASTER START
+            no_display_style_tag = ''' style="display: none;" '''
+
+            # PARA CARD START
             output_html = f'<div id="{paragraph_id}" class="para-card">'
 
-            # CARD MASTER HEADER
+            # PARA CARD HEADER
             output_html += f''' 
                <div class="card-header">
                    <div class="card-header-left-half">
                        <div class="card-para-number"><span>{paragraph_number}</span></div>
                        <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
-                       <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Expand</div>
                    </div>
+                        <div class=card-header-mid-section>
+                        <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Expand</div>
+                        </div>
                    <div class="card-header-right-half">
                        <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
                            onclick="copyTextByElementId('{paragraph_id}-raw-text', '{paragraph_id}-copy-button')">{GenerateHtml.CommonElements.copy_button_content}</button>
                    </div>
                </div>'''
 
-            # CARD MASTER CONTENTS
-            output_html += f'''
-                <div class="card-contents-raw master-raw">
-                    <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
-                    <span class="japanese-raw-para">{paragraph_raw}</span>
-                    </div>
-                </div>'''
+            # PARA CARD CONTENTS
+            if self.config_set_preprocessed_para_as_default:
+                # RAW
+                output_html += f'''
+                    <div class="card-contents-raw master-raw" {no_display_style_tag}>
+                        <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
+                        <span class="japanese-raw-para">{paragraph_raw}</span>
+                        </div>
+                    </div>'''
+                # PREPROCESSED
+                output_html += f'''
+                    <div class="card-contents-raw master-preprocessed">
+                        <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
+                        <span class="japanese-raw-para">{paragraph_preprocessed}</span>
+                        </div>
+                    </div>'''
+            else:
+                # RAW
+                output_html += f'''
+                    <div class="card-contents-raw master-raw">
+                        <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
+                        <span class="japanese-raw-para">{paragraph_raw}</span>
+                        </div>
+                    </div>'''
+                # PREPROCESSED
+                if self.config_preprocess:
+                    output_html += f'''
+                        <div class="card-contents-raw master-preprocessed" {no_display_style_tag}>
+                            <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
+                            <span class="japanese-raw-para">{paragraph_preprocessed}</span>
+                            </div>
+                        </div>'''
+
+            # LINE CARD CONTAINER START
+            output_html += '''<div class="line-card-container collapsed">'''
 
             # GENERATE SLAVE CARDS
             for (line_number, line_object) in input_rekai_paragraph_object.numbered_line_objects:
-                output_html += f'{self.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory)}'
+                output_html += f'{self.line_card(paragraph_number=paragraph_number, line_number=line_number, input_rekai_line_object=line_object, output_directory=output_directory, total_lines=line_count)}'
 
-            # CARD MASTER END
+            # PARACARD LOWER COLLAPSE BUTTON
+            output_html += f'''
+            <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Collapse</div>
+            '''
+            #
+            # # PARACARD LOWER COLLAPSE BUTTON
+            # output_html += f'''
+            # <div class="para-card-collapse-button-container">
+            # <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Collapse</div>
+            # </div>'''
+            #
+            # # LINE CARD CONTAINER END
+            output_html += '''</div>'''
+
+            # PARA CARD END
             output_html += f'</div>'
 
             return output_html
@@ -346,6 +451,7 @@ class GenerateHtml:
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link rel="stylesheet"
                     href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap">
+                <script src="javascript/wavesurfer.min.js"></script>
             </head>
             '''
             return html_head
@@ -373,9 +479,7 @@ class GenerateHtml:
 
             return output_html
 
-        def html_body_suffix(self) -> str:
-
-            top_bar_title = 'TITLE'
+        def html_body_suffix(self, top_bar_title: str) -> str:
 
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
@@ -401,15 +505,28 @@ class GenerateHtml:
                             </div>
                         </div>
                         <div class="top-bar-mid-section">
+                            <span>Toggles:</span>
                             <!-- function toggleElementDisplay(buttonId, elementClass, displayType, showText, hideText) -->
                             <button id="toggle-raw-para-button" class="top-bar-button top-bar-button-generic"
-                                onclick="toggleElementDisplay('toggle-raw-para-button','.card-contents-raw.master-raw','flex', 'Show RAW Para', 'Hide RAW Para')">Hide
-                                RAW Para</button>
-                            <button id="toggle-jisho-button" class="top-bar-button top-bar-button-generic"
-                                onclick="toggleElementDisplay('toggle-jisho-button','.card-contents-jisho-parse','flex', 'Show JishoParse', 'Hide JishoParse')">Hide
-                                JishoParse</button>
-                            <button id="toggle-inner-raw-button" class="top-bar-button top-bar-button-generic" onclick="toggleElementDisplay('toggle-inner-raw-button', '.slave-raw', 'block', 'Show Inner Raw', 'Hide Inner Raw')">ToggleInnerRAw</button>
-                            <button class="top-bar-button top-bar-button-generic">Button</button>
+                                onclick="toggleDisplay(this,'.card-contents-raw.master-raw','flex')">PRaw</button>
+
+                            <button id="toggle-prepro-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.card-contents-jisho-parse','flex')">JParse</button>
+
+                            <button id="toggle-prepro-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.line-preprocessed-container','block')">LPrePro</button>
+
+                            <button id="toggle-deepl-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.line-deepl-container','block')">DeepL</button>
+
+                            <button id="toggle-google-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.line-google-tl-container','block')">Google</button>
+                            
+                            <button id="toggle-clauses-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.clause-card-container','block')">Clauses</button>
+
+                            <button id="toggle-waveform-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.line-card-audio-container','flex')">Waveform</button>
                         </div>
                         <div class="top-bar-end-section">
                             <button id="toggle-light-dark-mode-button" class="top-bar-button top-bar-button-generic" onclick="toggleDarkMode()">Light|Dark</button>
@@ -428,7 +545,7 @@ class GenerateHtml:
     class RekaiHtml:
         @staticmethod
         def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
-                      output_directory: str, post_process: str = 'minify') -> None:
+                      output_directory: str, post_process: Union[str, None] = 'minify') -> None:
 
             GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
@@ -438,7 +555,7 @@ class GenerateHtml:
             html += generate.html_body_prefix()
             html += generate.html_body_main(input_rekai_text_object=input_rekai_text_object,
                                             output_directory=output_directory)
-            html += generate.html_body_suffix()
+            html += generate.html_body_suffix(top_bar_title=input_rekai_text_object.text_header)
 
             if post_process == 'prettify':
                 html = HtmlUtilities.prettify_html(html)

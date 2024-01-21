@@ -10,34 +10,34 @@ function copyTextByElementId(elementId, buttonId) {
   showTooltip(copyButton, "Copied!");
 }
 
-var clauseSubcards = document.querySelectorAll(".clause-subcard");
+var copyableElements = document.querySelectorAll(".copy-on-click");
 
-clauseSubcards.forEach(function (clauseSubcard) {
+copyableElements.forEach(function (copyableElement) {
 
-  clauseSubcard.addEventListener("keydown", function (event) {
+  copyableElement.addEventListener("keydown", function (event) {
     if (event.ctrlKey || event.metaKey) {
       handleMouseOver(event, this);
       this.focus();
     }
   });
 
-  clauseSubcard.addEventListener("keyup", function (event) {
+  copyableElement.addEventListener("keyup", function (event) {
     handleMouseOut(event, this);
     this.focus();
   });
 
-  clauseSubcard.addEventListener("mouseover", function (event) {
-    clauseSubcard.setAttribute("tabindex", "0");
+  copyableElement.addEventListener("mouseover", function (event) {
+    copyableElement.setAttribute("tabindex", "0");
     this.focus();
     handleMouseOver(event, this);
   });
 
-  clauseSubcard.addEventListener("mouseout", function (event) {
+  copyableElement.addEventListener("mouseout", function (event) {
     handleMouseOut(event, this);
     this.removeAttribute("tabindex");
   });
 
-  clauseSubcard.addEventListener("click", function (event) {
+  copyableElement.addEventListener("click", function (event) {
     copyTextOnClick(event, this);
   });
 
@@ -78,8 +78,8 @@ function showTooltip(element, message) {
   tooltip.style.fontSize = "10px";
   tooltip.style.whiteSpace = "nowrap";
   tooltip.style.transform = "translateY(-100%)";
-  tooltip.style.top = `${element.offsetTop - 10}px`;
-  tooltip.style.left = `${element.offsetLeft - 8}px`;
+  tooltip.style.top = `${element.offsetTop - tooltip.offsetHeight - 10}px`;
+  tooltip.style.left = `${element.offsetLeft + element.offsetWidth/4}px`;
   tooltip.style.zIndex = "2000";
 
   element.parentElement.appendChild(tooltip);
@@ -112,92 +112,33 @@ jishoLinks.forEach(function (jishoLink) {
 });
 
 // --------------------------------------------------------------------------------------------
-// JS for Audio Buttons
 
-// Select all elements with class 'audioButton'
-var audioButtons = document.querySelectorAll(".audioButton");
-var currentlyPlaying = null; // To keep track of the audio that's currently playing
 
-// Attach click and ended events to each audio button and player
-audioButtons.forEach(function (audioButton, index) {
-  var audioPlayer = document.querySelectorAll(".audioPlayer")[index];
-  audioPlayer.previousButton = audioButton; // assigns the currently playing button as the previously clicked button
-
-  audioButton.addEventListener("click", function () {
-    // If another audio is playing, pause and reset it
-    if (currentlyPlaying && currentlyPlaying !== audioPlayer) {
-      resetButtonState(currentlyPlaying.previousButton);
-      currentlyPlaying.pause();
-      currentlyPlaying.currentTime = 0;
-      currentlyPlaying = null;
-    }
-
-    // Toggle between playing and pausing
-    if (audioPlayer.paused) {
-      audioPlayer.play();
-      currentlyPlaying = audioPlayer;
-      // change button appearance to that of a stop button when audio is playing
-      updateButtonState(
-        audioButton,
-        "◼ TTS",
-        "audioButton audioButton-stop"
-      );
-    } else {
-      // While audio is playing and the user clicks on the stop button assigned to the currently playing audio, stop playback and reset state
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
-      currentlyPlaying = null;
-      resetButtonState(audioButton);
-    }
-  });
-
-  audioPlayer.addEventListener("ended", function () {
-    resetButtonState(audioButton);
-    currentlyPlaying = null;
-  });
-});
-
-// Function to update the button state with new text and class
-function updateButtonState(button, newText, newClassName) {
-  button.textContent = newText;
-  button.className = newClassName;
-}
-
-// Function to reset the button state to default
-function resetButtonState(button) {
-  var defaultText = "▶ TTS";
-  var defaultClassName = "audioButton audioButton-play";
-
-  updateButtonState(button, defaultText, defaultClassName);
-}
-
-// Set initial button state to default for all audio buttons
-audioButtons.forEach(function (audioButton) {
-  resetButtonState(audioButton);
-});
 
 // --------------------------------------------------------------------------------------------
 // JS for Top Bar Toggle Buttons
-function toggleElementDisplay(buttonId, elementClass, displayType, showText, hideText) {
-  var containers =
-    document.querySelectorAll(elementClass);
-  containers.forEach(function (container) {
-    if (container.style.display === "none") {
-      container.style.display = displayType;
-    } else {
-      container.style.display = "none";
-    }
+function updateButtonClasses() {
+  const toggleButtons = document.querySelectorAll(".top-bar-button");
+  toggleButtons.forEach(function (toggleButton) {
+    toggleButton.classList.add("toggle-button-enabled");
   });
-
-  var button = document.getElementById(buttonId);
-  if (containers[0].style.display === "none") {
-    button.textContent = showText;
-  } if (containers[0].style.display !== "none") {
-    button.textContent = hideText;
-  }
 }
 
-toggleElementDisplay('toggle-raw-para-button','.slave-raw','flex', 'Show RAW Para', 'Hide RAW Para');
+updateButtonClasses();
+
+function toggleDisplay(button, elementClass, displayType) {
+  
+  elements = document.querySelectorAll(elementClass);
+  elements.forEach(function (element) {
+    if (element.style.display === "none") {
+      element.style.display = displayType;
+      button.classList.add("toggle-button-enabled");
+    } else {
+      element.style.display = "none";
+      button.classList.remove("toggle-button-enabled");
+    }
+  });
+}
 
 function toggleRightSidebar() {
   const root = document.documentElement;
@@ -269,18 +210,158 @@ initializeDarkMode();
 
 // JS for expanding and collapsing cards
 function expandCollapseCard(cardID) {
-  const masterCard = document.getElementById(cardID);
-  const slaveCards = masterCard.querySelectorAll(".line-card");
+  const paraCard = document.getElementById(cardID);
+  const lineCards = paraCard.querySelectorAll(".line-card-container");
 
-  slaveCards.forEach((slaveCard) => {
-    slaveCard.classList.toggle("collapsed");
+  lineCards.forEach((lineCard) => {
+    lineCard.classList.toggle("collapsed");
 
-    if (slaveCard.classList.contains("collapsed")) {
-      button = masterCard.querySelector(".expand-collapse-button");
+    if (lineCard.classList.contains("collapsed")) {
+      lineCard.style.maxHeight = "0px";
+      button = paraCard.querySelector(".expand-collapse-button");
       button.textContent = "Expand";
     } else {
-      button = masterCard.querySelector(".expand-collapse-button");
+      lineCard.style.maxHeight = lineCard.scrollHeight + 1000 + "px";
+      button = paraCard.querySelector(".expand-collapse-button");
       button.textContent = "Collapse";
     }
   });
 }
+
+function expandCollapseLineContents(lineID) {
+  const line = document.getElementById(lineID);
+  const lineContent = line.querySelector(".line-card-contents-container");
+  var computedStyle = getComputedStyle(lineContent);
+
+  if (computedStyle.maxHeight === "0px") {
+    lineContent.style.maxHeight = lineContent.scrollHeight + 1000 + "px";
+  }
+
+  lineContent.classList.toggle("collapsed");
+
+  if (lineContent.classList.contains("collapsed")) {
+    lineContent.style.maxHeight = "0px";  
+  } else {
+    lineContent.style.maxHeight = lineContent.scrollHeight + 1000 + "px";
+  }
+  };
+
+
+
+// --------------------------------------------------------------------------------------------
+// JS for wavesurfer audio player and audiobuttons
+
+var audioButtons = document.querySelectorAll(".audioButton");
+
+// Function to update the button state with new text and class
+function updateButtonState(button, newText, newClassName) {
+  button.textContent = newText;
+  button.className = newClassName;
+}
+
+// Function to reset the button state to default
+function resetButtonState(button) {
+  var defaultText = "▶ TTS";
+  var defaultClassName = "audioButton audioButton-play";
+
+  updateButtonState(button, defaultText, defaultClassName);
+}
+
+// Set initial button state to default for all audio buttons
+audioButtons.forEach(function (audioButton) {
+  resetButtonState(audioButton);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const lineCards = document.querySelectorAll('.line-card');
+  let currentlyPlayingWaveSurfer = null;
+
+  function updateButtonState(button, newText, newClassName) {
+    button.textContent = newText;
+    button.className = newClassName;
+  }
+
+  function resetButtonState(button) {
+    var defaultText = "▶ TTS";
+    var defaultClassName = "audioButton audioButton-play";
+    updateButtonState(button, defaultText, defaultClassName);
+  }
+
+  lineCards.forEach((container, index) => {
+    const audioElement = container.querySelector('.audioPlayer');
+    const waveformContainer = container.querySelector('.audio-waveform');
+    const audioBase64Ogg = audioElement.getAttribute('base64ogg');
+
+    // Create a Blob from the base64 data
+    var binaryData = atob(audioBase64Ogg);
+    var arrayBuffer = new ArrayBuffer(binaryData.length);
+    var view = new Uint8Array(arrayBuffer);
+    for (var i = 0; i < binaryData.length; i++) {
+        view[i] = binaryData.charCodeAt(i);
+    }
+    var blob = new Blob([arrayBuffer], { type: 'audio/ogg' });
+
+    // Create an Object URL from the Blob
+    audio_url = URL.createObjectURL(blob);
+
+    // Create the waveform
+    const wavesurfer = WaveSurfer.create({
+      container: waveformContainer,
+      waveColor: "#7B7B7B",
+      progressColor: "#AFFF9B",
+      barWidth: 1,
+      url: audio_url,
+      responsive: true,
+      height: 30,
+      hideScrollbar: true,
+      cursorWidth: 0,
+      audioRate: 1,
+      autoplay: false,
+    });
+
+    // Play/pause on button click
+    const audioButton = container.querySelector('.audioButton');
+    audioButton.addEventListener('click', () => {
+      if (currentlyPlayingWaveSurfer && currentlyPlayingWaveSurfer !== wavesurfer) {
+        currentlyPlayingWaveSurfer.stop();
+        resetButtonState(currentlyPlayingAudioButton);
+      }
+
+      if (wavesurfer.isPlaying()) {
+        wavesurfer.stop();
+        currentlyPlayingWaveSurfer = null;
+        resetButtonState(audioButton);
+      } else {
+        wavesurfer.play();
+        currentlyPlayingWaveSurfer = wavesurfer;
+        currentlyPlayingAudioButton = audioButton;
+        updateButtonState(audioButton, "◼ TTS", "audioButton audioButton-stop");
+      }
+    });
+
+    wavesurfer.on('finish', () => {
+      if (currentlyPlayingWaveSurfer === wavesurfer) {
+        currentlyPlayingWaveSurfer = null;
+        resetButtonState(audioButton);
+      }  
+
+    })
+  });
+});
+
+// JS for highlighting the last clicked para card
+document.addEventListener('DOMContentLoaded', function() {
+  var paraCards = document.querySelectorAll('.para-card');
+
+  paraCards.forEach(function(paraCard) {
+      paraCard.addEventListener('click', function() {
+          // Remove 'clicked' class from all paracards
+          paraCards.forEach(function(d) {
+              d.classList.remove('clicked');
+          });
+
+          // Add 'clicked' class to the clicked div
+          paraCard.classList.add('clicked');
+      });
+  });
+});

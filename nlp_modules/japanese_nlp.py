@@ -16,8 +16,7 @@ class Classifier:
 
     @staticmethod
     def contains_no_parsable_ja_text(input_text: str) -> bool:
-
-        # print(input_text)
+        # print(f'Test Text: {input_text}')
         replacement_set = Charsets.EXPRESSIONS | Charsets.PUNCTUATION
         for char in replacement_set:
             input_text = input_text.replace(char, '')
@@ -25,24 +24,60 @@ class Classifier:
         # further checks on the remaining string
         same_kana_repeated = bool(re.match(Regex.same_hiragana_repeated, input_text))
         if same_kana_repeated:
+            # print(f'Same kana repeated')
             return True
+
+        only_single_kana = bool(re.match(Regex.any_single_kana, input_text))
+        if only_single_kana:
+            # print(f'Single kana')
+            return True
+
         # Needs an additional dictionary based check
-        return bool(len(input_text) < 1)
+        result = bool(len(input_text) < 1)
+        # print(f'Result:{result}')
+        return result
 
     @staticmethod
     def contains_no_kanji(input_text: str) -> bool:
         regex_pattern_for_any_kanji = re.compile(Regex.any_single_kanji, re.IGNORECASE)
-        is_kanji_present: bool = bool(regex_pattern_for_any_kanji.search(input_text))
-        if is_kanji_present:
-            return False
-        else:
-            return True
+        return not bool(regex_pattern_for_any_kanji.search(input_text))
 
-# print(Classifier.contains_no_parsable_ja_text('「「お客様――？」」'))
-# print(Classifier.contains_no_parsable_ja_text('※※　※　※　※　※　※　※　※　※　※　※　※'))
-# print(Classifier.contains_no_parsable_ja_text('　　　　　　　　　　　　　　　　△▼△▼△▼△'))
-# print(Classifier.contains_no_parsable_ja_text('「たたたたたたたたたたたたたた――っ！！」'))
-# print(Classifier.contains_no_parsable_ja_text('「――――」'))
+    @staticmethod
+    def is_dialogue(input_text: str) -> bool:
+
+        regex_patterns_for_dialogues: list = [
+            Regex.anything_bounded_by_single_quotes,
+            Regex.anything_bounded_by_double_quotes,
+            Regex.anything_bounded_by_multiple_single_quotes,
+            Regex.anything_bounded_by_multiple_double_quotes
+        ]
+
+        re_objects_for_regex_patterns = [re.compile(pattern) for pattern in regex_patterns_for_dialogues]
+
+        return any(re_object.search(input_text) for re_object in re_objects_for_regex_patterns)
+
+
+
+
+
+
+# print(Classifier.is_dialogue('『屍剣豪』'))
+
+
+
+# Classifier.contains_no_parsable_ja_text('「「お客様――？」」')
+# Classifier.contains_no_parsable_ja_text('※※　※　※　※　※　※　※　※　※　※　※　※')
+# Classifier.contains_no_parsable_ja_text('　　　　　　　　　　　　　　　　△▼△▼△▼△')
+# Classifier.contains_no_parsable_ja_text('「たたたたたたたたたたたたたた――っ！！」')
+# Classifier.contains_no_parsable_ja_text('「――――」')
+# Classifier.contains_no_parsable_ja_text('　――――――――――――――あ。')
+# Classifier.contains_no_parsable_ja_text('　――――――――――――――――――――――――――――ぁー。')
+# Classifier.contains_no_parsable_ja_text('　が、')
+# Classifier.contains_no_parsable_ja_text('「――――」')
+# Classifier.contains_no_parsable_ja_text('「――――」')
+# Classifier.contains_no_parsable_ja_text('「――――」')
+# Classifier.contains_no_parsable_ja_text('「――――」')
+
 
 class Extractor:
     @staticmethod
@@ -53,6 +88,7 @@ class Extractor:
         non_kanji_block = input_text.replace(kanji_block, '')
         return kanji_block, non_kanji_block
 
+
 #
 # print(Classifier.contains_no_kanji('濃'))
 # print(Classifier.contains_no_kanji('だ'))
@@ -61,11 +97,21 @@ class Extractor:
 class TextSplitter:
 
     @staticmethod
-    def split_para_to_list_of_lines(input_text: str, *, strip_each_line: bool = True, trim_list: bool = True,
+    def split_para_to_list_of_lines(input_text: str, *, strip_each_line: bool = True,
                                     delimiter: str = '。') -> list[str]:
+
 
         if delimiter in input_text:
             list_of_lines = input_text.split(delimiter)
+
+            # Remove the empty string that can arise for paras that end with delimiter
+            list_of_lines = [line for line in list_of_lines if not FundamentalPatterns.contains_only_whitespace(line)]
+
+            # Check if the input text ends with the delimiter
+            if delimiter == input_text[-1]:
+                # add back delimiter to the last line
+                list_of_lines[-1] = f'{list_of_lines[-1]}{delimiter}'
+
         else:
             list_of_lines = [input_text]
             return list_of_lines
@@ -73,11 +119,9 @@ class TextSplitter:
         if strip_each_line:
             list_of_lines = [line.strip() for line in list_of_lines]
 
-        if trim_list:
-            list_of_lines = [line for line in list_of_lines
-                             if not FundamentalPatterns.contains_only_whitespace(line)]
 
-        list_of_lines = [f'{line}{delimiter}' for line in list_of_lines]
+        # The last element will not be having the delimiter. It must be excluded
+        list_of_lines = [f'{line}{delimiter}' if line in list_of_lines[:-1] else line for line in list_of_lines]
 
         return list_of_lines
 
@@ -106,6 +150,7 @@ class TextSplitter:
 
         return final_list
 
+# print(TextSplitter.split_para_to_list_of_lines('「そうですね。肯定します。あなたの言う通り、昂揚感を覚えています。事前に立てた計画通りに事が運ぶのは当然のことと考えていましたが……過去の私も、達成感を知るべきでした。そうすれば、『亜人戦争』の結末も変わっていたでしょう」'))
 
 class Parser:
     @staticmethod

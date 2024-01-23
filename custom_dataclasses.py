@@ -8,6 +8,7 @@ import nlp_modules.japanese_nlp as JNLP
 from appconfig import AppConfig, RunConfig
 from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
+from custom_modules.custom_exceptions import ClassificationError
 
 
 class RekaiTextCommon:
@@ -96,6 +97,9 @@ class Paragraph:
     numbered_line_objects: list[tuple[int, Line]]
     unparsable: bool
     paragraph_type: str
+    is_dialogue: bool = False
+    is_narration: bool = False
+    is_expression: bool = False
 
     def __init__(self, input_paragraph: str, input_prepro_para: Union[str, None]):
         # assert "\n" not in input_paragraph
@@ -123,7 +127,18 @@ class Paragraph:
 
 
         # PARAGRAPH CLASSIFIER GOES HERE
-        self.paragraph_type = 'N/A'
+        if JNLP.Classifier.is_dialogue(self.raw_text) and not self.unparsable:
+            self.paragraph_type = 'Dialogue'
+            self.is_dialogue = True
+        elif not self.unparsable:
+            self.paragraph_type = 'Narration'
+            self.is_narration = True
+        elif self.unparsable:
+            self.paragraph_type = 'Dialogue: Expressive'
+            self.is_expression = True
+        else:
+            raise ClassificationError
+
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
@@ -160,7 +175,7 @@ class RekaiText:
     config_run_jisho_parse: bool
     config_run_tts: bool
 
-    def __init__(self, input_text: str, run_config_object: RunConfig, text_header: str = '',
+    def __init__(self, input_text: str, run_config_object: RunConfig, text_header: str,
                  input_preprocessed_text: str = None):
         # validation
         assert isinstance(input_text, str), f'Input text is not a valid string object'

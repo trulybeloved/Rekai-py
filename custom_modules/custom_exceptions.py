@@ -7,3 +7,6 @@ class EntryNotFound(Exception):
 
 class KairyouException(Exception):
     pass
+
+class ClassificationError(Exception):
+    pass

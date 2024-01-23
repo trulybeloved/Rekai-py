@@ -33,6 +33,8 @@ class GenerateHtml:
     class CommonElements:
 
         copy_button_content = '''<span style="font-size: .875em; margin-right: .125em; position: relative; top: -.25em; left: -.125em">📄<span style="position: absolute; top: .25em; left: .25em">📄</span></span>Raw'''
+        copy_button_content_prepro = '''<span style="font-size: .875em; margin-right: .125em; position: relative; top: -.25em; left: -.125em">📄<span style="position: absolute; top: .25em; left: .25em">📄</span></span>PrePro'''
+        copy_button_content_edited = '''<span style="font-size: .875em; margin-right: .125em; position: relative; top: -.25em; left: -.125em">📄<span style="position: absolute; top: .25em; left: .25em">📄</span></span>Edited'''
         audio_button_content = '''▶ TTS'''
 
     class FileOutput:
@@ -146,7 +148,7 @@ class GenerateHtml:
 
             # PARA CARD HEADER
             output_html += f''' 
-               <div class="card-header">
+               <div class="para-card-header">
                    <div class="card-header-left-half">
                        <div class="card-para-number"><span>{paragraph_number}</span></div>
                        <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
@@ -242,7 +244,7 @@ class GenerateHtml:
 
             # CARD SLAVE HEADER
             output_html += f'''
-                <div class="card-header">
+                <div class="line-card-header">
                     <div class="card-header-left-half">
                         <div class="card-line-number" onclick="expandCollapseLineContents('{line_id}')">P{paragraph_number}: Line {line_number} of {total_lines}</div>
                     </div>
@@ -282,7 +284,7 @@ class GenerateHtml:
             # CARD SLAVE RAW
             output_html += f'''
                 <div class="card-contents-raw slave-raw">
-                    <div id="{line_id}-raw-text" class="card-contents-raw-text">
+                    <div id="{line_id}-raw-text" class="card-contents-raw-text copy-on-click">
                     <span class="japanese-raw-line">{line_raw}</span>
                     </div>
                 </div>
@@ -348,6 +350,37 @@ class GenerateHtml:
 
             return output_html
 
+        def para_card_header(self, paragraph_number: int, paragraph_id: str, input_rekai_paragraph_object: Paragraph) -> str:
+
+            paragraph_object = input_rekai_paragraph_object
+
+            # Conditionally assigns a class to the paragraph label based on the para type
+            if paragraph_object.is_dialogue:
+                label_class = 'dialogue-label'
+            elif paragraph_object.is_narration:
+                label_class = 'narration-label'
+            else:
+                label_class = ''
+
+            output_html = f''' 
+               <div class="para-card-header">
+                   <div class="card-header-left-half">
+                       <div class="card-para-number"><span>{paragraph_number}</span></div>
+                       <div class="card-para-type {label_class}"><span>{paragraph_object.paragraph_type}</span></div>
+                   </div>
+                        <div class=card-header-mid-section>
+                        <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Expand</div>
+                        </div>
+                   <div class="card-header-right-half">
+                        <button id="{paragraph_id}-prepro-copy-button" class="raw-copy-button raw-para-copy-button"
+                           onclick="copyTextByElementId('{paragraph_id}-prepro-text', '{paragraph_id}-prepro-copy-button')">{GenerateHtml.CommonElements.copy_button_content_prepro}</button>
+                       <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
+                           onclick="copyTextByElementId('{paragraph_id}-raw-text', '{paragraph_id}-copy-button')">{GenerateHtml.CommonElements.copy_button_content}</button>
+                   </div>
+               </div>'''
+
+            return output_html
+
         def para_card(self, paragraph_number: int, input_rekai_paragraph_object: Paragraph,
                       output_directory: str) -> str:
 
@@ -363,21 +396,9 @@ class GenerateHtml:
             output_html = f'<div id="{paragraph_id}" class="para-card">'
 
             # PARA CARD HEADER
-            output_html += f''' 
-               <div class="card-header">
-                   <div class="card-header-left-half">
-                       <div class="card-para-number"><span>{paragraph_number}</span></div>
-                       <div class="card-para-type"><span>{paragraph_object.paragraph_type}</span></div>
-                   </div>
-                        <div class=card-header-mid-section>
-                        <div class="expand-collapse-button" onclick="expandCollapseCard('{paragraph_id}')">Expand</div>
-                        </div>
-                   <div class="card-header-right-half">
-                       <button id="{paragraph_id}-copy-button" class="raw-copy-button raw-para-copy-button"
-                           onclick="copyTextByElementId('{paragraph_id}-raw-text', '{paragraph_id}-copy-button')">{GenerateHtml.CommonElements.copy_button_content}</button>
-                   </div>
-               </div>'''
+            output_html += self.para_card_header(paragraph_number=paragraph_number, paragraph_id=paragraph_id, input_rekai_paragraph_object=input_rekai_paragraph_object)
 
+            # If adding container for para card contents, ensure to change addParaContentExpandOnClickEvent() in JS
             # PARA CARD CONTENTS
             if self.config_set_preprocessed_para_as_default:
                 # RAW

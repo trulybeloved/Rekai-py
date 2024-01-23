@@ -1,16 +1,24 @@
 :root {
   /* DIMENSIONAL VARIABLES */
   --body-max-width: 1600px;
+  --primary-max-width: 1100px;
   --sidebar-display: block;
   --sidbar-percent-width: 33%;
-  --sidebar-left-margin: 10px;
+  --sidebar-gap: 10px;
+  --sidebar-placeholder-opacity: 1;
+
 
   /* =========== COLOURS =============*/
+  --transparent: rgba(0, 0, 0, 0);
+
   /* Backgrounds */
   --body-background-color: #ffffff;
   --para-card-background-color: #ffffff;
 
-  --selected-para-background-color: #666666;
+  --selected-para-background-color: #ffffff;
+  --selected-para-background-color: #ffffff;
+  --hovered-para-background-color: #ffffff;
+  
   
   --line-card-background-color: #ffffff;
   --clause-card-background-color: #ffffff;
@@ -24,7 +32,7 @@
 
   /* Border Colors */
   --border-color: #ebebeb;
-  --border-color-2: #b2b1b1;
+  --border-color-2: #cfcfcf;
   --topbar-bottom-border-color: #cacaca;
 
   --selected-para-outline-color: #b5b5b5;
@@ -32,6 +40,7 @@
   /* Shadow Colors */
   --box-shadow-color: rgba(0, 0, 0, 0.15);
   --selected-para-shadow-color: #878787;
+  --hovered-para-shadow-color: #878787;
 
   /* Content */
   --japanese-raw-text-color: #474747;
@@ -51,6 +60,9 @@
   --card-para-number-background: #ca0000;
   --card-para-type-background: #ab44a2;
   --card-line-number-background: #006e84;
+
+  --card-para-type-dialogue-background: #303a73;
+  --card-para-type-narration-background: #6a2465;
 
   --card-para-number-font-color: #ffffff;
   --card-para-type-font-color: #ffffff;
@@ -83,10 +95,14 @@
   --expand-collapse-font-color: #00000044;
   --expand-collapse-hover-font-color: #000000d0;
   --expand-collapse-background: #0000002e;
-  --expand-collapse-hover-background: rgba(0, 0, 0, 0.326);
+  --expand-collapse-hover-background: rgba(0, 0, 0, 0.119);
 
   /* Top Bar Buttons */
   --enabled-filter-brightness: 120%;
+
+  /* Scrollbar */
+  --scrollbar-track-color: #e0e0e0;
+  --scrollbar-thumb-color: #b3b3b3;
 
   /* ========== FONT SIZES =============*/
   --label-button-font-size: 14px;
@@ -94,6 +110,7 @@
   --jisho-parse-font-size: 14px;
   --preprocessor-tags-font-size: 16px;
   --clause-subcard-label-font-size: 12px;
+  --top-bar-button-font-size: 12px;
 
   /* ========== DISPLAY PROPERTIES =============*/
   --para-card-display: flex;
@@ -106,9 +123,10 @@
   /* =========== COLOURS =============*/
   /* Backgrounds */
   --body-background-color: #141414;
-  --para-card-background-color: #292929;
+  --para-card-background-color: #161616;
 
-  --selected-para-background-color: #333333;
+  --selected-para-background-color: #2d2d2d;
+  --hovered-para-background-color: #363636;
 
   --line-card-background-color: #212121;
   --clause-card-background-color: #2f2f2f;
@@ -130,6 +148,7 @@
   /* Shadow Colors */
   /* --box-shadow-color: rgba(255, 255, 255, 0.15); */
   --selected-para-shadow-color: #7f7f7f;
+  --hovered-para-shadow-color: #7f7f7f;
 
 
   /* Content */
@@ -150,6 +169,9 @@
   --card-para-number-background: #540000;
   --card-para-type-background: #6d0064;
   --card-line-number-background: #8f8f8f;
+
+  --card-para-type-dialogue-background: #6d143e;
+  --card-para-type-narration-background: #54246a;
 
   --card-para-number-font-color: #d5d5d5;
   --card-para-type-font-color: #cdcdcd;
@@ -182,10 +204,15 @@
   --expand-collapse-font-color: #ffffff28;
   --expand-collapse-hover-font-color: #ffffff;
   --expand-collapse-background: #dedede;
-  --expand-collapse-hover-background: #00556b;
+  --expand-collapse-hover-background: #ffffff10;
 
   /* Top Bar Buttons */
   --enabled-filter-brightness: 200%;
+
+    /* Scrollbar */
+    --scrollbar-track-color: #262626;
+    --scrollbar-thumb-color: #6d6d6d;
+  
 }
 
 
@@ -195,12 +222,11 @@
 }
 
 body, .top-bar, .right-sidebar, .para-card, .line-card, .japanese-raw-para, .japanese-raw-line, .card-contents-raw-text, .card-contents-jisho-parse, .clause-card, .clause-subcard, .clause-card-label-container, .card-contents-line-preprocessed , .card-contents-line-deepl, .card-contents-line-google-tl, .line-content-label, .clause-card-label, .line-card-audio-container, .top-bar-button, .card-line-number, .card-para-number, .card-para-type, .japanese_gothic {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, padding 0.3s ease;
 }
 
 body {
   max-width: var(--body-max-width);
-  margin: 0px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 20px;
@@ -213,12 +239,15 @@ body {
   flex-direction: column;
 }
 
-@media screen and (max-width: 800px){
+/* Media queries for body associated with top bar are in the top bar section */
+
+@media screen and (max-width: 1200px){
   body {
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
   }
 }
+
 
 div {
   border-radius: 5px;
@@ -226,13 +255,16 @@ div {
 
 
 button {
-  transition-duration: 0.2s;
+  transition-duration: 0.3s;
 }
 
 .primary {
   display: flex;
   flex-direction: row;
   padding: 5px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sidebar-gap);
   transition: all 0.3s ease;
 }
 
@@ -241,7 +273,8 @@ button {
 .card-coloumn {
   display: flex;
   margin-top: 10px;
-  flex: 1;
+  flex-grow: 0;
+  flex-basis: var(--primary-max-width);
   flex-direction: column;
   transition: all 0.3s ease;
 }
@@ -249,10 +282,12 @@ button {
 /* child of main. style for div that is a place holder for the sidebar */
 /* This allows for transitions as directly altering diplay property does not transition */
 .sidebar-placeholder {
-  flex: 0 1 var(--sidbar-percent-width);
-  margin-left: var(--sidebar-left-margin);
+  flex: 0 0 var(--sidbar-percent-width);
+  /* gap: 10px; */
+  /* margin-left: var(--sidebar-left-margin); */
   height: 95vh;
   transition: all 0.3s ease;
+  opacity: var(--sidebar-placeholder-opacity);
 }
 
 /* style for master card div. Each line will be contained within this and other sub divs will be children */
@@ -262,12 +297,22 @@ button {
   margin: 5px;
   border: 1px;
   border-style: solid;
-  border-color: var(--border-color);
+  border-color: var(--transparent);
   background-color: var(--para-card-background-color);
   height: fit-content;
   margin-bottom: 10px;
   border-radius: 5px;
   box-shadow: 0 2px 10px var(--box-shadow-color);
+  transition: background-color 0.3s;
+}
+
+.para-card:hover {
+  background-color: var(--hovered-para-background-color);
+  filter: drop-shadow(0 0 2px var(--hovered-para-shadow-color));
+}
+
+.para-card.expanded {
+  background-color: var(--selected-para-background-color);
 }
 
 .clicked {
@@ -275,6 +320,10 @@ button {
   outline-color: var(--selected-para-outline-color);
   outline-style: solid;
   filter: drop-shadow(0 0 2px var(--selected-para-shadow-color));
+  background-color: var(--selected-para-background-color);
+  border: 1px;
+  border-style: solid;
+  border-color: var(--border-color);
 }
 
 .line-card-container {
@@ -357,6 +406,7 @@ button {
   margin: 0px;
 }
 
+
 .hovered {
   filter: brightness(var(--hover-filter-brightness));
   cursor: pointer;
@@ -366,18 +416,28 @@ button {
   display: flex;
   height: fit-content;
   flex-direction: row;
+  transition: opacity 0.15s ease;
+}
+
+.para-card-header {
+  opacity: 0;
+}
+
+.para-card:hover .para-card-header, 
+.para-card.expanded .para-card-header,
+.para-card.clicked .para-card-header {
+  opacity: 1;
 }
 
 .card-header-left-half {
   display: flex;
-  height: fit-content;
   flex: 1;
   justify-content: start;
+
 }
 
 .card-header-mid-section {
   display: flex;
-  height: fit-content;
   flex: 2;
   justify-content: center;
 
@@ -385,14 +445,6 @@ button {
 
 .card-header-right-half {
   display: flex;
-  height: fit-content;
-  flex: 1;
-  justify-content: end;
-}
-
-.card-header-right-half {
-  display: flex;
-  height: fit-content;
   flex: 1;
   justify-content: end;
 }
@@ -512,12 +564,19 @@ rt {
   border-radius: 5px;
   margin: 5px 0px 5px 5px;
   color: var(--card-para-number-font-color);
-  background: var(--card-para-type-background);
   width: fit-content;
   height: fit-content;
   padding: 3px;
   font-size: var(--label-button-font-size);
   cursor: default;
+}
+
+.dialogue-label {
+  background: var(--card-para-type-dialogue-background);
+}
+
+.narration-label {
+  background: var(--card-para-type-narration-background);
 }
 
 .card-line-number {
@@ -537,22 +596,11 @@ rt {
   filter: brightness(var(--hover-filter-brightness));
 }
 
-.line-contents-collapse-indicator {
-  width: fit-content;
-  height: fit-content;
-  margin: 5px 0px 5px 5px;
-  padding: 3px;
-  font-size: var(--label-button-font-size);
-  color: var(--card-line-number-background);
-}
-
 .expand-collapse-button {
   display: flex;
   border-radius: 5px;
-  margin: 5px 5px 5px 5px;
-  padding: 3px;
   color: var(--expand-collapse-font-color);
-  height: fit-content;
+  height: 100%;
   flex: 1;
   font-size: var(--label-button-font-size);
   text-align: center;
@@ -566,6 +614,11 @@ rt {
 .expand-collapse-button:hover {
   background: var(--expand-collapse-hover-background);
   color: var(--expand-collapse-hover-font-color);
+}
+
+.line-card-container > .expand-collapse-button {
+  height: fit-content;
+  padding: 3px 3px 3px 3px;
 }
 
 .raw-copy-button {
@@ -683,7 +736,7 @@ rt {
   bottom: 20px;
   margin-right: auto;
   border-radius: 5px;
-  z-index: 100;
+  z-index: 1000;
   display: block;
   transition: 0.3s ease;
   background-color: var(--right-sidebar-background-color);
@@ -692,10 +745,9 @@ rt {
 .right-sidebar-iframe {
   position: absolute;
   top: 0px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
   border-radius: 10px;
   border-color: var(--border-color);
   border-style: solid;
@@ -707,10 +759,10 @@ rt {
   display: none;
 }
 
-@media screen and (max-width: 1150px) {
+@media screen and (max-width: 1000px) {
 
   .primary {
-    margin-bottom: 30vh;
+    margin-bottom: 40vh;
   }
 
   .sidebar-placeholder {
@@ -725,7 +777,7 @@ rt {
     right: 5px;
     left: 5px;
     margin-top: auto;
-    height: 30vh;
+    height: 40vh;
     width: 100%;
     max-width: none;
     transition: 0.3s ease;
@@ -749,6 +801,7 @@ rt {
   border-bottom-width: 1px;
   border-radius: 0px;
   min-width: 100%;
+  transition: all 0.3s ease;
 }
 
 .top-bar-flex-container {
@@ -760,32 +813,38 @@ rt {
   overflow-x: auto;  /* Enable horizontal scrolling */
   scroll-snap-type: x mandatory; /* Enable snap scrolling */
   -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS devices */
-}
-
-.top-bar-flex-container div {
-  display: flex;
+  scroll-behavior: smooth;
+  width: 100%;
+  transition: all 0.3s ease;
 }
 
 .top-bar-start-section {
   display: flex;
+  padding-right: 10px;
+  padding-left: 10px;
   flex: 1;
   z-index: 100;
   justify-content: start;
   align-items: center;
-  height: 33px;
+  height: 90%;
+  transition: all 0.3s ease;
 }
 
 .top-bar-mid-section {
+  display: flex;
   flex-direction: row;
-  flex: 2;
+  flex: 2 1;
   z-index: 100;
-  justify-content: start;
+  justify-content: center;
   align-items: center;
   color: var(--clause-subcard-label-font-color);
+  height: 90%;
+  transition: all 0.3s ease;
 }
 
 .top-bar-mid-section span {
-  margin-right: 10px;
+  padding-right: 10px;
+  padding-left: 10px;
   font-size: var(--clause-subcard-label-font-size);
 }
 
@@ -793,18 +852,25 @@ rt {
   display: flex;
   flex: 1;
   justify-content: end;
+  align-items: center;
   z-index: 100;
   padding-right: 10px;
+  padding-left: 10px;
+  height: 90%;
+  transition: all 0.3s ease;
 }
 
 .top-bar-title {
-  margin-left: 10px;
+  padding-left: 10px;
   color: var(--top-bar-title-font-color);
   font-family: "Roboto";
   font-weight: 900;
   font-size: x-large;
   transition: all 0.3s ease;
   cursor: default;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  opacity: 1;
 }
 
 .top-bar-title:hover {
@@ -821,6 +887,9 @@ rt {
   font-size: x-large;
   transition: all 0.15s;
   cursor: default;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  opacity: 1;
 }
 
 .top-bar-chapter-title:hover {
@@ -828,49 +897,67 @@ rt {
   text-shadow: var(--top-bar-chapter-title-hover-text-shadow-color) 2px;
 }
 
-@media screen and (max-width: 1150px) {
+@media screen and (max-width: 1200px) {
+
+  .top-bar-title {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1100px) {
+
   .top-bar-start-section {
     display: none;
   }
-
-  body {
-    margin-top: 70px;
-  }
-
-  .top-bar {
-    height: 70px;
-  }
-
-  .top-bar-flex-container {
-    height: 70px;
-  }
-
-
   
 }
 
-
-@media screen and (max-width: 900px) {
-  .top-bar-chapter-title {
-    font-size: medium;
-  }
-
-}
-
-@media screen and (max-width: 870px) {
-  .top-bar-chapter-title {
-    opacity: 0;
-  }
-}
-
 @media screen and (max-width: 850px) {
-  .top-bar-chapter-title {
-    display: none;
+
+  body {
+    padding-top: 65px;
+  }
+
+  .top-bar-button {
+    font-size: 10px;
+  }
+
+  .top-bar {
+    height: 65px;
+  }
+
+  .top-bar-flex-container {
+    height: 65px;
+  }
+
+  .top-bar-mid-section {
+    height: fit-content;
+    flex-wrap: wrap;
+  }
+
+  .top-bar-end-section {
+    /* flex-direction: column; */
   }
 }
 
+@media screen and (max-width: 600px) {
+   
+  body {
+    padding-top: 100px;
+  }
+
+  .top-bar {
+    height: 100px;
+  }
+
+  .top-bar-flex-container {
+    height: 100px;
+  }
+
+}
 
 .top-bar-button {
+  font-size: var(--top-bar-button-font-size);
   display: flex;
   margin: 5px 5px 5px 0px;
   border: none;
@@ -878,11 +965,14 @@ rt {
   padding: 4px 4px;
   cursor: pointer;
   border: none;
-  border-radius: 3px;
-  height: fit-content;
+  border-radius: 5px;
+  height: 90%;
   width: fit-content;
   align-content: center;
-  transition: all 0.15s;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
 .top-bar-button-generic {
@@ -1233,3 +1323,33 @@ rt {
   margin-left: 36em;
 }
 
+/* SCROLLBAR OVERRIDE */
+
+/* WebKit (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 15px; 
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color); 
+  border-radius: 10px; 
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track-color); 
+}
+
+/* Firefox */
+/* Note: Firefox uses scrollbar-width property and not pseudo-elements */
+
+* {
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+}
+
+*::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track-color);
+}

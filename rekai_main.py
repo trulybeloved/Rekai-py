@@ -30,6 +30,7 @@ from processors import Process
 from generators import GenerateHtml
 from custom_modules.utilities import get_current_timestamp
 from custom_modules.utilities import log_process_time
+import data_for_processing
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -43,32 +44,10 @@ class CustomTest:
     @staticmethod
     @log_process_time
     def rekai_test():
-        input_japanese_text = '''
-        
-「休日、なのにどうしてこんな騒ぎに巻き込まれたの？」
 
+        input_raw = data_for_processing.input_raw
+        input_prepro = data_for_processing.input_preprocessed
 
-
-「それは少しだけ複雑なのですが……そこの、スバルの導きですね」
-
-
-
-　今は意識がここにない少年、彼との出会いがラインハルトをここへ導いたのだ。
-
-　順を追って説明すれば、ラインハルトがスバルと初めて邂逅した路地裏、あそこでのスバルとの問答にまで物語はさかのぼる。
-
-　あのとき、スバルは『銀髪で白いローブを着た女性を探している』とラインハルトに漏らしていた。あの時点で、ラインハルトの知識に該当する人物はひとりしかいない。
-
-　その人物への接触を求めるスバル。彼の動向を探るうちに、ラインハルトもまた、貧民街へと足を踏み入れることとなり、
-
-
-
-「途中で彼女と出会い、今に至るというところです」
-
-
-
-「そう、あの子に」
-        '''
         timestamp = get_current_timestamp()
         output_directory = AppConfig.output_directory
 
@@ -76,14 +55,20 @@ class CustomTest:
 
         run_config = RunConfig()
 
-        rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
+        rekai_text_object = RekaiText(input_text=input_raw, input_preprocessed_text=input_prepro, run_config_object=run_config, text_header='HEADER')
+
+        print(rekai_text_object)
 
         if run_config.run_jisho_parse:
-            Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+            Process.jisho_parse(rekai_text_object=rekai_text_object)
         if run_config.run_tts:
-            Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+            Process.gcloud_tts(rekai_text_object=rekai_text_object)
+        if run_config.run_deepl_tl:
+            Process.deepl_tl(rekai_text_object=rekai_text_object)
+        if run_config.run_google_tl:
+            Process.google_tl(rekai_text_object=rekai_text_object)
 
-        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
+        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path, post_process=None)
 
 # Main Function
 def main(input_japanese_text):
@@ -94,16 +79,16 @@ def main(input_japanese_text):
 
     final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
 
-    rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config)
+    rekai_text_object = RekaiText(input_text=input_japanese_text, run_config_object=run_config, text_header='Header')
 
     # These dicts are not yet used but are a clearer way to pass data to the HTML generator than it fetching it manually.
     jisho_dict = None
     tts_dict = None
 
     if run_config.run_jisho_parse:
-        jisho_dict = Process.jisho_parse(input_rekai_text_object=rekai_text_object)
+        jisho_dict = Process.jisho_parse(rekai_text_object=rekai_text_object)
     if run_config.run_tts:
-        tts_dict = Process.gcloud_tts(input_rekai_text_object=rekai_text_object)
+        tts_dict = Process.gcloud_tts(rekai_text_object=rekai_text_object)
 
     GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path)
 

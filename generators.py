@@ -123,11 +123,13 @@ class GenerateHtml:
 
             base64ogg = base64.b64encode(tts_bytes).decode('utf-8')
 
+            # brotli_compressed = brotli.compress(tts_bytes)
+
             output_html = f'''
             <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
             </audioButton>
-            <audio id="{line_id}-audioPlayer" class="audioPlayer"
-                src="{line_tts_relative_path}" base64ogg="{base64ogg}"></audio>
+            <div id="{line_id}-audioPlayer" class="audioPlayer"
+                src="{line_tts_relative_path}" base64ogg="{base64ogg}"></div>
             '''
             return output_html
 
@@ -242,7 +244,7 @@ class GenerateHtml:
             output_html += f'''
                 <div class="card-header">
                     <div class="card-header-left-half">
-                        <p class="card-line-number" onclick="expandCollapseLineContents('{line_id}')">P{paragraph_number}: Line {line_number} of {total_lines}</p>
+                        <div class="card-line-number" onclick="expandCollapseLineContents('{line_id}')">P{paragraph_number}: Line {line_number} of {total_lines}</div>
                     </div>
 
                     <div class="card-header-right-half">
@@ -266,15 +268,6 @@ class GenerateHtml:
                 </div>
                 '''
 
-            # CARD SLAVE RAW
-            output_html += f'''
-                <div class="card-contents-raw slave-raw">
-                    <div id="{line_id}-raw-text" class="card-contents-raw-text">
-                    <span class="japanese-raw-line">{line_raw}</span>
-                    </div>
-                </div>
-            '''
-
             if self.config_include_jisho_parse:
                 jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
                 # CARD SLAVE JISHO PARSE
@@ -285,6 +278,15 @@ class GenerateHtml:
                         </div>
                     </div>        
                 '''
+
+            # CARD SLAVE RAW
+            output_html += f'''
+                <div class="card-contents-raw slave-raw">
+                    <div id="{line_id}-raw-text" class="card-contents-raw-text">
+                    <span class="japanese-raw-line">{line_raw}</span>
+                    </div>
+                </div>
+            '''
 
             if self.config_preprocess:
                 line_key = line_preprocessed
@@ -387,9 +389,9 @@ class GenerateHtml:
                     </div>'''
                 # PREPROCESSED
                 output_html += f'''
-                    <div class="card-contents-raw master-preprocessed">
-                        <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
-                        <span class="japanese-raw-para">{paragraph_preprocessed}</span>
+                    <div class="card-contents-prepro master-preprocessed">
+                        <div id="{paragraph_id}-prepro-text" class="card-contents-prepro-text">
+                        <span class="japanese-preprocessed-para">{paragraph_preprocessed}</span>
                         </div>
                     </div>'''
             else:
@@ -403,11 +405,12 @@ class GenerateHtml:
                 # PREPROCESSED
                 if self.config_preprocess:
                     output_html += f'''
-                        <div class="card-contents-raw master-preprocessed" {no_display_style_tag}>
-                            <div id="{paragraph_id}-raw-text" class="card-contents-raw-text">
-                            <span class="japanese-raw-para">{paragraph_preprocessed}</span>
-                            </div>
-                        </div>'''
+                    <div class="card-contents-prepro master-preprocessed" {no_display_style_tag}>
+                        <div id="{paragraph_id}-prepro-text" class="card-contents-prepro-text">
+                        <span class="japanese-preprocessed-para">{paragraph_preprocessed}</span>
+                        </div>
+                    </div>'''
+
 
             # LINE CARD CONTAINER START
             output_html += '''<div class="line-card-container collapsed">'''
@@ -451,7 +454,6 @@ class GenerateHtml:
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link rel="stylesheet"
                     href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap">
-                <script src="javascript/wavesurfer.min.js"></script>
             </head>
             '''
             return html_head
@@ -509,9 +511,15 @@ class GenerateHtml:
                             <!-- function toggleElementDisplay(buttonId, elementClass, displayType, showText, hideText) -->
                             <button id="toggle-raw-para-button" class="top-bar-button top-bar-button-generic"
                                 onclick="toggleDisplay(this,'.card-contents-raw.master-raw','flex')">PRaw</button>
+                            
+                            <button id="toggle-prepro-para-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.card-contents-prepro.master-preprocessed','flex')">PPrePro</button>
 
                             <button id="toggle-prepro-button" class="top-bar-button top-bar-button-generic"
                                 onclick="toggleDisplay(this,'.card-contents-jisho-parse','flex')">JParse</button>
+                            
+                            <button id="toggle-raw-line-button" class="top-bar-button top-bar-button-generic"
+                                onclick="toggleDisplay(this,'.card-contents-raw.slave-raw','flex')">LRaw</button>                                
 
                             <button id="toggle-prepro-button" class="top-bar-button top-bar-button-generic"
                                 onclick="toggleDisplay(this,'.line-preprocessed-container','block')">LPrePro</button>
@@ -527,10 +535,18 @@ class GenerateHtml:
 
                             <button id="toggle-waveform-button" class="top-bar-button top-bar-button-generic"
                                 onclick="toggleDisplay(this,'.line-card-audio-container','flex')">Waveform</button>
+                                
+                            <span>||</span>
+                            
+                            <button id="expand-all-paras" class="top-bar-button top-bar-button-generic"
+                                onclick="expandAllParas()">Expand All</button>
+                                
+                            <button id="collapse-all-paras" class="top-bar-button top-bar-button-generic"
+                                onclick="collapseAllParas()">Collapse All</button>
                         </div>
                         <div class="top-bar-end-section">
                             <button id="toggle-light-dark-mode-button" class="top-bar-button top-bar-button-generic" onclick="toggleDarkMode()">Light|Dark</button>
-                            <button id="toggle-sidebar-button" class="top-bar-button top-bar-button-generic" onclick="toggleRightSidebar()">Hide Sidebar</button>
+                            <button id="toggle-sidebar-button" class="top-bar-button top-bar-button-generic" onclick="toggleRightSidebar()">Hide Omnibar</button>
                         </div>
                     </div>
                 </div>

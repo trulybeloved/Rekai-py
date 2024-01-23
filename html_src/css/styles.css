@@ -3,11 +3,12 @@
   --body-max-width: 1600px;
   --sidebar-display: block;
   --sidbar-percent-width: 33%;
+  --sidebar-left-margin: 10px;
 
   /* =========== COLOURS =============*/
   /* Backgrounds */
   --body-background-color: #ffffff;
-  --para-card-background-color: #f5f5f5;
+  --para-card-background-color: #ffffff;
 
   --selected-para-background-color: #666666;
   
@@ -58,7 +59,7 @@
   /* Topbar Buttons */
   --top-bar-button-font-color: #000000;
   --top-bar-button-hover-font-color: #ffffff;
-  --top-bar-button-background: #dedede;
+  --top-bar-button-background: #c7c7c7;
   --top-bar-button-hover-background: #adadad;
 
   /* Copy-button */
@@ -85,7 +86,7 @@
   --expand-collapse-hover-background: rgba(0, 0, 0, 0.326);
 
   /* Top Bar Buttons */
-  --enabled-filter-brightness: 80%;
+  --enabled-filter-brightness: 120%;
 
   /* ========== FONT SIZES =============*/
   --label-button-font-size: 14px;
@@ -128,7 +129,7 @@
 
   /* Shadow Colors */
   /* --box-shadow-color: rgba(255, 255, 255, 0.15); */
-  --selected-para-shadow-color: #00000000;
+  --selected-para-shadow-color: #7f7f7f;
 
 
   /* Content */
@@ -187,16 +188,14 @@
   --enabled-filter-brightness: 200%;
 }
 
+
 * {
   margin: 0px;
   padding: 0px;
-  /* transition: background-color 0.5s, color 0.5s;
-  transition: border-color 0.5s; */
 }
 
-body, .top-bar, .right-sidebar, .para-card, .line-card, .japanese-raw-para, .japanese-raw-line, .card-contents-raw-text, .card-contents-jisho-parse, .clause-card, .clause-subcard, .clause-card-label-container, .card-contents-line-deepl, .card-contents-line-google-tl, 
-.clause-card-label, .line-card-audio-container {
-  transition: background-color 0.5s, color 0.5s, border-color 0.5s; height 1s;
+body, .top-bar, .right-sidebar, .para-card, .line-card, .japanese-raw-para, .japanese-raw-line, .card-contents-raw-text, .card-contents-jisho-parse, .clause-card, .clause-subcard, .clause-card-label-container, .card-contents-line-preprocessed , .card-contents-line-deepl, .card-contents-line-google-tl, .line-content-label, .clause-card-label, .line-card-audio-container, .top-bar-button, .card-line-number, .card-para-number, .card-para-type, .japanese_gothic {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
@@ -212,8 +211,6 @@ body {
   display: flex;
   align-items: center;
   flex-direction: column;
-  transition-duration: 300ms;
-  transition: background-color 0.5s, color 0.5s;
 }
 
 @media screen and (max-width: 800px){
@@ -236,7 +233,7 @@ button {
   display: flex;
   flex-direction: row;
   padding: 5px;
-  transition: 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 
@@ -246,15 +243,16 @@ button {
   margin-top: 10px;
   flex: 1;
   flex-direction: column;
-  transition: 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 /* child of main. style for div that is a place holder for the sidebar */
 /* This allows for transitions as directly altering diplay property does not transition */
 .sidebar-placeholder {
   flex: 0 1 var(--sidbar-percent-width);
+  margin-left: var(--sidebar-left-margin);
   height: 95vh;
-  transition: 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 /* style for master card div. Each line will be contained within this and other sub divs will be children */
@@ -276,6 +274,7 @@ button {
   outline-width: 1px;
   outline-color: var(--selected-para-outline-color);
   outline-style: solid;
+  filter: drop-shadow(0 0 2px var(--selected-para-shadow-color));
 }
 
 .line-card-container {
@@ -420,13 +419,13 @@ button {
   margin-left: 0.5em;
 }
 
-.card-contents-raw {
+.card-contents-raw, .card-contents-prepro {
   display: flex;
   flex-direction: column;
   flex: 0;
 }
 
-.card-contents-raw-text {
+.card-contents-raw-text, .card-contents-prepro-text {
   display: flex;
   width: fit-content;
   padding: 0.7em;
@@ -462,7 +461,7 @@ button {
   font-size: var(--jisho-parse-font-size);
 }
 
-.japanese-raw-para {
+.japanese-raw-para, .japanese-preprocessed-para {
   color: var(--japanese-raw-text-color);
 }
 
@@ -716,6 +715,7 @@ rt {
 
   .sidebar-placeholder {
     flex: 0 0 0%;
+    margin-left: 0;
   }
 
   .right-sidebar {
@@ -748,6 +748,7 @@ rt {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-radius: 0px;
+  min-width: 100%;
 }
 
 .top-bar-flex-container {
@@ -756,6 +757,9 @@ rt {
   align-items: center;
   justify-content: center;
   height: 50px;
+  overflow-x: auto;  /* Enable horizontal scrolling */
+  scroll-snap-type: x mandatory; /* Enable snap scrolling */
+  -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS devices */
 }
 
 .top-bar-flex-container div {
@@ -764,7 +768,7 @@ rt {
 
 .top-bar-start-section {
   display: flex;
-  flex: 0.5;
+  flex: 1;
   z-index: 100;
   justify-content: start;
   align-items: center;
@@ -772,7 +776,8 @@ rt {
 }
 
 .top-bar-mid-section {
-  flex: 1;
+  flex-direction: row;
+  flex: 2;
   z-index: 100;
   justify-content: start;
   align-items: center;
@@ -786,7 +791,7 @@ rt {
 
 .top-bar-end-section {
   display: flex;
-  flex: 0.5;
+  flex: 1;
   justify-content: end;
   z-index: 100;
   padding-right: 10px;
@@ -798,7 +803,7 @@ rt {
   font-family: "Roboto";
   font-weight: 900;
   font-size: x-large;
-  transition: all 0.5s ease;
+  transition: all 0.3s ease;
   cursor: default;
 }
 
@@ -823,10 +828,33 @@ rt {
   text-shadow: var(--top-bar-chapter-title-hover-text-shadow-color) 2px;
 }
 
+@media screen and (max-width: 1150px) {
+  .top-bar-start-section {
+    display: none;
+  }
+
+  body {
+    margin-top: 70px;
+  }
+
+  .top-bar {
+    height: 70px;
+  }
+
+  .top-bar-flex-container {
+    height: 70px;
+  }
+
+
+  
+}
+
+
 @media screen and (max-width: 900px) {
   .top-bar-chapter-title {
     font-size: medium;
   }
+
 }
 
 @media screen and (max-width: 870px) {
@@ -841,14 +869,9 @@ rt {
   }
 }
 
-@media screen and (max-width: 1750px) {
-  .top-bar-title {
-    display: none;
-  }
-  
-}
 
 .top-bar-button {
+  display: flex;
   margin: 5px 5px 5px 0px;
   border: none;
   border-radius: 4px;

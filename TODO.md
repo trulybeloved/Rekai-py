@@ -22,7 +22,6 @@
 
 ## Rekai_HTML
 
-- Making the natural appearance of paras less conspicous and appear more like a text document. Elements like the para number and collapse button should appear only on hover and after being selected
 - Make the Omnibar actually omni - Direct MoS integration, embedded chapter search, with tabs to select between.??
 - Incorporate adjustable fonts and colors
 - Tooltips for buttons
@@ -30,6 +29,7 @@
 - Chapter Search iframe
 - Click to send to chapter search feature
 
+- ~~Making the natural appearance of paras less conspicous and appear more like a text document. Elements like the para number and collapse button should appear only on hover and after being selected~~
 - ~~HTML - cards need to be collapsible to make the page appear less cluttered with info~~
 - ~~Update HTML source and generator functions for translations and associated functionality and layout~~
 

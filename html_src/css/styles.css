@@ -266,6 +266,7 @@ button {
   justify-content: center;
   gap: var(--sidebar-gap);
   transition: all 0.3s ease;
+  align-items: flex-start;
 }
 
 
@@ -935,9 +936,6 @@ rt {
     flex-wrap: wrap;
   }
 
-  .top-bar-end-section {
-    /* flex-direction: column; */
-  }
 }
 
 @media screen and (max-width: 600px) {
@@ -1327,12 +1325,12 @@ rt {
 
 /* WebKit (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 15px; 
+  width: 12px; 
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb-color); 
-  border-radius: 10px; 
+  border-radius: 6px; 
 }
 
 ::-webkit-scrollbar-track {

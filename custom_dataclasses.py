@@ -60,12 +60,12 @@ class Line:
     def __init__(self, input_line: str, input_prepro_line: Union[str, None]):
 
         self.raw_text = input_line
-        self.list_of_clauses = JNLP.TextSplitter.split_line_to_list_of_clauses(input_line)
+        self.list_of_clauses = JNLP.TextSplitter.regex_split_to_clauses(input_line)
         self.clause_count = len(self.list_of_clauses)
 
         if input_prepro_line:
             self.preprocessed_text = input_prepro_line
-            list_of_preprocessed_lines = JNLP.TextSplitter.split_line_to_list_of_clauses(self.preprocessed_text)
+            list_of_preprocessed_lines = JNLP.TextSplitter.regex_split_to_clauses(self.preprocessed_text)
             self.generate_child_objects(Clause, string_list=self.list_of_clauses, prepro_string_list=list_of_preprocessed_lines)
         else:
             self.generate_child_objects(Clause, self.list_of_clauses, None)
@@ -105,7 +105,7 @@ class Paragraph:
         # assert "\n" not in input_paragraph
 
         self.raw_text = input_paragraph
-        self.list_of_raw_lines = JNLP.TextSplitter.split_para_to_list_of_lines(input_paragraph)
+        self.list_of_raw_lines = JNLP.TextSplitter.regex_split_to_lines(input_paragraph)
         self.line_count = len(self.list_of_raw_lines)
 
         # check if the paragraph is unparsable
@@ -115,7 +115,7 @@ class Paragraph:
         if not self.unparsable:
             if input_prepro_para:
                 self.preprocessed_text = input_prepro_para
-                list_of_preprocessed_lines = JNLP.TextSplitter.split_para_to_list_of_lines(self.preprocessed_text)
+                list_of_preprocessed_lines = JNLP.TextSplitter.regex_split_to_lines(self.preprocessed_text)
                 self.generate_child_objects(Line, self.list_of_raw_lines, list_of_preprocessed_lines)
             else:
                 self.generate_child_objects(Line, self.list_of_raw_lines, None)

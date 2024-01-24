@@ -36,4 +36,6 @@
 
 ## Known Issues
 - The deeplapi target language is unlinked from appconfig
-
+- Setting preprocess as False breaks the flow, generating blank strings for transmutation as well as several errors withing the RekaiText object
+- Single words cannot be parsed by Jisho - implement a better error return from transmutor (HTML coded so that it appears better)
+- 

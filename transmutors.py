@@ -172,3 +172,21 @@ class Transmute:
         output = preprocessor.text_to_preprocess
         return output
 
+    @staticmethod
+    def post_process_dialogue(input_string:str):
+        """Replaces quotation/japanese quotation marks with []"""
+
+        opening_characters = {"\"", "「"}
+        closing_characters = {"\"", "」"}
+
+        if input_string[0] in opening_characters:
+            output_string = "[" + input_string[1:]
+        else:
+            output_string = input_string
+
+        if input_string[-1] in closing_characters:
+            output_string = output_string[:-1] + "]"
+        else:
+            output_string = output_string
+
+        return output_string

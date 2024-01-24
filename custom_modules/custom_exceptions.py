@@ -10,3 +10,6 @@ class KairyouException(Exception):
 
 class ClassificationError(Exception):
     pass
+
+class TextSplitError(Exception):
+    pass

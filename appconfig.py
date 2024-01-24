@@ -95,6 +95,7 @@ class RunConfig:
     run_deepl_tl: bool
     run_google_tl: bool
     run_gpt4_analysis: bool
+    clean_post_split: bool
 
     include_jisho_parse: bool
     include_clause_analysis: bool
@@ -115,6 +116,7 @@ class RunConfig:
                  run_deepl_tl=True,
                  run_google_tl=True,
                  run_gpt4_analysis=False,
+                 clean_post_split=True,
 
                  include_jisho_parse=True,
                  include_clause_analysis=True,
@@ -134,6 +136,7 @@ class RunConfig:
         self.run_deepl_tl = run_deepl_tl
         self.run_google_tl = run_google_tl
         self.run_gpt4_analysis = run_gpt4_analysis
+        self.clean_post_split = clean_post_split
 
         self.include_jisho_parse = include_jisho_parse and run_jisho_parse
         self.include_clause_analysis = include_clause_analysis

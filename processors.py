@@ -57,6 +57,10 @@ class Process:
             transmute_lines=True,
             transmute_clauses=False)
 
+        if not list_of_strings_to_transmute:
+            logger.info('No strings required transmutation. API calls were not made')
+            return
+
         if parallel_process:
             list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -86,6 +90,10 @@ class Process:
             transmute_paragraphs=False,
             transmute_lines=True,
             transmute_clauses=True)
+
+        if not list_of_strings_to_transmute:
+            logger.info('No strings required transmutation. API calls were not made')
+            return
 
         if parallel_process:
             list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
@@ -117,6 +125,10 @@ class Process:
             transmute_paragraphs=False,
             transmute_lines=True,
             transmute_clauses=True)
+
+        if not list_of_strings_to_transmute:
+            logger.info('No strings required transmutation. API calls were not made')
+            return
 
         if parallel_process:
             list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
@@ -233,10 +245,14 @@ class SubProcess:
                             else:
                                 list_of_strings_for_transmutation.append(clause_object.raw_text)
 
-        logger.info(f'Lines to transmute: {len(list_of_strings_for_transmutation)}')
-
         # As single clause lines and single line paragraphs being included can possibly result in duplicates
         list_of_unique_strings_for_transmutation = list(set(list_of_strings_for_transmutation))
+
+        logger.info(f'Number of lines to transmute: {len(list_of_unique_strings_for_transmutation)}')
+        logger.info(f'Lines for transmutation: {list_of_unique_strings_for_transmutation}')
+
+        if not all(list_of_unique_strings_for_transmutation):
+            return []
 
         return list_of_unique_strings_for_transmutation
 

@@ -387,7 +387,6 @@ class GenerateHtml:
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
             paragraph_raw = paragraph_object.raw_text
-            paragraph_preprocessed = paragraph_object.preprocessed_text
             line_count = input_rekai_paragraph_object.line_count
 
             no_display_style_tag = ''' style="display: none;" '''
@@ -401,6 +400,7 @@ class GenerateHtml:
             # If adding container for para card contents, ensure to change addParaContentExpandOnClickEvent() in JS
             # PARA CARD CONTENTS
             if self.config_set_preprocessed_para_as_default:
+                paragraph_preprocessed = paragraph_object.preprocessed_text
                 # RAW
                 output_html += f'''
                     <div class="card-contents-raw master-raw" {no_display_style_tag}>
@@ -425,6 +425,7 @@ class GenerateHtml:
                     </div>'''
                 # PREPROCESSED
                 if self.config_preprocess:
+                    paragraph_preprocessed = paragraph_object.preprocessed_text
                     output_html += f'''
                     <div class="card-contents-prepro master-preprocessed" {no_display_style_tag}>
                         <div id="{paragraph_id}-prepro-text" class="card-contents-prepro-text">

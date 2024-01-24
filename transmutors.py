@@ -98,7 +98,7 @@ class Transmute:
         source_lang = AppConfig.GoogleTranslateConfig.source_language_code
         target_lang = AppConfig.GoogleTranslateConfig.target_language_code
         location = AppConfig.GoogleTranslateConfig.location
-        project_id = api_keys.google_tl_project_id
+        project_id = api_keys.google_project_id
         parent = f"projects/{project_id}/locations/{location}"
 
         client = translate.TranslationServiceClient()
@@ -135,7 +135,9 @@ class Transmute:
         pitch: float = AppConfig.GoogleTTSConfig.pitch
         volume_gain_db: float = AppConfig.GoogleTTSConfig.volume_gain_db
 
-        tts_client = texttospeech.TextToSpeechClient()
+        tts_client = texttospeech.TextToSpeechClient(
+            client_options={"api_key": api_keys.google_cloud_api_key, "quota_project_id": api_keys.google_project_id}
+        )
         input_for_synthesis = texttospeech.SynthesisInput({"text": f"{line}"})
         voice_settings = texttospeech.VoiceSelectionParams(
             {

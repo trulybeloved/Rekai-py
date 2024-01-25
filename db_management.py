@@ -14,6 +14,7 @@ class DBM:
 
     # logging
     logger.add(sink=AppConfig.db_log_path)
+    deep_log: bool = AppConfig.deep_log_databases
 
     # placeholder variables
     db_connection = sqlite3.connect('')
@@ -51,27 +52,26 @@ class DBM:
                     return False
             return True
         except Exception as e:
-            if AppConfig.deep_log_databases:
-                logger.error(f'{self._database_name}:An Exception:{e} was raised')
+            logger.error(f'{self._database_name}:An Exception:{e} was raised')
             return False
 
     def initialize_db_structure(self) -> None:
         structure_test = self.check_db_structure()
         if structure_test is True:
-            logger.info(f'{self._database_name} is already initialized and has the correct structure.')
+            if self.deep_log:
+                logger.info(f'{self._database_name} is already initialized and has the correct structure.')
         else:
             try:
                 cursor = self.db_connection.cursor()
                 cursor.execute(self._main_table_create_query)
                 cursor.execute(self._archive_table_create_query)
-                if AppConfig.deep_log_databases:
+                if self.deep_log:
                     logger.info(
-                        f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                    f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
                 self.db_connection.commit()
                 self.db_updated = True
             except Exception as e:
-                if AppConfig.deep_log_databases:
-                    logger.error(f'{self._database_name}:An Exception:{e} was raised')
+                logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
     def query(self, raw_line: str, column_name: str = None) -> Union[str, bytes]:
 
@@ -84,11 +84,11 @@ class DBM:
         query_results = cursor.fetchone()
         if query_results:
             result = query_results[0]
-            if AppConfig.deep_log_databases:
+            if self.deep_log:
                 logger.info(f'{self._database_name}:{self._database_name} Query for {raw_line} successful')
             return result
         else:
-            if AppConfig.deep_log_databases:
+            if self.deep_log:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
             raise EntryNotFound
 
@@ -111,13 +111,15 @@ class DBM:
             cursor.execute(insert_query, (raw_line, transmuted_data))
             self.db_connection.commit()
             self.db_updated = True
-            if AppConfig.deep_log_databases:
+            if self.deep_log:
                 logger.info(
                     f'{self._database_name}:Insert of {column_name} for line {raw_line} in {self._main_table_name} was successful')
         else:
-            if AppConfig.deep_log_databases:
+            self.archive(raw_line=raw_line)
+            self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name)
+            if self.deep_log:
                 logger.info(
-                    f'{self._database_name}:Insert of {column_name} into {self._main_table_name} was skipped as line already existed')
+                    f'{self._database_name}:Insert of {column_name} into {self._main_table_name} was completed with archival of previously existing line')
 
     def archive(self, raw_line: str) -> None:
         cursor = self.db_connection.cursor()
@@ -131,11 +133,11 @@ class DBM:
             delete_query = f'DELETE FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
             cursor.execute(delete_query, (raw_line,))
             self.db_connection.commit()
-            if AppConfig.deep_log_databases:
+            if self.deep_log:
                 logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
             self.db_updated = True
         else:
-            if AppConfig.deep_log_databases:
+            if self.deep_log:
                 logger.info(f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. '
                             f'No such entry exists. Archive function is not applicable')
 
@@ -152,7 +154,7 @@ class DBM:
         clear_query = f'DELETE FROM {self._archive_table_name}'
         cursor.execute(clear_query)
         self.db_connection.commit()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.info(f'{self._database_name}:{self._archive_table_name} Cleared')
 
     def clear_main_table(self) -> None:
@@ -160,7 +162,7 @@ class DBM:
         clear_main_query = f'DELETE FROM {self._main_table_name}'
         cursor.execute(clear_main_query)
         self.db_connection.commit()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.critical(f'MAIN TABLE in {self._database_name} has been cleared')
         self.db_updated = True
 
@@ -168,7 +170,7 @@ class DBM:
         self.clear_main_table()
         self.clear_archive()
         self.initialize_db_structure()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.critical(f'{self._database_name} has been wiped and reset')
 
     def close_connection(self) -> None:
@@ -226,9 +228,9 @@ class JishoParseDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
-        self.initialize_db_structure()
+        # self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 
 
@@ -272,9 +274,9 @@ class TextToSpeechDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
-        self.initialize_db_structure()
+        # self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 
 
@@ -318,9 +320,9 @@ class DeepLDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
-        self.initialize_db_structure()
+        # self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 
 
@@ -364,9 +366,9 @@ class GoogleTLDBM(DBM):
 
     def __init__(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
-        self.initialize_db_structure()
+        # self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if AppConfig.deep_log_databases:
+        if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 
 
@@ -415,5 +417,5 @@ class GoogleTLDBM(DBM):
 #     def __init__(self) -> None:
 #         self.db_connection = sqlite3.connect(self._db_path)
 #         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-#         if AppConfig.deep_log_databases:
+#         if self.deep_log:
 #             logger.info(f'An instance of {self._database_name} was initialized')

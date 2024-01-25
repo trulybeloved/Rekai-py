@@ -1,5 +1,9 @@
 # RE:KAI
 
+Rekai is in the pre-release state and a lot of work is still on going. So please use at your own descretion.
+
+A more detailed Readme will come soon.
+
 ## Acknowledgements:
 
 > "If I have seen further, it is by standing on the shoulders of giants." - Sir Issac Newton

@@ -273,13 +273,11 @@ function expandCollapseLineContents(lineID) {
   const lineContent = line.querySelector(".line-card-contents-container");
   lineContent.classList.toggle("collapsed");
   if (lineContent.classList.contains("collapsed")) {
-    console.log("if")
     lineContent.style.maxHeight = "0px";  
   } else {
-    console.log("else")
     lineContent.style.maxHeight = lineContent.scrollHeight + "px";
     lineCardContainer = para.querySelector('.line-card-container');
-    lineCardContainer.style.maxHeight = lineContent.scrollHeight + 200 + "px";
+    lineCardContainer.style.maxHeight = lineContent.scrollHeight + 5000 + "px";
   };
 
   };

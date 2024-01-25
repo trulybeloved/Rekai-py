@@ -42,6 +42,10 @@ class AppConfig:
     je_tts_db: str = os.path.join(datastores_directory, 'je_text_to_speech.db')
     translations_db_path: str = os.path.join(datastores_directory, 'translations.db')
 
+    # Path to CSS and JS source files
+    path_to_css_source = os.path.join(current_working_directory, 'html_src', 'css', 'styles.css')
+    path_to_js_source = os.path.join(current_working_directory, 'html_src', 'javascript', 'rekai.js')
+
     # paths pertaining to generator outputs
     output_directory = os.path.join(current_working_directory, 'outputs')
     path_to_rekai_html_src = os.path.join(current_working_directory, 'html_src')

@@ -26,6 +26,32 @@ class HtmlUtilities:
         prettified_html = soup.prettify()
         return prettified_html
 
+    @staticmethod
+    def get_css():
+        css_path = AppConfig.path_to_css_source
+        try:
+            with open(file=css_path, mode='r', encoding='utf-8') as file:
+                css_content = file.read()
+                minified_css = minify_html.minify(code=css_content, minify_css=True)
+                return css_content
+        except FileNotFoundError:
+            logger.error(f"Error: The file {css_path} was not found.")
+        except Exception as e:
+            logger.exception(f"Error: An unexpected error occurred - {str(e)}")
+
+    @staticmethod
+    def get_js():
+        css_path = AppConfig.path_to_js_source
+        try:
+            with open(file=css_path, mode='r', encoding='utf-8') as file:
+                js_content = file.read()
+                minified_js = minify_html.minify(code=js_content, minify_js=True)
+                return js_content
+        except FileNotFoundError:
+            logger.error(f"Error: The file {css_path} was not found.")
+        except Exception as e:
+            logger.exception(f"Error: An unexpected error occurred - {str(e)}")
+
 class GenerateHtml:
     class Config:
         pass
@@ -463,6 +489,9 @@ class GenerateHtml:
 
         # Page Blocks ==============================================
         def html_head(self, html_title: str) -> str:
+
+            stylesheet = HtmlUtilities.get_css()
+
             html_head = f'''
             <!DOCTYPE html>
             <html>
@@ -472,11 +501,11 @@ class GenerateHtml:
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>{html_title}</title>
 
-                <link rel="stylesheet" href="css/styles.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link rel="stylesheet"
                     href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap">
+                <style>{stylesheet}</style>
             </head>
             '''
             return html_head
@@ -505,6 +534,8 @@ class GenerateHtml:
             return output_html
 
         def html_body_suffix(self, top_bar_title: str) -> str:
+
+            javascript = HtmlUtilities.get_js()
 
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
@@ -575,7 +606,7 @@ class GenerateHtml:
                 </div>
 
                 <!-- SCRIPT --------------------------------------------------------------------->
-                <script src="javascript/rekai.js"></script>
+                <script>{javascript}</script>
             </body>
             </html>
             '''
@@ -609,4 +640,3 @@ class GenerateHtml:
             os.startfile(output_html_file_path)
 
             logger.info('RekaiHTML file generated sucessfully')
-

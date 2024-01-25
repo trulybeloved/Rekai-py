@@ -22,6 +22,8 @@ Follow these steps to download, install, and run the Python script from a GitHub
 
 ### Step 1: Clone\Download the Repository
 
+Once you have git installed and running:
+
 1. Open your terminal or command prompt.
 2. Navigate to the directory where you want to clone the repository.
 3. Run the following command to clone the repository:
@@ -29,7 +31,6 @@ Follow these steps to download, install, and run the Python script from a GitHub
    ```bash
    git clone https://github.com/trulybeloved/Rekai.git
    ```
-
 
 
 ### Step 2: Install Dependencies
@@ -50,13 +51,13 @@ Follow these steps to download, install, and run the Python script from a GitHub
 2. Execute the script using the following command:
 
    ```bash
-   python rekai.py
+   python rekai_main.py
    ```
 
    or
 
    ```bash
-   python3 rekai.py
+   python3 rekai_main.py
    ```
 
 3. If everything went well, then you should have the webgui open up in your default browser. If not, click on the URL that is generated within the terminal/console window. 

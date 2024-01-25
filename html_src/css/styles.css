@@ -407,7 +407,6 @@ button {
   margin: 0px;
 }
 
-
 .hovered {
   filter: brightness(var(--hover-filter-brightness));
   cursor: pointer;
@@ -434,6 +433,7 @@ button {
   display: flex;
   flex: 1;
   justify-content: start;
+  padding-right: 5px;
 
 }
 
@@ -448,6 +448,7 @@ button {
   display: flex;
   flex: 1;
   justify-content: end;
+  padding-left: 5px;
 }
 
 .card-contents-label {
@@ -642,6 +643,10 @@ rt {
 
 /* ------------------------------------------------------------------------- */
 /* Audio Button Styling ------ */
+
+.audioPlayer {
+  display: none;
+}
 
 .audioButton {
   margin: 5px 5px 5px 0px;
@@ -916,7 +921,7 @@ rt {
 @media screen and (max-width: 850px) {
 
   body {
-    padding-top: 65px;
+    padding-top: 80px;
   }
 
   .top-bar-button {
@@ -924,11 +929,11 @@ rt {
   }
 
   .top-bar {
-    height: 65px;
+    height: 80px;
   }
 
   .top-bar-flex-container {
-    height: 65px;
+    height: 80px;
   }
 
   .top-bar-mid-section {
@@ -936,23 +941,29 @@ rt {
     flex-wrap: wrap;
   }
 
+  .top-bar-end-section {
+    flex-direction: column;
+    height: fit-content;
+  }
+
 }
 
 @media screen and (max-width: 600px) {
    
   body {
-    padding-top: 100px;
+    padding-top: 85px;
   }
 
   .top-bar {
-    height: 100px;
+    height: 85px;
   }
 
   .top-bar-flex-container {
-    height: 100px;
+    height: 85px;
   }
 
 }
+
 
 .top-bar-button {
   font-size: var(--top-bar-button-font-size);

@@ -1,4 +1,5 @@
 
+
 // JS for Copy Buttons
 
 // Function to copy text from a specific element to clipboard and show a tooltip
@@ -198,20 +199,27 @@ initializeDarkMode();
 // JS for expanding and collapsing cards
 function expandParaCard(paraCardID) {
   const paraCard = document.getElementById(paraCardID);
+  if (paraCard.classList.contains("unparsable")) {
+    return;
+  }
   paraCard.classList.add("expanded");
-  paraCard.querySelector(".line-card-container").classList.remove("collapsed");
-  paraCard.querySelector(".line-card-container").style.maxHeight = paraCard.querySelector(".line-card-container").scrollHeight + 1000 + "px";
-  button = paraCard.querySelector(".expand-collapse-button");
-  button.textContent = "Collapse";
+  try {
+    paraCard.querySelector(".line-card-container").classList.remove("collapsed");
+    paraCard.querySelector(".line-card-container").style.maxHeight = paraCard.querySelector(".line-card-container").scrollHeight + 1000 + "px";
+    button = paraCard.querySelector(".expand-collapse-button");
+    button.textContent = "Collapse";
+  } catch (err) {}
   };
 
 function collapseParaCard(paraCardID) {
   const paraCard = document.getElementById(paraCardID);
   paraCard.classList.remove("expanded");
-  paraCard.querySelector(".line-card-container").classList.add("collapsed");
-  paraCard.querySelector(".line-card-container").style.maxHeight = "0px";
-  button = paraCard.querySelector(".expand-collapse-button");
-  button.textContent = "Expand";
+  try {  
+    paraCard.querySelector(".line-card-container").classList.add("collapsed");
+    paraCard.querySelector(".line-card-container").style.maxHeight = "0px";
+    button = paraCard.querySelector(".expand-collapse-button");
+    button.textContent = "Expand";
+  } catch (err) {}
   };
 
 function expandCollapseCard(cardID) {
@@ -257,38 +265,54 @@ function addParaContentExpandOnClickEvent() {
   const paraPreProDivs = document.querySelectorAll(".master-preprocessed");
   const paraHeaderLeftDivs = document.querySelectorAll(".card-header-left-half");
   const paraHeaderMiddleDivs = document.querySelectorAll(".card-header-mid-section");
+
   paraRawDivs.forEach((paraRawDiv) => {
     paraRawDiv.addEventListener("click", () => {
-      paraCard = paraRawDiv.parentElement;
-      if (paraCard.classList.contains("expanded")) {
-        return
-      } else {
-        expandParaCard(paraCard.id);
+      try {
+        paraCard = paraRawDiv.parentElement;
+        if (paraCard.classList.contains("expanded")) {
+          return;
+        } else {
+          expandParaCard(paraCard.id);
+        }
+      } catch (error) {
+        console.error("Error in paraRawDiv click event:", error);
       }
-    })
+    });
   });
+
   paraPreProDivs.forEach((paraPreProDiv) => {
     paraPreProDiv.addEventListener("click", () => {
-      paraCard = paraPreProDiv.parentElement;
-      if (paraCard.classList.contains("expanded")) {
-        return
-      } else {
-        expandParaCard(paraCard.id);
+      try {
+        paraCard = paraPreProDiv.parentElement;
+        if (paraCard.classList.contains("expanded")) {
+          return;
+        } else {
+          expandParaCard(paraCard.id);
+        }
+      } catch (error) {
+        console.error("Error in paraPreProDiv click event:", error);
       }
-    })
+    });
   });
+
   paraHeaderLeftDivs.forEach((paraHeaderLeftDiv) => {
     paraHeaderLeftDiv.addEventListener("click", () => {
-      paraCardHeader = paraHeaderLeftDiv.parentElement;
-      paraCard = paraCardHeader.parentElement;
-      if (paraCard.classList.contains("expanded")) {
-        collapseParaCard(paraCard.id);
-      } else {
-        expandParaCard(paraCard.id);
+      try {
+        paraCardHeader = paraHeaderLeftDiv.parentElement;
+        paraCard = paraCardHeader.parentElement;
+        if (paraCard.classList.contains("expanded")) {
+          collapseParaCard(paraCard.id);
+        } else {
+          expandParaCard(paraCard.id);
+        }
+      } catch (error) {
+        console.error("Error in paraHeaderLeftDiv click event:", error);
       }
-    })
+    });
   });
 };
+
 
 // Add click events to the para card divs so that divs can be more easily expanded
 addParaContentExpandOnClickEvent()
@@ -399,8 +423,8 @@ document.addEventListener('DOMContentLoaded', function() {
   paraCards.forEach(function(paraCard) {
       paraCard.addEventListener('click', function() {
           // Remove 'clicked' class from all paracards
-          paraCards.forEach(function(d) {
-              d.classList.remove('clicked');
+          paraCards.forEach(function(paraCard) {
+              paraCard.classList.remove('clicked');
           });
 
           // Add 'clicked' class to the clicked div

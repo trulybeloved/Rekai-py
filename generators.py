@@ -144,7 +144,7 @@ class GenerateHtml:
 
 
             # PARA CARD START
-            output_html = f'<div id="{paragraph_id}" class="para-card">'
+            output_html = f'<div id="{paragraph_id}" class="para-card unparsable">'  # Unparsable class added
 
             # PARA CARD HEADER
             output_html += f''' 
@@ -202,13 +202,14 @@ class GenerateHtml:
 
             # If clause analysis is enabled, include the clause split structure by default.
             output_html = f'''<div id="{clause_id}" class="clause-card">'''
-            output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed copy-on-click">{clause_preprocessed}</div>'''
 
             # If preprocess option is enabled, use preprocessed japanese text to query the db, else use raw
             if self.config_preprocess:
                 clause_key = clause_preprocessed
+                output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed copy-on-click">{clause_preprocessed}</div>'''
             else:
                 clause_key = clause_raw
+                output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed copy-on-click">{clause_raw}</div>'''
 
             if self.config_include_clause_deepl_tl:
                 clause_deepl_tl = Fetch.deepl_tl(raw_line=clause_key)
@@ -300,7 +301,7 @@ class GenerateHtml:
                 output_html += f'''
                 <div class="line-preprocessed-container">
                     <div class="line-content-label">Preprocessed</div>
-                    <div class="card-contents-line-preprocessed copy-on-click" id={line_id}-deepl)">{line_preprocessed}</div>
+                    <div class="card-contents-line-preprocessed copy-on-click" id={line_id}-preprocessed)">{line_preprocessed}</div>
                 </div>
                 '''
             # LINE CARD FULL DEEPL TL

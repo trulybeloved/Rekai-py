@@ -13,6 +13,60 @@ I'm also tremendously greatful to [JanSnoh](https://github.com/JanSnoh) for revi
 
 # Setting up Rekai
 
+Certainly! Here's the modified set of instructions in Markdown format for downloading, installing, and running a Python script from a GitHub repository:
+
+
+## Download and Running for the First Time:
+
+Follow these steps to download, install, and run the Python script from a GitHub repository:
+
+### Step 1: Clone\Download the Repository
+
+1. Open your terminal or command prompt.
+2. Navigate to the directory where you want to clone the repository.
+3. Run the following command to clone the repository:
+
+   ```bash
+   git clone https://github.com/trulybeloved/Rekai.git
+   ```
+
+
+
+### Step 2: Install Dependencies
+
+1. Ensure you have Python installed. If not, download and install Python from [python.org](https://www.python.org/downloads/).
+    - Rekai has been tested on *Python 3.11* and higher
+
+2. Navigate to the directory containing the cloned repository using the terminal.
+3. Run the following command to install dependencies (if any):
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Step 3: Run the Script
+
+1. In the terminal, navigate to the directory containing the cloned repository.
+2. Execute the script using the following command:
+
+   ```bash
+   python rekai.py
+   ```
+
+   or
+
+   ```bash
+   python3 rekai.py
+   ```
+
+3. If everything went well, then you should have the webgui open up in your default browser. If not, click on the URL that is generated within the terminal/console window. 
+
+
+The above method is only assured to work if you've never really installed any other dependances to your core python enviroment. It is recommended to use a seperate VENV for Rekai. If you are unfamilar with that, read [this guide](https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/). 
+
+
+
+
 ## Setting up API access:
 
 This project uses the following APIs:

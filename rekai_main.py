@@ -29,7 +29,7 @@ from processors import Process
 from generators import GenerateHtml
 from custom_modules.utilities import get_current_timestamp
 from custom_modules.utilities import log_process_time
-# import data_for_processing
+import data_for_processing
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -67,7 +67,16 @@ class CustomTest:
         if run_config.run_google_tl:
             Process.google_tl(rekai_text_object=rekai_text_object)
 
-        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object, html_title='Rekai_Test', output_directory=final_output_path, post_process=None)
+        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
+                                         html_title='Rekai_Test', output_directory=final_output_path, post_process=None,
+                                         single_file_mode=False)
+
+        if run_config.output_single_file:
+            GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
+                                             html_title='Rekai_Test', output_directory=final_output_path,
+                                             post_process=None,
+                                             single_file_mode=True)
+
 
 
 
@@ -95,8 +104,12 @@ def main(japanese_text, preprocessed_text, header):
         Process.google_tl(rekai_text_object=rekai_text_object)
 
     GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
-                                     html_title='Rekai_Test', output_directory=final_output_path, post_process=None)
+                                     html_title='Rekai_Test', output_directory=final_output_path, post_process=None, single_file_mode=False)
 
+    if run_config.output_single_file:
+        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
+                                         html_title='Rekai_Test', output_directory=final_output_path, post_process=None,
+                                         single_file_mode=True)
 
 
 # Frontend
@@ -138,5 +151,5 @@ with gr.Blocks() as webgui:
 
 if __name__ == '__main__':
 
-    webgui.launch()
-    # CustomTest.rekai_test()
+    # webgui.launch()
+    CustomTest.rekai_test()

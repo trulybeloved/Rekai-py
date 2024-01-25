@@ -114,29 +114,33 @@ class RunConfig:
     google_tl_clauses: bool
     use_preprocessed_for_google_tl: bool
 
+    output_single_file: bool
+
     def __init__(self,
-        preprocess=True,
-        use_preprocessed_for_paragraphs=True,
-        run_jisho_parse=True,
-        run_tts=True,
-        run_deepl_tl=True,
-        run_google_tl=True,
-        run_gpt4_analysis=False,
-        clean_post_split=True,
+                 preprocess=True,
+                 use_preprocessed_for_paragraphs=True,
+                 run_jisho_parse=True,
+                 run_tts=True,
+                 run_deepl_tl=True,
+                 run_google_tl=True,
+                 run_gpt4_analysis=False,
+                 clean_post_split=True,
 
-        include_jisho_parse=True,
-        include_clause_analysis=True,
+                 include_jisho_parse=True,
+                 include_clause_analysis=True,
 
-        deepl_tl_paragraphs=False,
-        deepl_tl_lines=True,
-        deepl_tl_clauses=True,
-        use_preprocessed_for_deepl_tl=True,
+                 deepl_tl_paragraphs=False,
+                 deepl_tl_lines=True,
+                 deepl_tl_clauses=True,
+                 use_preprocessed_for_deepl_tl=True,
 
-        google_tl_paragraphs=False,
-        google_tl_lines=True,
-        google_tl_clauses=True,
-        use_preprocessed_for_google_tl = True
-        ):
+                 google_tl_paragraphs=False,
+                 google_tl_lines=True,
+                 google_tl_clauses=True,
+                 use_preprocessed_for_google_tl = True,
+
+                 also_output_single_file = True,
+                 ):
 
         self.preprocess = preprocess
         self.use_preprocessed_for_paragraphs = preprocess and use_preprocessed_for_paragraphs
@@ -159,3 +163,5 @@ class RunConfig:
         self.google_tl_lines = google_tl_lines and run_google_tl
         self.google_tl_clauses = google_tl_clauses and run_google_tl
         self.use_preprocessed_for_google_tl = preprocess and use_preprocessed_for_google_tl
+
+        self.output_single_file = also_output_single_file

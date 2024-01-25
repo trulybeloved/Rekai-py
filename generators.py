@@ -32,7 +32,6 @@ class HtmlUtilities:
         try:
             with open(file=css_path, mode='r', encoding='utf-8') as file:
                 css_content = file.read()
-                minified_css = minify_html.minify(code=css_content, minify_css=True)
                 return css_content
         except FileNotFoundError:
             logger.error(f"Error: The file {css_path} was not found.")
@@ -45,7 +44,6 @@ class HtmlUtilities:
         try:
             with open(file=css_path, mode='r', encoding='utf-8') as file:
                 js_content = file.read()
-                minified_js = minify_html.minify(code=js_content, minify_js=True)
                 return js_content
         except FileNotFoundError:
             logger.error(f"Error: The file {css_path} was not found.")
@@ -105,8 +103,11 @@ class GenerateHtml:
         config_include_clause_deepl_tl: bool
         config_include_clause_google_tl: bool
 
-        def __init__(self, run_config_object: RunConfig):
+        single_file_mode: bool
+
+        def __init__(self, run_config_object: RunConfig, single_file_mode: bool):
             self.set_config(run_config_object=run_config_object)
+            self.single_file_mode = single_file_mode
 
         def set_config(self, run_config_object: RunConfig):
 
@@ -137,9 +138,9 @@ class GenerateHtml:
             self.config_include_clause_google_tl = (run_config_object.include_clause_analysis
                                                     and run_config_object.google_tl_clauses)
 
+
         # Inner Elements ===========================================
-        @staticmethod
-        def audio_button(line_id: str, line_raw: str, output_directory: str) -> str:
+        def audio_button(self, line_id: str, line_raw: str, output_directory: str) -> str:
 
             tts_file_output_folder_name = AppConfig.tts_output_folder_name
             tts_file_output_directory_path = os.path.join(output_directory, tts_file_output_folder_name)
@@ -149,16 +150,24 @@ class GenerateHtml:
 
             tts_bytes = Fetch.tts_bytes(raw_line=line_raw)
 
-            base64ogg = base64.b64encode(tts_bytes).decode('utf-8')
+            if self.single_file_mode:
+                base64ogg = base64.b64encode(tts_bytes).decode('utf-8')
 
-            # brotli_compressed = brotli.compress(tts_bytes)
+                output_html = f'''
+                <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
+                </audioButton>
+                <div id="{line_id}-audioPlayer" class="audioPlayer"
+                    src="{line_tts_relative_path}" base64ogg="{base64ogg}"></div>
+                '''
+            else:
 
-            output_html = f'''
-            <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
-            </audioButton>
-            <div id="{line_id}-audioPlayer" class="audioPlayer"
-                src="{line_tts_relative_path}" base64ogg="{base64ogg}"></div>
-            '''
+                output_html = f'''
+                <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
+                </audioButton>
+                <div id="{line_id}-audioPlayer" class="audioPlayer"
+                    src="{line_tts_relative_path}"></div>
+                '''
+
             return output_html
 
         # Card Blocks ==============================================
@@ -261,8 +270,7 @@ class GenerateHtml:
             line_preprocessed = line_object.preprocessed_text
 
             if self.config_include_tts:
-                audio_button_html = GenerateHtml.RekaiHtmlBlock.audio_button(line_id=line_id, line_raw=line_raw,
-                                                                             output_directory=output_directory)
+                audio_button_html = self.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
             else:
                 audio_button_html = ''
 
@@ -490,7 +498,12 @@ class GenerateHtml:
         # Page Blocks ==============================================
         def html_head(self, html_title: str) -> str:
 
-            stylesheet = HtmlUtilities.get_css()
+            if self.single_file_mode:
+                stylesheet = HtmlUtilities.get_css()
+                style_tag = f'''<style>{stylesheet}</style>'''
+            else:
+                style_tag = f'''<link rel="stylesheet" href="css/styles.css">'''
+
 
             html_head = f'''
             <!DOCTYPE html>
@@ -505,7 +518,7 @@ class GenerateHtml:
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link rel="stylesheet"
                     href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap">
-                <style>{stylesheet}</style>
+                {style_tag}
             </head>
             '''
             return html_head
@@ -535,7 +548,12 @@ class GenerateHtml:
 
         def html_body_suffix(self, top_bar_title: str) -> str:
 
-            javascript = HtmlUtilities.get_js()
+            if self.single_file_mode:
+                javascript = HtmlUtilities.get_js()
+                script_tag = f'''<script>{javascript}</script>'''
+            else:
+                script_tag = f'''<script src="javascript/rekai.js"></script>'''
+
 
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
@@ -606,7 +624,7 @@ class GenerateHtml:
                 </div>
 
                 <!-- SCRIPT --------------------------------------------------------------------->
-                <script>{javascript}</script>
+                {script_tag}                
             </body>
             </html>
             '''
@@ -615,11 +633,12 @@ class GenerateHtml:
     class RekaiHtml:
         @staticmethod
         def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
-                      output_directory: str, post_process: Union[str, None] = 'minify') -> None:
+                      output_directory: str, post_process: Union[str, None], single_file_mode: bool) -> None:
 
-            GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
+            if not single_file_mode:
+                GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
-            generate = GenerateHtml.RekaiHtmlBlock(run_config_object=run_config_object)
+            generate = GenerateHtml.RekaiHtmlBlock(run_config_object=run_config_object, single_file_mode=single_file_mode)
 
             html = generate.html_head(html_title=html_title)
             html += generate.html_body_prefix()
@@ -632,7 +651,12 @@ class GenerateHtml:
             elif post_process == 'minify':
                 html = HtmlUtilities.minify(html)
 
-            output_html_file_path = os.path.join(output_directory, 'rekai.html')
+            if single_file_mode:
+                file_name_suffix = '_single_file'
+            else:
+                file_name_suffix = ''
+
+            output_html_file_path = os.path.join(output_directory, f'rekai_{html_title}{file_name_suffix}.html')
 
             with open(output_html_file_path, 'w', encoding='utf-8') as rekai_html_file:
                 rekai_html_file.write(html)

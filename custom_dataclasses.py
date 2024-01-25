@@ -182,11 +182,11 @@ class Paragraph(RekaiTextCommon):
         elif not self.unparsable:
             self.paragraph_type = 'Narration'
             self.is_narration = True
-        elif self.unparsable:
+        elif self.unparsable and JNLP.Classifier.is_dialogue(self.raw_text):
             self.paragraph_type = 'Dialogue: Expressive'
             self.is_expression = True
         else:
-            raise ClassificationError
+            self.paragraph_type = 'Unparsable/Division'
 
         self.para_info = ParaInfo(
             is_dialogue=self.is_dialogue,

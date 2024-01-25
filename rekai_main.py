@@ -21,7 +21,7 @@ Todo
 import os.path
 
 import gradio as gr
-
+from loguru import logger
 
 from appconfig import AppConfig, RunConfig
 from custom_dataclasses import RekaiText
@@ -94,6 +94,10 @@ def main(japanese_text, preprocessed_text, header):
 
     rekai_text_object = RekaiText(input_text=japanese_text, input_preprocessed_text=preprocessed_text, run_config_object=run_config, text_header=header)
 
+    if AppConfig.global_run_stop:
+        logger.critical(f'GLOBAL STOP FLAG RAISED. FUNCTION TERMINATED')
+        return
+
     if run_config.run_jisho_parse:
         Process.jisho_parse(rekai_text_object=rekai_text_object)
     if run_config.run_tts:
@@ -151,5 +155,5 @@ with gr.Blocks() as webgui:
 
 if __name__ == '__main__':
 
-    # webgui.launch()
-    CustomTest.rekai_test()
+    webgui.launch()
+    # CustomTest.rekai_test()

@@ -9,6 +9,8 @@ from selenium.webdriver.chrome.options import Options
 class AppConfig:
     _instance = None
 
+    global_run_stop: bool = False
+
     def __new__(cls, *args, **kwargs):
         """This class method ensures that only one instance of the class exists"""
         if cls._instance is None:

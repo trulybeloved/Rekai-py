@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 from loguru import logger
 
 from nlp_modules.patterns import Regex, Charsets
+from nlp_modules.basic_nlp import FundamentalPatterns
+from custom_modules.custom_exceptions import TextSplitError
+from appconfig import AppConfig
 
 class Classifier:
 
@@ -69,8 +72,31 @@ class TextSplitter:
         if not lines:
             return [input_text]
 
+        reassembled_para = ''.join(lines)
+        if reassembled_para != input_text:
+            captured_substring_pattern = re.compile(reassembled_para)
+            split_result: list = re.split(captured_substring_pattern, input_text)
+            if len(split_result) > 1:
+                pre_substring = split_result[0]
+                post_substring = split_result[1]
+                lines.insert(0, pre_substring)
+                lines.append(post_substring)
+            else:
+                missed_substring = ''.join(split_result)
+                if input_text.startswith(missed_substring):
+                    lines.insert(0, missed_substring)
+                elif input_text.endswith(missed_substring):
+                    lines.append(missed_substring)
+                else:
+                    logger.error(
+                        f'REGEX MATCH missed a substring in the middle of string. Input Text: {input_text} Result: {lines}')
+
         if ''.join(lines) != input_text:
             logger.error(f'REGEX MATCH did not include all characters. Input Text: {input_text} Result: {lines}')
+            AppConfig.global_run_stop = True
+            logger.warning(f'GLOBAL RUN STOP FLAG SET')
+
+        lines = [line for line in lines if not FundamentalPatterns.contains_only_whitespace(line)]
 
         return lines
 
@@ -86,6 +112,8 @@ class TextSplitter:
 
         if ''.join(clauses) != input_text:
             logger.error(f'REGEX MATCH did not include all characters. Input Text: {input_text} Result: {clauses}')
+
+        clauses = [clause for clause in clauses if not FundamentalPatterns.contains_only_whitespace(clause)]
 
         return clauses
 
@@ -180,4 +208,5 @@ class Parser:
         list_of_word_pos_tuples = [(word, pos_tag) for word, pos_tag in zip(list_of_words, list_of_pos_tags)]
 
         return list_of_word_pos_tuples
+
 

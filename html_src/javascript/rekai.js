@@ -1,5 +1,3 @@
-
-
 // JS for Copy Buttons
 
 // Function to copy text from a specific element to clipboard and show a tooltip
@@ -123,9 +121,28 @@ function toggleDisplay(button, elementClass, displayType) {
     } else {
       element.style.display = "none";
       button.classList.remove("toggle-button-enabled");
-    }
+    };
+
   });
+
+  updateDivMaxHeight(".line-card-contents-container");
+  updateDivMaxHeight(".line-card-container");
 };
+
+function updateDivMaxHeight(divClass) {
+  const divElements = document.querySelectorAll(divClass);
+  divElements.forEach(function (divElement) {
+    try {
+      if (divElement.classList.contains("collapsed")) {
+        return;
+      } else {
+        divElement.style.maxHeight = divElement.scrollHeight + 100 + "px";
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  })
+}
 
 function toggleRightSidebar() {
   const root = document.documentElement;
@@ -205,7 +222,7 @@ function expandParaCard(paraCardID) {
   paraCard.classList.add("expanded");
   try {
     paraCard.querySelector(".line-card-container").classList.remove("collapsed");
-    paraCard.querySelector(".line-card-container").style.maxHeight = paraCard.querySelector(".line-card-container").scrollHeight + 1000 + "px";
+    paraCard.querySelector(".line-card-container").style.maxHeight = paraCard.querySelector(".line-card-container").scrollHeight + "px";
     button = paraCard.querySelector(".expand-collapse-button");
     button.textContent = "Collapse";
   } catch (err) {}
@@ -251,14 +268,36 @@ function collapseAllParas() {
 
 function expandCollapseLineContents(lineID) {
   const line = document.getElementById(lineID);
+  const paraID = extractParaID(lineID);
+  const para = document.getElementById(paraID)
   const lineContent = line.querySelector(".line-card-contents-container");
   lineContent.classList.toggle("collapsed");
   if (lineContent.classList.contains("collapsed")) {
+    console.log("if")
     lineContent.style.maxHeight = "0px";  
   } else {
-    lineContent.style.maxHeight = lineContent.scrollHeight + 1000 + "px";
-  }
+    console.log("else")
+    lineContent.style.maxHeight = lineContent.scrollHeight + "px";
+    lineCardContainer = para.querySelector('.line-card-container');
+    lineCardContainer.style.maxHeight = lineContent.scrollHeight + 200 + "px";
   };
+
+  };
+
+function extractParaID(inputString) {
+  // Find the index of the underscore
+  const underscoreIndex = inputString.indexOf('_');
+
+  // If underscore is not found, return the original string
+  if (underscoreIndex === -1) {
+    return inputString;
+  }
+
+  // Extract the substring before the underscore
+  const prefix = inputString.substring(0, underscoreIndex);
+
+  return prefix;
+}
 
 function addParaContentExpandOnClickEvent() {
   const paraRawDivs = document.querySelectorAll(".master-raw");

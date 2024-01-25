@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 from typing import Union
 from loguru import logger
@@ -229,7 +229,7 @@ class Paragraph(RekaiTextCommon):
 class RekaiText(RekaiTextCommon):
     log_sink = logger.add(sink=AppConfig.dataclasses_log_path)
 
-    # run_config: RunConfig
+    run_config: RunConfig = field(repr=False)
 
     # Instance variables (needed for dataclasses base methods to function)
     text_header: str

@@ -26,6 +26,10 @@ class Process:
             transmute_lines=True,
             transmute_clauses=False)
 
+        if not list_of_strings_to_transmute:
+            logger.info('No strings required transmutation. API calls were not made')
+            return
+
         if parallel_process:
             list_of_transmuted_data_tuples = SubProcess.parallel_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -86,7 +90,7 @@ class Process:
         list_of_strings_to_transmute = SubProcess.prepare_data(
             rekai_text_object=rekai_text_object,
             db_interface=DeepLDBM(),
-            preprocess=True,
+            preprocess=rekai_text_object.run_config.use_preprocessed_for_deepl_tl,
             transmute_paragraphs=False,
             transmute_lines=True,
             transmute_clauses=True)
@@ -121,7 +125,7 @@ class Process:
         list_of_strings_to_transmute = SubProcess.prepare_data(
             rekai_text_object=rekai_text_object,
             db_interface=GoogleTLDBM(),
-            preprocess=True,
+            preprocess=rekai_text_object.run_config.use_preprocessed_for_google_tl,
             transmute_paragraphs=False,
             transmute_lines=True,
             transmute_clauses=True)

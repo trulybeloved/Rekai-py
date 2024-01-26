@@ -4,6 +4,7 @@ import asyncio
 import concurrent.futures
 import time
 from typing import Union
+import functools
 
 from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph, Line
@@ -31,10 +32,10 @@ class Process:
             return
 
         if parallel_process:
-            list_of_transmuted_data_tuples = SubProcess.parallel_transmute(
+            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.parse_string_with_jisho,
-                max_workers=AppConfig.jisho_multipro_max_workers)
+                transmutor=Transmute.parse_string_with_jisho))
+
         else:
             list_of_transmuted_data_tuples = SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -157,22 +158,28 @@ class SubProcess:
     @staticmethod
     def sync_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str], tuple[str, Union[str, bytes]]]) -> list[tuple[str,Union[str, bytes]]]:
+            transmutor: Callable[[str, int], tuple[str, Union[str, bytes]]]) -> list[tuple[str,Union[str, bytes]]]:
 
-        list_of_transmuted_data = [transmutor(string) for string in list_of_strings_to_transmute]
+        total_string_count = len(list_of_strings_to_transmute)
+
+        list_of_transmuted_data = [transmutor(string, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
 
         return list_of_transmuted_data
 
     @staticmethod
     async def async_transmute(list_of_strings_to_transmute: list,
-                              transmutor: Callable[[str], tuple[str, Union[str, bytes]]]) -> list[tuple[str, any]]:
+                              transmutor: Callable[[str, int], tuple[str, Union[str, bytes]]]) -> list[tuple[str, any]]:
+
+        total_string_count = len(list_of_strings_to_transmute)
 
         loop = asyncio.get_event_loop()
 
-        async def async_func(transmutor, argument):
-            return await loop.run_in_executor(None, transmutor, argument)
+        async def async_func(transmutor, *args):
+            partial_transmutor = functools.partial(transmutor, *args)
 
-        tasks = [async_func(transmutor, string) for string in list_of_strings_to_transmute]
+            return await loop.run_in_executor(None, partial_transmutor)
+
+        tasks = [async_func(transmutor, string, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
         list_of_transmuted_data = await asyncio.gather(*tasks)
 
         return list_of_transmuted_data

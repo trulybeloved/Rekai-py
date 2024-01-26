@@ -29,7 +29,7 @@ class Transmute:
 
     # Jisho web scrape and parse
     @staticmethod
-    def parse_string_with_jisho(line: str, index: str = 0) -> tuple[str, str]:
+    def parse_string_with_jisho(line: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -46,10 +46,10 @@ class Transmute:
 
             try:
 
-                logger.info(f'Trying to parse line {index}')
+                logger.info(f'Trying to parse line {index} out of {total_count}')
 
                 driver.get(url=url)
-                logger.info(f'{index} - Webdriver instance Started')
+                logger.info(f'Webdriver instance Started for {index} started')
 
                 zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
                 zen_outer_html = zen_bar_element.get_attribute('outerHTML')
@@ -60,8 +60,8 @@ class Transmute:
                 jisho_parsed_html_element += zen_html
 
             except Exception as e:
-                logger.error(f'An exception occured in jisho parse - f{str(e)}')
-                zen_html = f'<p>((Text is not parsable or could not be parsed))</p>'
+                logger.error(f'An exception occured in jisho parse - f{line}')
+                zen_html = f'<p></p>'
                 jisho_parsed_html_element += zen_html
 
             driver.quit()
@@ -74,7 +74,7 @@ class Transmute:
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(line: str, index: str = 0) -> tuple[str, str]:
+    def translate_string_with_deepl_api(line: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -89,7 +89,7 @@ class Transmute:
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(line: str, index: str = 0, ) -> tuple[str, str]:
+    def translate_string_with_google_tl_api(line: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API can accept a list.
@@ -122,7 +122,7 @@ class Transmute:
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(line: str) -> tuple[str, bytes]:
+    def tts_string_with_google_api(line: str, index: int = 0, total_count: int = 0) -> tuple[str, bytes]:
 
         """DOCSTRING PENDING"""
 
@@ -142,7 +142,6 @@ class Transmute:
         voice_settings = texttospeech.VoiceSelectionParams(
             {
                 "language_code": language_code,
-                "ssml_gender": ssml_gender,
                 "name": voice_name
             }
         )
@@ -154,7 +153,7 @@ class Transmute:
                 "volume_gain_db": volume_gain_db,
             }
         )
-        logger.info(f'TTS_API_CALL: Line: {line}')
+        logger.info(f'TTS_API_CALL: Line {index} of {total_count}: {line}')
 
         api_response = tts_client.synthesize_speech(
             input=input_for_synthesis,
@@ -173,7 +172,7 @@ class Transmute:
         return output
 
     @staticmethod
-    def post_process_dialogue(input_string:str):
+    def post_process_dialogue(input_string:str, *args):
         """Replaces quotation/japanese quotation marks with []"""
 
         opening_characters = {"\"", "「"}

@@ -54,6 +54,7 @@ class AppConfig:
 
     ##=========== INTERNAL PARAMETERS =============##
     # concurrency limits
+    # Right now all processors use asyncio. These settings will be deprecated.
     general_multipro_max_workers: int = 8
     jisho_multipro_max_workers: int = 16
     deepl_multipro_max_workers: int = 4
@@ -65,8 +66,8 @@ class AppConfig:
 
     class GoogleTTSConfig:
         language_code: str = 'ja-JP'
-        ssml_gender = texttospeech.SsmlVoiceGender.NEUTRAL
-        voice_name: str = 'ja-JP-Wavenet-B'
+        # ssml_gender = texttospeech.SsmlVoiceGender.NEUTRAL # Not all voices support this flag
+        voice_name: str = 'ja-JP-Neural2-B'
         audio_encoding = texttospeech.AudioEncoding.OGG_OPUS
         speaking_rate: float = 0.9
         pitch: float = 0.0
@@ -94,6 +95,8 @@ class AppConfig:
 @dataclass
 class RunConfig:
     # This class is called by default by RekaiText.
+    run_id: int
+
     preprocess: bool
     use_preprocessed_for_paragraphs: bool
     run_jisho_parse: bool
@@ -119,12 +122,14 @@ class RunConfig:
     output_single_file: bool
 
     def __init__(self,
+                 unix_timestamp: int,
+
                  preprocess=True,
                  use_preprocessed_for_paragraphs=True,
                  run_jisho_parse=True,
-                 run_tts=True,
-                 run_deepl_tl=True,
-                 run_google_tl=True,
+                 run_tts=False,
+                 run_deepl_tl=False,
+                 run_google_tl=False,
                  run_gpt4_analysis=False,
                  clean_post_split=True,
 
@@ -141,7 +146,7 @@ class RunConfig:
                  google_tl_clauses=True,
                  use_preprocessed_for_google_tl = True,
 
-                 also_output_single_file = True,
+                 also_output_single_file = False,
                  ):
 
         self.preprocess = preprocess
@@ -167,3 +172,6 @@ class RunConfig:
         self.use_preprocessed_for_google_tl = preprocess and use_preprocessed_for_google_tl
 
         self.output_single_file = also_output_single_file
+
+        self.run_id = unix_timestamp
+

@@ -27,7 +27,7 @@ from appconfig import AppConfig, RunConfig
 from custom_dataclasses import RekaiText
 from processors import Process
 from generators import GenerateHtml
-from custom_modules.utilities import get_current_timestamp
+from custom_modules.utilities import get_current_timestamps
 from custom_modules.utilities import log_process_time
 import data_for_processing
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -49,7 +49,7 @@ class CustomTest:
         input_raw = data_for_processing.small_sample
         input_prepro = data_for_processing.input_preprocessed
 
-        timestamp = get_current_timestamp()
+        timestamp = get_current_timestamps()
         output_directory = AppConfig.output_directory
 
         final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
@@ -84,13 +84,13 @@ class CustomTest:
 # Main Function
 def main(japanese_text, preprocessed_text, header):
 
-    timestamp = get_current_timestamp()
+    timestamp_str, timestamp_unix = get_current_timestamps()
 
     output_directory = AppConfig.output_directory
 
-    run_config = RunConfig()
+    run_config = RunConfig(timestamp_unix)
 
-    final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
+    final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp_str}')
 
     rekai_text_object = RekaiText(input_text=japanese_text, input_preprocessed_text=preprocessed_text, run_config_object=run_config, text_header=header)
 
@@ -108,7 +108,7 @@ def main(japanese_text, preprocessed_text, header):
         Process.google_tl(rekai_text_object=rekai_text_object)
 
     GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
-                                     html_title='Rekai_Test', output_directory=final_output_path, post_process=None, single_file_mode=False)
+                                     html_title='Rekai_Test', output_directory=final_output_path, post_process='minify', single_file_mode=False)
 
     if run_config.output_single_file:
         GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,

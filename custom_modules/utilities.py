@@ -4,10 +4,9 @@ from datetime import datetime
 import time
 from loguru import logger
 
-def get_current_timestamp() -> str:
-    # Ref https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior for more info on formats
-    timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    return timestamp
+def get_current_timestamps() -> [str, int]:
+    current_time = datetime.utcnow()
+    return current_time.strftime('%Y_%m_%d_%H_%M_%S'), int(current_time.timestamp())
 
 def log_process_time(func):
     def wrapper(*args, **kwargs):

@@ -394,6 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
   lineCards.forEach((container, index) => {
     const audioElement = container.querySelector('.audioPlayer');
     const waveformContainer = container.querySelector('.audio-waveform');
+
+    if (audioElement.getAttribute('base64ogg')) {
     const audioBase64Ogg = audioElement.getAttribute('base64ogg');
 
     // Create a Blob from the base64 data
@@ -407,6 +409,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Create an Object URL from the Blob
     audio_url = URL.createObjectURL(blob);
+    } else {
+      var src = audioElement.getAttribute('src');
+      audio_url = src;
+    }
 
     // Create the waveform
     const wavesurfer = WaveSurfer.create({

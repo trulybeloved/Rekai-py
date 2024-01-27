@@ -151,7 +151,7 @@ target_html = '''<section id="zen_bar" class="japanese_gothic focus" lang="ja">
 
                                 </section>'''
 
-list_of_word_pos_tuples = Parser.jisho_parse_html_parser(target_html)
+list_of_word_pos_tuples = Parser.get_word_pos_from_jisho_html(target_html)
 # print(list_of_word_pos_tuples)
 sentence = ""
 

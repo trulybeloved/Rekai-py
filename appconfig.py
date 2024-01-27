@@ -9,13 +9,21 @@ from selenium.webdriver.chrome.options import Options
 class AppConfig:
     _instance = None
 
-    global_run_stop: bool = False
-
     def __new__(cls, *args, **kwargs):
         """This class method ensures that only one instance of the class exists"""
         if cls._instance is None:
             cls._instance = super(AppConfig, cls).__new__(cls)
         return cls._instance
+
+    ##========== FLAGS =============================##
+
+    ENABLE_TIMING: bool = False  # Used by timing wrapper in utilities
+
+    # Debugging Controls
+    STOP_RUN_IF_TEXT_PROCESSING_ERRORS: bool = False
+
+    # Global Stop Flag
+    GLOBAL_RUN_STOP: bool = False
 
     ##=========== PATHS AND DIRECTORIES =============##
     # current working directory
@@ -127,9 +135,9 @@ class RunConfig:
                  preprocess=True,
                  use_preprocessed_for_paragraphs=True,
                  run_jisho_parse=True,
-                 run_tts=False,
-                 run_deepl_tl=False,
-                 run_google_tl=False,
+                 run_tts=True,
+                 run_deepl_tl=True,
+                 run_google_tl=True,
                  run_gpt4_analysis=False,
                  clean_post_split=True,
 
@@ -144,11 +152,10 @@ class RunConfig:
                  google_tl_paragraphs=False,
                  google_tl_lines=True,
                  google_tl_clauses=True,
-                 use_preprocessed_for_google_tl = True,
+                 use_preprocessed_for_google_tl=True,
 
-                 also_output_single_file = False,
+                 also_output_single_file=False,
                  ):
-
         self.preprocess = preprocess
         self.use_preprocessed_for_paragraphs = preprocess and use_preprocessed_for_paragraphs
         self.run_jisho_parse = run_jisho_parse
@@ -174,4 +181,3 @@ class RunConfig:
         self.output_single_file = also_output_single_file
 
         self.run_id = unix_timestamp
-

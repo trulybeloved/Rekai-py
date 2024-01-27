@@ -15,7 +15,6 @@ from custom_modules.utilities import log_process_time
 
 class Process:
     @staticmethod
-    @log_process_time
     def jisho_parse(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, str]:
         logger.info("Starting Jisho processing")
 
@@ -50,7 +49,6 @@ class Process:
         return
 
     @staticmethod
-    @log_process_time
     def gcloud_tts(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
         logger.info("Starting Google Cloud TTS processing")
 
@@ -84,7 +82,6 @@ class Process:
         return
 
     @staticmethod
-    @log_process_time
     def deepl_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
         logger.info("Starting DeepL Translation")
 
@@ -119,7 +116,6 @@ class Process:
 
 
     @staticmethod
-    @log_process_time
     def google_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
         logger.info("Starting Google Translation")
 
@@ -143,6 +139,8 @@ class Process:
             list_of_transmuted_data_tuples = SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_google_tl_api)
+
+        # list_of_transmuted_data_tuples = Transmute.translate_list_with_google_tl_api(list_of_strings_to_transmute)
 
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,

@@ -59,12 +59,3 @@ class TextSplitter:
             list_of_lines = [f'{prefix}{line}{suffix}' for line in list_of_lines]
 
         return list_of_lines
-
-    @staticmethod
-    def split_at_delimiter(input_text: str, delimiter: str) -> str:
-        """
-        Function that will split text at a specified delimiter
-        """
-        pass
-
-

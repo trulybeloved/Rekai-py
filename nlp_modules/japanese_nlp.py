@@ -14,6 +14,21 @@ class Classifier:
 
     @staticmethod
     def contains_no_parsable_ja_text(input_text: str) -> bool:
+        """
+        Checks if the given input text contains any parsable Japanese text.
+
+        This method removes certain characters (expressions and punctuation) from
+        the input text and performs further checks to determine if the remaining
+        string is not parsable Japanese text.
+
+        Args:
+        - input_text (str): The text to be examined for parsable Japanese content.
+
+        Returns:
+        - bool: True if the input text does not contain parsable Japanese text,
+                False otherwise.
+        """
+
         replacement_set = Charsets.EXPRESSIONS | Charsets.PUNCTUATION
         for char in replacement_set:
             input_text = input_text.replace(char, '')
@@ -38,6 +53,21 @@ class Classifier:
 
     @staticmethod
     def is_dialogue(input_text: str) -> bool:
+        """
+        Checks if the given input text contains any patterns indicative of dialogue.
+
+        This method uses regular expressions to identify potential dialogue patterns,
+        such as text enclosed in single or double quotes. It returns True if any of
+        these patterns are found in the input text, indicating the presence of dialogue.
+
+        REGEX can be found in nlp_modules/patterns.py
+
+        Args:
+        - input_text (str): The text to be examined for dialogue patterns.
+
+        Returns:
+        - bool: True if any dialogue patterns are found, False otherwise.
+        """
 
         regex_patterns_for_dialogues: list = [
             Regex.anything_bounded_by_single_quotes,
@@ -64,6 +94,27 @@ class TextSplitter:
 
     @staticmethod
     def regex_split_to_lines(input_text: str) -> list:
+        """
+        Splits the input text into lines using a regular expression pattern for line detection.
+
+        Args:
+            input_text (str): The input text to be split into lines.
+
+        Returns:
+            list: A list of strings representing the lines extracted from the input text.
+
+        The function uses a regular expression pattern defined in `Regex.pattern_for_line`
+        to identify and extract lines from the input text. It handles cases where the regular
+        expression might miss substrings by attempting to reassemble the paragraph and re-spliting it.
+        The final result is a list of lines, with any leading or trailing whitespace removed.
+
+        If debugging mode (`AppConfig.PREVENT_TRANSMUTE_IF_TEXT_PROCESSING_ERRORS`) is enabled,
+        the function may set the `GLOBAL_RUN_STOP` flag in `AppConfig` on error. Otherwise, it
+        logs a warning and considers the entire input text as a single line.
+
+        Note:
+        - Regex patterns are all defined in the Regex class in nlp_modules/patterns.py
+        """
 
         pattern = re.compile(Regex.pattern_for_line)
 
@@ -93,8 +144,12 @@ class TextSplitter:
 
         if ''.join(lines) != input_text:
             logger.error(f'REGEX MATCH did not include all characters. Input Text: {input_text} Result: {lines}')
-            AppConfig.global_run_stop = True
-            logger.warning(f'GLOBAL RUN STOP FLAG SET')
+            if AppConfig.STOP_RUN_IF_TEXT_PROCESSING_ERRORS:
+                AppConfig.GLOBAL_RUN_STOP = True
+                logger.warning(f'DEBUGGING MODE: GLOBAL RUN STOP FLAG SET')
+            else:
+                logger.warning(f'There was a text split error with {input_text}. Para will be considered to be a single line')
+                lines = [input_text]
 
         lines = [line for line in lines if not FundamentalPatterns.contains_only_whitespace(line)]
 
@@ -102,6 +157,27 @@ class TextSplitter:
 
     @staticmethod
     def regex_split_to_clauses(input_text: str) -> list:
+        """
+        Splits the input text into clauses using a regular expression pattern for clause detection.
+
+        Args:
+            input_text (str): The input text to be split into clauses.
+
+        Returns:
+            list: A list of strings representing the clauses extracted from the input text.
+
+        The function uses a regular expression pattern defined in `Regex.pattern_for_clause`
+        to identify and extract clauses from the input text. If no clauses are found, the entire
+        input text is returned as a single clause. The function also checks if the sum of extracted
+        clauses matches the original input text and logs an error if discrepancies are found.
+
+        If debugging mode (`AppConfig.PREVENT_TRANSMUTE_IF_TEXT_PROCESSING_ERRORS`) is enabled,
+        the function may set the `GLOBAL_RUN_STOP` flag in `AppConfig` on error. Otherwise, it
+        logs a warning and considers the entire input text as a single clause.
+
+        Note:
+        - Regex patterns are all defined in the Regex class in nlp_modules/patterns.py
+        """
 
         pattern = re.compile(Regex.pattern_for_clause)
 
@@ -112,26 +188,21 @@ class TextSplitter:
 
         if ''.join(clauses) != input_text:
             logger.error(f'REGEX MATCH did not include all characters. Input Text: {input_text} Result: {clauses}')
+            if AppConfig.STOP_RUN_IF_TEXT_PROCESSING_ERRORS:
+                AppConfig.GLOBAL_RUN_STOP = True
+                logger.warning(f'DEBUGGING MODE: GLOBAL RUN STOP FLAG SET')
+            else:
+                logger.warning(f'There was a text split error with {input_text}. Line will be considered to be a single clause')
+                clauses = [input_text]
 
         clauses = [clause for clause in clauses if not FundamentalPatterns.contains_only_whitespace(clause)]
 
         return clauses
 
 class Parser:
-    @staticmethod
-    def parse_html(html_code):
-        # Parse the HTML code
-        soup = BeautifulSoup(html_code, 'html.parser')
-
-        # Find all <li> elements with class "japanese_word"
-        japanese_word_elements = soup.find_all('li', class_='japanese_word')
-
-        # Extract and return the values of data-pos
-        data_pos_values = [element['data-pos'] for element in japanese_word_elements]
-        return data_pos_values
 
     @staticmethod
-    def jisho_parse_html_parser(jisho_html: str) -> list:
+    def get_word_pos_from_jisho_html(jisho_html: str) -> list:
 
         # This function is intended to recieve the html zenbar section for a single sentence. But will handle multiple sentences.
         # Can be postprocessed to break at the . period separator in japanese

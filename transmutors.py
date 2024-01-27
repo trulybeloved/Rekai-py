@@ -16,6 +16,7 @@ from appconfig import AppConfig
 from nlp_modules.japanese_nlp import Classifier
 import api_keys
 from nlp_modules.kairyou_preprocessor import Kairyou
+from custom_modules import utilities
 
 class ApiKeyHandler:
 
@@ -29,7 +30,7 @@ class Transmute:
 
     # Jisho web scrape and parse
     @staticmethod
-    def parse_string_with_jisho(line: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def parse_string_with_jisho(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -38,11 +39,11 @@ class Transmute:
 
         jisho_parsed_html_element = str()
 
-        if Classifier.contains_no_parsable_ja_text(line):
+        if Classifier.contains_no_parsable_ja_text(input_string):
             jisho_parsed_html_element += 'unparsable'
 
         else:
-            url = f'https://jisho.org/search/{line}'
+            url = f'https://jisho.org/search/{input_string}'
 
             try:
 
@@ -60,7 +61,7 @@ class Transmute:
                 jisho_parsed_html_element += zen_html
 
             except Exception as e:
-                logger.error(f'An exception occured in jisho parse - f{line}')
+                logger.error(f'An exception occured in jisho parse - f{input_string}')
                 zen_html = f'<p></p>'
                 jisho_parsed_html_element += zen_html
 
@@ -70,11 +71,11 @@ class Transmute:
             jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
             jisho_parsed_html_element = jisho_parsed_html_element.replace('class=""', 'class="jisho-link"')
 
-        return (line, jisho_parsed_html_element)
+        return (input_string, jisho_parsed_html_element)
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(line: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_deepl_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -83,16 +84,18 @@ class Transmute:
 
         translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
 
-        result = translator.translate_text(text=line, source_lang=source_lang, target_lang="EN-US")
+        logger.info(f'CALLING_DEEPL_API: Line {index} of {total_count}: {input_string}')
 
-        return line, result.text
+        result = translator.translate_text(text=input_string, source_lang=source_lang, target_lang="EN-US")
+
+        return input_string, result.text
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(line: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_google_tl_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
-        This API can accept a list.
+        This API expects a single string within a list.
         """
 
         source_lang = AppConfig.GoogleTranslateConfig.source_language_code
@@ -103,10 +106,12 @@ class Transmute:
 
         client = translate.TranslationServiceClient()
 
+        logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_string}')
+
         response = client.translate_text(
             request={
                 "parent": parent,
-                "contents": [line],
+                "contents": [input_string],
                 "mime_type": "text/plain",
                 "source_language_code": source_lang,
                 "target_language_code": target_lang,
@@ -116,19 +121,18 @@ class Transmute:
         result = [translation.translated_text for translation in response.translations]
 
         if len(result) == 1:
-            return line, str(result[0])
+            return input_string, str(result[0])
         else:
-            return line, ''.join(result)
+            return input_string, ''.join(result)
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(line: str, index: int = 0, total_count: int = 0) -> tuple[str, bytes]:
+    def tts_string_with_google_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, bytes]:
 
         """DOCSTRING PENDING"""
 
         # Get configration on run
         language_code: str = AppConfig.GoogleTTSConfig.language_code
-        ssml_gender = AppConfig.GoogleTTSConfig.ssml_gender
         voice_name: str = AppConfig.GoogleTTSConfig.voice_name
         audio_encoding = AppConfig.GoogleTTSConfig.audio_encoding
         speaking_rate: float = AppConfig.GoogleTTSConfig.speaking_rate
@@ -138,7 +142,7 @@ class Transmute:
         tts_client = texttospeech.TextToSpeechClient(
             client_options={"api_key": api_keys.google_cloud_api_key, "quota_project_id": api_keys.google_project_id}
         )
-        input_for_synthesis = texttospeech.SynthesisInput({"text": f"{line}"})
+        input_for_synthesis = texttospeech.SynthesisInput({"text": f"{input_string}"})
         voice_settings = texttospeech.VoiceSelectionParams(
             {
                 "language_code": language_code,
@@ -153,16 +157,17 @@ class Transmute:
                 "volume_gain_db": volume_gain_db,
             }
         )
-        logger.info(f'TTS_API_CALL: Line {index} of {total_count}: {line}')
+
+        logger.info(f'CALLING_GCLOUD_TTS_API: Line {index} of {total_count}: {input_string}')
 
         api_response = tts_client.synthesize_speech(
             input=input_for_synthesis,
             voice=voice_settings,
             audio_config=audio_configuration)
 
-        logger.info(f'TTS_API_CALL for {line} was sucessful')
 
-        return (line, api_response.audio_content)
+
+        return (input_string, api_response.audio_content)
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict):
@@ -189,3 +194,4 @@ class Transmute:
             output_string = output_string
 
         return output_string
+

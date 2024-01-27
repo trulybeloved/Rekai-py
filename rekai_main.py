@@ -19,6 +19,7 @@ Todo
 - add paragraph classifier
 """
 import os.path
+import time
 
 import gradio as gr
 from loguru import logger
@@ -29,7 +30,6 @@ from processors import Process
 from generators import GenerateHtml
 from custom_modules.utilities import get_current_timestamps
 from custom_modules.utilities import log_process_time
-import data_for_processing
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#
@@ -39,50 +39,11 @@ import data_for_processing
 # GRADIO WEBGUI
 # ----------------------------------------------------------------------------------------------------------------------#
 
-class CustomTest:
-    """Just a temporary class with methods for quick testing of the backend"""
-
-    @staticmethod
-    @log_process_time
-    def rekai_test():
-
-        input_raw = data_for_processing.small_sample
-        input_prepro = data_for_processing.input_preprocessed
-
-        timestamp = get_current_timestamps()
-        output_directory = AppConfig.output_directory
-
-        final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp}')
-
-        run_config = RunConfig()
-
-        rekai_text_object = RekaiText(input_text=input_raw, input_preprocessed_text=input_prepro, run_config_object=run_config, text_header='HEADER')
-
-        if run_config.run_jisho_parse:
-            Process.jisho_parse(rekai_text_object=rekai_text_object)
-        if run_config.run_tts:
-            Process.gcloud_tts(rekai_text_object=rekai_text_object)
-        if run_config.run_deepl_tl:
-            Process.deepl_tl(rekai_text_object=rekai_text_object)
-        if run_config.run_google_tl:
-            Process.google_tl(rekai_text_object=rekai_text_object)
-
-        GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
-                                         html_title='Rekai_Test', output_directory=final_output_path, post_process=None,
-                                         single_file_mode=False)
-
-        if run_config.output_single_file:
-            GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
-                                             html_title='Rekai_Test', output_directory=final_output_path,
-                                             post_process=None,
-                                             single_file_mode=True)
-
-
-
-
 
 # Main Function
 def main(japanese_text, preprocessed_text, header):
+
+    start_time = time.time()
 
     timestamp_str, timestamp_unix = get_current_timestamps()
 
@@ -94,18 +55,33 @@ def main(japanese_text, preprocessed_text, header):
 
     rekai_text_object = RekaiText(input_text=japanese_text, input_preprocessed_text=preprocessed_text, run_config_object=run_config, text_header=header)
 
-    if AppConfig.global_run_stop:
+    if AppConfig.GLOBAL_RUN_STOP:
         logger.critical(f'GLOBAL STOP FLAG RAISED. FUNCTION TERMINATED')
         return
 
     if run_config.run_jisho_parse:
+        jisho_start_time = time.time()
         Process.jisho_parse(rekai_text_object=rekai_text_object)
+        jisho_end_time = time.time()
+        logger.success(f'Function complete. Time taken: {jisho_end_time - jisho_start_time}')
+
     if run_config.run_tts:
+        tts_start_time = time.time()
         Process.gcloud_tts(rekai_text_object=rekai_text_object)
+        tts_end_time = time.time()
+        logger.success(f'Function complete. Time taken: {tts_end_time - tts_start_time}')
+
     if run_config.run_deepl_tl:
+        deepl_start_time = time.time()
         Process.deepl_tl(rekai_text_object=rekai_text_object)
+        deepl_end_time = time.time()
+        logger.success(f'Function complete. Time taken: {deepl_end_time - deepl_start_time}')
+
     if run_config.run_google_tl:
+        gtl_start_time = time.time()
         Process.google_tl(rekai_text_object=rekai_text_object)
+        gtl_end_time = time.time()
+        logger.success(f'Function complete. Time taken: {gtl_end_time - gtl_start_time}')
 
     GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
                                      html_title='Rekai_Test', output_directory=final_output_path, post_process='minify', single_file_mode=False)
@@ -114,18 +90,24 @@ def main(japanese_text, preprocessed_text, header):
         GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
                                          html_title='Rekai_Test', output_directory=final_output_path, post_process=None,
                                          single_file_mode=True)
+    end_time = time.time()
 
+    logger.success(f'Function complete. Time taken: {end_time - start_time}')
 
 # Frontend
-with gr.Blocks() as webgui:
+with gr.Blocks() as demo:
     gr.Markdown("""# Re:KAI""")
 
     with gr.Tab('RekaiHTML') as rekai_html_tab:
 
-        gr.Markdown('''Generate RekaiHTML files for japanese text.''')
+        # gr.Markdown('''### Generate RekaiHTML files for japanese text.''')
 
         with gr.Row():
+
             with gr.Column():
+
+                gr.Markdown('#### Inputs')
+
                 html_header_input_textbox = gr.Textbox(label='Header', lines=1, max_lines=2, visible=True, interactive=True)
 
                 raw_input_text_box = gr.Textbox(label='Japanese Raw Text', value='', lines=10, max_lines=20, visible=True, interactive=True,
@@ -137,23 +119,57 @@ with gr.Blocks() as webgui:
 
                 html_generate_button = gr.Button(value='Generate HTML', variant='primary', interactive=True, visible=True)
 
-                html_interrupt_button = gr.Button(value='Stop', variant='stop', interactive=False, visible=True)
+                html_interrupt_button = gr.Button(value='Stop', variant='stop', interactive=True, visible=True)
 
             with gr.Column():
+
+                gr.Markdown('#### Options')
+                with gr.Row():
+
+                    with gr.Column():
+                        gr.Markdown('#### Processing Options')
+                        gr.Markdown('''These toggles control which processes to run on your input text. 
+                        Unchecking them will also mean that they will not be rendered in the final output, 
+                        regardless of the output options below''')
+
+                        run_options_jishoparse = gr.Checkbox(value=True, label='JishoParse', info='Perform sentence parsing using Jisho', container=True, interactive=True)
+                        run_options_tts = gr.Checkbox(value=True, label='Text-to-Speech', info='Enable Text-to-Speech', container=True, interactive=True)
+                        run_options_preprocess = gr.Checkbox(value=True, label='Preprocess', info='Use preprocessed text for translation', container=True, interactive=True)
+                        run_options_deepl_tl = gr.Checkbox(value=True, label='DeepL TL', info='Translate using DeepL', container=True, interactive=True)
+                        run_options_google_tl = gr.Checkbox(value=True, label='Google TL', info='Translate using Google', container=True, interactive=True)
+                        run_options_clean_post_split = gr.Checkbox(value=True, label='Clean Clauses', info='Remove trailing punctuation marks when sentences are split into clauses', container=True, interactive=True)
+
+                    with gr.Column():
+                        gr.Markdown('Options concerning the levels at which translation should be carried out')
+                        text_options_deepl = gr.CheckboxGroup(choices=[('Lines', 'line'), ('Clauses', 'clauses')], label='DeepL Translate:')
+
+
+                    with gr.Column():
+                        gr.Markdown('#### Output Options')
+
+                        output_options_include_clause_analysis = gr.Checkbox(value=True, label='Clause Analysis', container=True, interactive=True)
+                        # output_options_include_clause_analysis = gr.Checkbox(value=True, label='Clause Analysis', container=True, interactive=True)
+                        # output_options_include_clause_analysis = gr.Checkbox(value=True, label='Clause Analysis', container=True, interactive=True)
+                        # output_options_include_clause_analysis = gr.Checkbox(value=True, label='Clause Analysis', container=True, interactive=True)
+
+                        pass
+
 
                 # with gr.Row():
                 with gr.Row():
                     rekai_html_log_area = gr.Textbox(label='Log', value='', lines=10, max_lines=20, visible=True, interactive=False)
 
-    with gr.Tab("Preprocess") as preprocess_tab:
+    with gr.Tab("Settings") as preprocess_tab:
         with gr.Column():
-            Tab0_run_btn = gr.Button('Run')
+            pass
+
+
 
     ## Event Listeners
-    html_generate_button.click(fn=main, inputs=[raw_input_text_box, preprocessed_input_text_box, html_header_input_textbox])
+    run_main = html_generate_button.click(fn=main, inputs=[raw_input_text_box, preprocessed_input_text_box, html_header_input_textbox])
+    interrupt_main = html_interrupt_button.click(fn=None, cancels=run_main)
 
 
 if __name__ == '__main__':
 
-    webgui.launch()
-    # CustomTest.rekai_test()
+    demo.launch()

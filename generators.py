@@ -1,6 +1,7 @@
 import base64
 import os.path
 import shutil
+import zipfile
 from typing import Union
 
 from loguru import logger

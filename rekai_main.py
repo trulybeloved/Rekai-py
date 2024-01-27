@@ -29,7 +29,7 @@ from custom_dataclasses import RekaiText
 from processors import Process
 from generators import GenerateHtml
 from custom_modules.utilities import get_current_timestamps
-from custom_modules.utilities import log_process_time
+from custom_modules.utilities import log_execution_time
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#

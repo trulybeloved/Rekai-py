@@ -10,12 +10,12 @@ from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph, Line
 from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
-from custom_modules.utilities import log_process_time
+from custom_modules.utilities import log_execution_time
 
 
 class Process:
     @staticmethod
-    def jisho_parse(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, str]:
+    def jisho_parse(rekai_text_object: RekaiText, parallel_process: bool = True):
         logger.info("Starting Jisho processing")
 
         list_of_strings_to_transmute = SubProcess.prepare_data(
@@ -42,14 +42,15 @@ class Process:
 
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-            db_interface=JishoParseDBM())
+            db_interface=JishoParseDBM(),
+            unix_timestamp=rekai_text_object.timestamp)
 
         logger.info("Finished Jisho processing")
 
         return
 
     @staticmethod
-    def gcloud_tts(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+    def gcloud_tts(rekai_text_object: RekaiText, parallel_process: bool = True):
         logger.info("Starting Google Cloud TTS processing")
 
         list_of_strings_to_transmute = SubProcess.prepare_data(
@@ -75,14 +76,15 @@ class Process:
 
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-            db_interface=TextToSpeechDBM())
+            db_interface=TextToSpeechDBM(),
+            unix_timestamp=rekai_text_object.timestamp)
 
         logger.info("Finished Google Cloud TTS processing")
 
         return
 
     @staticmethod
-    def deepl_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+    def deepl_tl(rekai_text_object: RekaiText, parallel_process: bool = True):
         logger.info("Starting DeepL Translation")
 
         list_of_strings_to_transmute = SubProcess.prepare_data(
@@ -108,7 +110,8 @@ class Process:
 
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-            db_interface=DeepLDBM())
+            db_interface=DeepLDBM(),
+            unix_timestamp=rekai_text_object.timestamp)
 
         logger.info('Finished DeepL Translation')
 
@@ -116,7 +119,7 @@ class Process:
 
 
     @staticmethod
-    def google_tl(rekai_text_object: RekaiText, parallel_process: bool = True) -> dict[str, bytes]:
+    def google_tl(rekai_text_object: RekaiText, parallel_process: bool = True):
         logger.info("Starting Google Translation")
 
         list_of_strings_to_transmute = SubProcess.prepare_data(
@@ -140,11 +143,10 @@ class Process:
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_google_tl_api)
 
-        # list_of_transmuted_data_tuples = Transmute.translate_list_with_google_tl_api(list_of_strings_to_transmute)
-
         SubProcess.update_database(
             list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-            db_interface=GoogleTLDBM())
+            db_interface=GoogleTLDBM(),
+            unix_timestamp=rekai_text_object.timestamp)
 
         logger.info('Finished Google Translation')
 
@@ -156,7 +158,7 @@ class SubProcess:
     @staticmethod
     def sync_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int], tuple[str, Union[str, bytes]]]) -> list[tuple[str,Union[str, bytes]]]:
+            transmutor: Callable[[str, int, int], tuple[str, Union[str, bytes]]]) -> list[tuple[str,Union[str, bytes]]]:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -266,11 +268,10 @@ class SubProcess:
         return list_of_unique_strings_for_transmutation
 
     @staticmethod
-    def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM, column_name: Union[str, None] = None) -> None:
+    def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM, unix_timestamp: int,  column_name: Union[str, None] = None) -> None:
 
         for (raw_line, transmuted_data) in list_of_transmuted_data_tuples:
-            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name)
-        # db_interface.close_connection()
+            db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name, unix_timestamp=unix_timestamp)
 
     @staticmethod
     def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:

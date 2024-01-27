@@ -26,14 +26,6 @@ class DBM:
     _archive_table_name = ''
     _key_column_name = ''  # the column in which the unique string that was transmuted is stored
     _output_column_name = ''
-    _db_structure = \
-        [
-            [_main_table_name, ['id', _key_column_name, _output_column_name]],
-            [_archive_table_name, ['id', _key_column_name, _output_column_name]]
-        ]
-    _db_data_types = {}
-    _main_table_create_query = ''
-    _archive_table_create_query = ''
 
     cached_raw_lines_dict = {}
     db_updated: bool
@@ -41,6 +33,30 @@ class DBM:
     @property
     def db_path(self):
         return self._db_path
+
+    def __init__(self) -> None:
+
+        self._db_structure = \
+            [
+                [self._main_table_name, ['id', self._key_column_name, self._output_column_name, 'timestamp']],
+                [self._archive_table_name, ['id', self._key_column_name, self._output_column_name, 'timestamp']]
+            ]
+
+        self._db_data_types = {
+            'id': 'INTEGER PRIMARY KEY',
+            self._key_column_name: 'TEXT',
+            self._output_column_name: 'TEXT',
+            'timestamp': 'INTEGER'
+        }
+
+        self._main_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._main_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
+        self._archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
+
+        self.db_connection = sqlite3.connect(self._db_path)
+        self.initialize_db_structure()
+        self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
+        if self.deep_log:
+            logger.info(f'An instance of {self._database_name} was initialized')
 
     def check_db_structure(self) -> bool:
         cursor = self.db_connection.cursor()
@@ -92,7 +108,7 @@ class DBM:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
             raise EntryNotFound
 
-    def insert(self, raw_line: str, transmuted_data: Union[str, bytes], column_name: str = None) -> None:
+    def insert(self, raw_line: str, transmuted_data: Union[str, bytes], unix_timestamp: int, column_name: str = None) -> None:
         cursor = self.db_connection.cursor()
 
         if isinstance(transmuted_data, bytes):
@@ -107,8 +123,8 @@ class DBM:
         count = cursor.fetchone()[0]
         if count == 0:
             # raw_line doesn't exist, so perform the insertion
-            insert_query = f'INSERT INTO {self._main_table_name} ({self._key_column_name}, {column_name}) VALUES (?, ?)'
-            cursor.execute(insert_query, (raw_line, transmuted_data))
+            insert_query = f'INSERT INTO {self._main_table_name} ({self._key_column_name}, {column_name}, timestamp) VALUES (?, ?, ?)'
+            cursor.execute(insert_query, (raw_line, transmuted_data, unix_timestamp))
             self.db_connection.commit()
             self.db_updated = True
             if self.deep_log:
@@ -116,7 +132,7 @@ class DBM:
                     f'{self._database_name}:Insert of {column_name} for line {raw_line} in {self._main_table_name} was successful')
         else:
             self.archive(raw_line=raw_line)
-            self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name)
+            self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name, unix_timestamp=unix_timestamp)
             if self.deep_log:
                 logger.info(
                     f'{self._database_name}:Insert of {column_name} into {self._main_table_name} was completed with archival of previously existing line')
@@ -189,8 +205,6 @@ class DBM:
 
 
 class JishoParseDBM(DBM):
-    """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
-    explicit check if another version of a line exists in the db"""
 
     # intrinsic settings
     _database_name = 'jisho_parse_db'
@@ -202,41 +216,16 @@ class JishoParseDBM(DBM):
 
     _key_column_name = 'raw_line'  # the column in which the unique string that was transmuted is stored
     _output_column_name = 'parsed_html'
-    _db_structure = \
-        [
-            [_main_table_name, ['id', 'raw_line', 'parsed_html']],
-            [_archive_table_name, ['id', 'raw_line', 'parsed_html']]
-        ]
-    _db_data_types = {
-        'id': 'TEXT',
-        'raw_line': 'TEXT',
-        'parsed_html': 'TEXT'
-    }
-
-    _main_table_create_query = f'CREATE TABLE IF NOT EXISTS {_main_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, parsed_html TEXT)'
-    _archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {_archive_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, parsed_html TEXT)'
 
     # operational flags
     db_updated = False
 
     def __new__(cls, *args, **kwargs):
-        """This class method ensures that only one instance of the class exists,
-        but I'm not sure of the scope of that exclusivity"""
         if cls._instance is None:
             cls._instance = super(JishoParseDBM, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self) -> None:
-        self.db_connection = sqlite3.connect(self._db_path)
-        # self.initialize_db_structure()
-        self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if self.deep_log:
-            logger.info(f'An instance of {self._database_name} was initialized')
-
-
 class TextToSpeechDBM(DBM):
-    """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
-    explicit check if another version of a line exists in the db"""
 
     # intrinsic settings
     _database_name = 'je_tts'
@@ -248,41 +237,16 @@ class TextToSpeechDBM(DBM):
 
     _key_column_name = 'raw_line'
     _output_column_name = 'tts_bytes'
-    _db_structure = \
-        [
-            [_main_table_name, ['id', _key_column_name, 'tts_bytes']],
-            [_archive_table_name, ['id', _key_column_name, 'tts_bytes']]
-        ]
-    _db_data_types = {
-        'id': 'TEXT',
-        'raw_line': 'TEXT',
-        'tts_bytes': 'BLOB'
-    }
-
-    _main_table_create_query = f'CREATE TABLE IF NOT EXISTS {_main_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, tts_bytes BLOB)'
-    _archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {_archive_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, tts_bytes BLOB)'
 
     # operational flags
     db_updated = False
 
     def __new__(cls, *args, **kwargs):
-        """This class method ensures that only one instance of the class exists,
-        but I'm not sure of the scope of that exclusivity"""
         if cls._instance is None:
             cls._instance = super(TextToSpeechDBM, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self) -> None:
-        self.db_connection = sqlite3.connect(self._db_path)
-        # self.initialize_db_structure()
-        self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if self.deep_log:
-            logger.info(f'An instance of {self._database_name} was initialized')
-
-
 class DeepLDBM(DBM):
-    """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
-    explicit check if another version of a line exists in the db"""
 
     # intrinsic settings
     _database_name = 'deepl_tl'
@@ -294,41 +258,16 @@ class DeepLDBM(DBM):
 
     _key_column_name = 'raw_line'  # the column in which the unique string that was transmuted is stored
     _output_column_name = 'deepl_tl'
-    _db_structure = \
-        [
-            [_main_table_name, ['id', _key_column_name, 'deepl_tl']],
-            [_archive_table_name, ['id', _key_column_name, 'deepl_tl']]
-        ]
-    _db_data_types = {
-        'id': 'TEXT',
-        'raw_line': 'TEXT',
-        'deepl_tl': 'TEXT',
-    }
-
-    _main_table_create_query = f'CREATE TABLE IF NOT EXISTS {_main_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT,  deepl_tl TEXT)'
-    _archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {_archive_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, deepl_tl TEXT)'
 
     # operational flags
     db_updated = False
 
     def __new__(cls, *args, **kwargs):
-        """This class method ensures that only one instance of the class exists,
-        but I'm not sure of the scope of that exclusivity"""
         if cls._instance is None:
             cls._instance = super(DeepLDBM, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self) -> None:
-        self.db_connection = sqlite3.connect(self._db_path)
-        # self.initialize_db_structure()
-        self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if self.deep_log:
-            logger.info(f'An instance of {self._database_name} was initialized')
-
-
 class GoogleTLDBM(DBM):
-    """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
-    explicit check if another version of a line exists in the db"""
 
     # intrinsic settings
     _database_name = 'google_tl'
@@ -340,82 +279,13 @@ class GoogleTLDBM(DBM):
 
     _key_column_name = 'raw_line'  # the column in which the unique string that was transmuted is stored
     _output_column_name = 'google_tl'
-    _db_structure = \
-        [
-            [_main_table_name, ['id', _key_column_name, 'google_tl']],
-            [_archive_table_name, ['id', _key_column_name, 'google_tl']]
-        ]
-    _db_data_types = {
-        'id': 'TEXT',
-        'raw_line': 'TEXT',
-        'google_tl': 'TEXT',
-    }
-
-    _main_table_create_query = f'CREATE TABLE IF NOT EXISTS {_main_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT,  google_tl TEXT)'
-    _archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {_archive_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, google_tl TEXT)'
 
     # operational flags
     db_updated = False
 
     def __new__(cls, *args, **kwargs):
-        """This class method ensures that only one instance of the class exists,
-        but I'm not sure of the scope of that exclusivity"""
         if cls._instance is None:
             cls._instance = super(GoogleTLDBM, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self) -> None:
-        self.db_connection = sqlite3.connect(self._db_path)
-        # self.initialize_db_structure()
-        self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-        if self.deep_log:
-            logger.info(f'An instance of {self._database_name} was initialized')
 
-
-
-# class TranslationDBM(DBM):
-#     """ Remember that these methods do not always explicitly check if the operations are valid, for example, there is no
-#     explicit check if another version of a line exists in the db"""
-#
-#     # intrinsic settings
-#     _database_name = 'translations_db'
-#     _instance = None
-#     _db_path = AppConfig.translations_db_path
-#
-#     _main_table_name = 'translations'
-#     _archive_table_name = 'translations_archive'
-#
-#     _key_column_name = 'raw_line'  # the column in which the unique string that was transmuted is stored
-#     _output_column_name = ''
-#     _db_structure = \
-#         [
-#             [_main_table_name, ['id', _key_column_name, 'preprocessed', 'deepl_tl', 'google_tl', 'gpt_analysis']],
-#             [_archive_table_name, ['id', _key_column_name, 'preprocessed', 'deepl_tl', 'google_tl', 'gpt_analysis']]
-#         ]
-#     _db_data_types = {
-#         'id': 'TEXT',
-#         'raw_line': 'TEXT',
-#         'preprocessed': 'TEXT',
-#         'deepl_tl': 'TEXT',
-#         'google_tl': 'TEXT',
-#         'gpt_analysis': 'TEXT'
-#     }
-#
-#     _main_table_create_query = f'CREATE TABLE IF NOT EXISTS {_main_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, preprocessed TEXT, deepl_tl TEXT, google_tl TEXT, gpt_analysis TEXT)'
-#     _archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {_archive_table_name} (id INTEGER PRIMARY KEY, {_key_column_name} TEXT, preprocessed TEXT, deepl_tl TEXT, google_tl TEXT, gpt_analysis TEXT)'
-#
-#     # operational flags
-#     db_updated = False
-#
-#     def __new__(cls, *args, **kwargs):
-#         """This class method ensures that only one instance of the class exists,
-#         but I'm not sure of the scope of that exclusivity"""
-#         if cls._instance is None:
-#             cls._instance = super(TranslationDBM, cls).__new__(cls)
-#         return cls._instance
-#
-#     def __init__(self) -> None:
-#         self.db_connection = sqlite3.connect(self._db_path)
-#         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
-#         if self.deep_log:
-#             logger.info(f'An instance of {self._database_name} was initialized')

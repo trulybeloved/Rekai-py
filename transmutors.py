@@ -127,7 +127,7 @@ class Transmute:
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, bytes]:
+    def tts_string_with_google_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -165,9 +165,9 @@ class Transmute:
             voice=voice_settings,
             audio_config=audio_configuration)
 
+        encoded_output = utilities.encode_bytes_to_base64_string(api_response.audio_content)
 
-
-        return (input_string, api_response.audio_content)
+        return (input_string, encoded_output)
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict):

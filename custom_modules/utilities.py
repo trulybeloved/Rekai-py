@@ -2,6 +2,7 @@
 
 import os
 import zipfile
+import base64
 from datetime import datetime
 import time
 from loguru import logger
@@ -82,3 +83,11 @@ def zip_directory(directory_to_zip, zip_file_name: str, zip_save_directory: str)
                 zip_file.write(file_path, os.path.relpath(file_path, directory_to_zip))
 
     return zip_file_path
+
+def encode_bytes_to_base64_string(input_bytes: bytes) -> str:
+    encoded_data = base64.b64encode(input_bytes).decode('utf-8')
+    return encoded_data
+
+def decode_bytes_from_base64_string(input_base64: str) -> bytes:
+    decoded_data = base64.b64decode(input_base64)
+    return decoded_data

@@ -230,6 +230,7 @@ class RekaiText(RekaiTextCommon):
     log_sink = logger.add(sink=AppConfig.dataclasses_log_path)
 
     run_config: RunConfig = field(repr=False)
+    timestamp: int
 
     # Instance variables (needed for dataclasses base methods to function)
     text_header: str
@@ -255,6 +256,7 @@ class RekaiText(RekaiTextCommon):
         # The run_configuration parameters pertaining to generation and processing can be sent along with the RekaiText
         # object.
         self.run_config = run_config_object
+        self.timestamp = run_config_object.run_timestamp
         self.config_preprocess = run_config_object.preprocess
         self.config_run_jisho_parse = run_config_object.run_jisho_parse
         self.config_run_tts = run_config_object.run_tts

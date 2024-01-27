@@ -2,6 +2,7 @@ from loguru import logger
 
 from db_management import JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.custom_exceptions import EntryNotFound
+from custom_modules.utilities import decode_bytes_from_base64_string
 
 
 
@@ -23,7 +24,9 @@ class Fetch:
 
         db_interface = TextToSpeechDBM()
         try:
-            tts_bytes = db_interface.query(raw_line=raw_line)
+            base64_string = db_interface.query(raw_line=raw_line)
+            tts_bytes = decode_bytes_from_base64_string(base64_string)
+
             return tts_bytes
         except EntryNotFound as e:
             logger.exception(e)

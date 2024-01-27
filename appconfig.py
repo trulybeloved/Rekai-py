@@ -103,7 +103,7 @@ class AppConfig:
 @dataclass
 class RunConfig:
     # This class is called by default by RekaiText.
-    run_id: int
+    run_timestamp: int
 
     preprocess: bool
     use_preprocessed_for_paragraphs: bool
@@ -180,4 +180,4 @@ class RunConfig:
 
         self.output_single_file = also_output_single_file
 
-        self.run_id = unix_timestamp
+        self.run_timestamp = unix_timestamp

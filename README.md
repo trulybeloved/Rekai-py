@@ -1,6 +1,6 @@
 # RE:KAI
 
-Rekai is in the pre-release state and a lot of work is still on going. So please use at your own descretion.
+## **Rekai is in the pre-release state and a lot of stuff is still broken and dysfunctional. So please use at your own descretion.**
 
 A more detailed Readme will come soon.
 

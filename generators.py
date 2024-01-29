@@ -560,9 +560,20 @@ class GenerateHtml:
                      <!-- SIDEBAR --------------------------------------------------------------------->
                         <div id="sidebar-placeholder" class="sidebar-placeholder">
                             <div id="right-sidebar" class="right-sidebar sidebar-expanded">
-                            <div class="right-sidebar-iframe">
-                                <iframe id="sidebar-iframe" class="sidebar-iframe" name="sidebar-iframe" width="100%" height="100%"
-                                    src="https://jisho.org/" frameborder="0"></iframe>
+                            
+                                <div class="sidebar-tab-buttons">
+                                    <div id="jisho-tab-button" class="tab-button tab-button-generic" onclick="showTab('.right-sidebar-iframe-container')">Jisho</div>
+                                    <div id="chapter-search-tab-button" class="tab-button tab-button-generic" onclick="showTab('.chapter-search-iframe-container')">Chapter Search</div>
+                                </div>
+
+                                <div class="sidebar-tab right-sidebar-iframe-container">
+                                    <iframe class=sidebar-iframe id=sidebar-iframe name=sidebar-iframe src=https://jisho.org/ frameborder="0"></iframe>
+                                </div>
+
+                                <div class="sidebar-tab chapter-search-iframe-container">
+                                    <iframe class=chapter-search-iframe id=chapter-search-iframe name=sidebar-chapter-search-iframe src="https://re-zero-chapter-search-ui.web.app/" frameborder="0"></iframe>
+                                </div>                           
+                                
                             </div>
                         </div>
                     </div> 
@@ -657,7 +668,7 @@ class GenerateHtml:
             else:
                 file_name_suffix = ''
 
-            output_html_file_path = os.path.join(output_directory, f'rekai_{html_title}{file_name_suffix}.html')
+            output_html_file_path = os.path.join(output_directory, f'index{file_name_suffix}.html')
 
             with open(output_html_file_path, 'w', encoding='utf-8') as rekai_html_file:
                 rekai_html_file.write(html)

@@ -81,6 +81,17 @@ function showTooltip(element, message) {
   }, 1200); // Remove after 1.2 seconds
 };
 
+// Tab Buttons
+function showTab(iframeContainerClass) {
+  const rightSidebar = document.getElementById("right-sidebar");
+  const sidebarTabs = rightSidebar.querySelectorAll(".sidebar-tab");
+  sidebarTabs.forEach(function (sidebarTab) {
+    sidebarTab.style.display = "none";
+  })
+  var tab = document.querySelector(iframeContainerClass);
+  tab.style.display = "block";
+}
+
 
 // JS for Jisho Links
 
@@ -88,19 +99,104 @@ var jishoLinks = document.querySelectorAll(".jisho-link");
 
 jishoLinks.forEach(function (jishoLink) {
   jishoLink.onclick = function (event) {
+
+    // Check if the Alt key is pressed
+    var altPressed = event.altKey;
+    const jishoTabButton = document.querySelector('#jisho-tab-button')
+    const chapterSearchTabButton = document.querySelector('#chapter-search-tab-button')
+
     event.preventDefault();
     var iframe = document.getElementById("sidebar-iframe");
     var originalJishoLink = this.href;
-    // modify link to align with dark mode
-    if (localStorage.getItem("darkModeEnabled") === "true") {
-      var modifiedJishoLink = originalJishoLink + "?color_theme=dark";
-    } else {
-      var modifiedJishoLink = originalJishoLink + "?color_theme=light";
-    }
-    iframe.src = modifiedJishoLink;
-  };
-});
 
+    if (altPressed) {
+      chapterSearchIframe = document.getElementById('chapter-search-iframe')
+      var chapterSearchLink = originalJishoLink.replace('https://jisho.org/search/', 'https://re-zero-chapter-search-ui.web.app/advanced-search?runSearch=true&prevQuery=');
+      if (localStorage.getItem("darkModeEnabled") === "true") {
+        var modifiedChapterSearchLink = chapterSearchLink + "&darkMode=true";
+      } else {
+        var modifiedChapterSearchLink = chapterSearchLink;
+      }
+      if (chapterSearchIframe.src !== modifiedChapterSearchLink) {
+        chapterSearchIframe.src = modifiedChapterSearchLink;
+      }
+      showTab('.chapter-search-iframe-container')
+      chapterSearchTabButton.classList.add('link-updated');
+      setTimeout(() => {
+        chapterSearchTabButton.classList.remove('link-updated');
+      }, 1200);
+      
+      
+    } else {
+
+      // Modify link to align with dark mode
+      if (localStorage.getItem("darkModeEnabled") === "true") {
+        var modifiedJishoLink = originalJishoLink + "?color_theme=dark";
+      } else {
+        var modifiedJishoLink = originalJishoLink + "?color_theme=light";
+      }
+      iframe.src = modifiedJishoLink;
+      showTab('.right-sidebar-iframe-container');
+
+      chapterSearchIframe = document.getElementById('chapter-search-iframe')
+      var chapterSearchLink = originalJishoLink.replace('https://jisho.org/search/', 'https://re-zero-chapter-search-ui.web.app/advanced-search?runSearch=true&prevQuery=');
+      if (localStorage.getItem("darkModeEnabled") === "true") {
+        var modifiedChapterSearchLink = chapterSearchLink + "&darkMode=true";
+      } else {
+        var modifiedChapterSearchLink = chapterSearchLink;
+      }
+
+      if (chapterSearchIframe.src !== modifiedChapterSearchLink) {
+        chapterSearchIframe.src = modifiedChapterSearchLink;
+      }
+      
+      jishoTabButton.classList.add('link-updated');
+      chapterSearchTabButton.classList.add('link-updated');
+
+      setTimeout(() => {
+        jishoTabButton.classList.remove('link-updated');
+        chapterSearchTabButton.classList.remove('link-updated');
+      }, 1200);
+    };
+}});
+
+// JS for Custom Context Menu
+// document.addEventListener('DOMContentLoaded', function () {
+//   const content = document.querySelector('.act-on-highlight');
+//   const customContextMenu = document.createElement('div');
+//   customContextMenu.id = 'customContextMenu';
+//   customContextMenu.innerHTML = '<div id="customMenuItem">Custom Action</div>';
+//   document.body.appendChild(customContextMenu);
+
+//   content.addEventListener('mouseup', function (event) {
+//       const selectedText = window.getSelection().toString().trim();
+
+//       if (selectedText !== '') {
+//           customContextMenu.style.top = `${event.clientY}px`;
+//           customContextMenu.style.left = `${event.clientX}px`;
+//           customContextMenu.style.display = 'block';
+//           customContextMenu.dataset.selectedText = selectedText;
+//       } else {
+//           customContextMenu.style.display = 'none';
+//           customContextMenu.dataset.selectedText = '';
+//       }
+//   });
+
+//   document.addEventListener('mousedown', function () {
+//       customContextMenu.style.display = 'none';
+//       customContextMenu.dataset.selectedText = '';
+//   });
+
+//   // Customize the action performed when the custom menu item is clicked
+//   document.getElementById('customMenuItem').addEventListener('click', function () {
+//       const selectedText = customContextMenu.dataset.selectedText;
+//       if (selectedText) {
+//           alert(`Custom action performed with selected text: "${selectedText}"`);
+//       }
+//       customContextMenu.style.display = 'none';
+//       customContextMenu.dataset.selectedText = '';
+//   });
+// });
 
 // JS for Top Bar Toggle Buttons
 function updateButtonClasses() {
@@ -175,14 +271,18 @@ function setDarkMode(isDarkModeEnabled) {
     // reload jisho
     var jishoIframe = document.getElementById("sidebar-iframe");
     jishoIframe.src = "https://jisho.org/?color_theme=dark";
-    localStorage.setItem("darkModeEnabled", true)
+    var chapterSearchIframe = document.getElementById("chapter-search-iframe");
+    chapterSearchIframe.src = "https://re-zero-chapter-search-ui.web.app/?darkMode=true";
+    localStorage.setItem("darkModeEnabled", true);
 
   } else {
     root.classList.remove("dark-mode");
     // reload jisho
     var jishoIframe = document.getElementById("sidebar-iframe");
     jishoIframe.src = "https://jisho.org/?color_theme=light";
-    localStorage.setItem("darkModeEnabled", false)
+    var chapterSearchIframe = document.getElementById("chapter-search-iframe");
+    chapterSearchIframe.src = "https://re-zero-chapter-search-ui.web.app/";
+    localStorage.setItem("darkModeEnabled", false);
   }
 };
 
@@ -211,7 +311,10 @@ function initializeDarkMode() {
 };
 
 // Call initializeDarkMode on page load
-initializeDarkMode();
+document.addEventListener('DOMContentLoaded', function () {
+  initializeDarkMode();
+});
+
 
 // JS for expanding and collapsing cards
 function expandParaCard(paraCardID) {

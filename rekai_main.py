@@ -51,7 +51,7 @@ def main(japanese_text, preprocessed_text, header):
 
     run_config = RunConfig(timestamp_unix)
 
-    final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp_str}')
+    final_output_path = os.path.join(output_directory, f'Rekai_HTML_{timestamp_str}_{header}')
 
     rekai_text_object = RekaiText(input_text=japanese_text, input_preprocessed_text=preprocessed_text, run_config_object=run_config, text_header=header)
 

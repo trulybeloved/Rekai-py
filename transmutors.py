@@ -15,7 +15,6 @@ from google.cloud import translate
 
 
 from appconfig import AppConfig
-from nlp_modules.japanese_nlp import Classifier
 import api_keys
 from nlp_modules.kairyou_preprocessor import Kairyou
 from custom_modules import utilities
@@ -49,37 +48,33 @@ class Transmute:
 
         jisho_parsed_html_element = str()
 
-        if Classifier.contains_no_parsable_ja_text(input_string):
-            jisho_parsed_html_element += 'unparsable'
+        url = f'https://jisho.org/search/{input_string}'
 
-        else:
-            url = f'https://jisho.org/search/{input_string}'
+        try:
 
-            try:
+            logger.info(f'Trying to parse line {index} out of {total_count}')
 
-                logger.info(f'Trying to parse line {index} out of {total_count}')
+            driver.get(url=url)
+            logger.info(f'Webdriver instance Started for {index} started')
 
-                driver.get(url=url)
-                logger.info(f'Webdriver instance Started for {index} started')
+            zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
+            zen_outer_html = zen_bar_element.get_attribute('outerHTML')
 
-                zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
-                zen_outer_html = zen_bar_element.get_attribute('outerHTML')
+            # Selenium also extracts linebreaks that mess with the html when assigned to a string_list
+            zen_html = str(zen_outer_html).replace('\n', "").strip()
 
-                # Selenium also extracts linebreaks that mess with the html when assigned to a string_list
-                zen_html = str(zen_outer_html).replace('\n', "").strip()
+            jisho_parsed_html_element += zen_html
 
-                jisho_parsed_html_element += zen_html
+        except Exception as e:
+            logger.error(f'An exception occured in jisho parse - f{input_string}')
+            zen_html = f'<p></p>'
+            jisho_parsed_html_element += zen_html
 
-            except Exception as e:
-                logger.error(f'An exception occured in jisho parse - f{input_string}')
-                zen_html = f'<p></p>'
-                jisho_parsed_html_element += zen_html
+        driver.quit()
 
-            driver.quit()
-
-            jisho_parsed_html_element = jisho_parsed_html_element.replace('/search/', 'https://jisho.org/search/')
-            jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
-            jisho_parsed_html_element = jisho_parsed_html_element.replace('class=""', 'class="jisho-link"')
+        jisho_parsed_html_element = jisho_parsed_html_element.replace('/search/', 'https://jisho.org/search/')
+        jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
+        jisho_parsed_html_element = jisho_parsed_html_element.replace('class=""', 'class="jisho-link"')
 
         db_interface = JishoParseDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=jisho_parsed_html_element, unix_timestamp=timestamp)

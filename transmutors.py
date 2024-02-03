@@ -12,11 +12,15 @@ from selenium.common.exceptions import NoSuchElementException
 # Google Cloud
 from google.cloud import texttospeech
 from google.cloud import translate
+
+
 from appconfig import AppConfig
 from nlp_modules.japanese_nlp import Classifier
 import api_keys
 from nlp_modules.kairyou_preprocessor import Kairyou
 from custom_modules import utilities
+from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
+
 
 class ApiKeyHandler:
 
@@ -30,9 +34,12 @@ class Transmute:
 
     # Jisho web scrape and parse
     @staticmethod
-    def parse_string_with_jisho(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def parse_string_with_jisho(input_string: str, timestamp: int, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
+            return  # type: ignore
 
         options = AppConfig.ChromeOptions.options
         driver = webdriver.Chrome(options=options)
@@ -71,13 +78,20 @@ class Transmute:
             jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
             jisho_parsed_html_element = jisho_parsed_html_element.replace('class=""', 'class="jisho-link"')
 
+        db_interface = JishoParseDBM()
+        db_interface.insert(raw_line=input_string, transmuted_data=jisho_parsed_html_element, unix_timestamp=timestamp)
+
         return (input_string, jisho_parsed_html_element)
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_deepl_api(input_string: str, timestamp: int, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+
+        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
+            return  # type: ignore
 
         source_lang = AppConfig.DeeplTranslateConfig.source_language_code
         target_lang = AppConfig.DeeplTranslateConfig.target_language_code
@@ -86,17 +100,26 @@ class Transmute:
 
         logger.info(f'CALLING_DEEPL_API: Line {index} of {total_count}: {input_string}')
 
-        result = translator.translate_text(text=input_string, source_lang=source_lang, target_lang="EN-US")
+        response = translator.translate_text(text=input_string, source_lang=source_lang, target_lang="EN-US")
 
-        return input_string, result.text
+        result = response.text
+
+        db_interface = DeepLDBM()
+        db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+
+        return (input_string, result)
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_google_tl_api(input_string: str, timestamp: int,  index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a single string within a list.
         """
+
+
+        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
+            return  # type: ignore
 
         source_lang = AppConfig.GoogleTranslateConfig.source_language_code
         target_lang = AppConfig.GoogleTranslateConfig.target_language_code
@@ -121,15 +144,23 @@ class Transmute:
         result = [translation.translated_text for translation in response.translations]
 
         if len(result) == 1:
-            return input_string, str(result[0])
+            result = str(result[0])
         else:
-            return input_string, ''.join(result)
+            result = ''.join(result)
+
+        db_interface = GoogleTLDBM()
+        db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+
+        return (input_string, result)
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(input_string: str, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def tts_string_with_google_api(input_string: str, timestamp: int, index: int = 0, total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
+            return  # type: ignore
 
         # Get configration on run
         language_code: str = AppConfig.GoogleTTSConfig.language_code
@@ -160,14 +191,17 @@ class Transmute:
 
         logger.info(f'CALLING_GCLOUD_TTS_API: Line {index} of {total_count}: {input_string}')
 
-        api_response = tts_client.synthesize_speech(
+        response = tts_client.synthesize_speech(
             input=input_for_synthesis,
             voice=voice_settings,
             audio_config=audio_configuration)
 
-        encoded_output = utilities.encode_bytes_to_base64_string(api_response.audio_content)
+        result = utilities.encode_bytes_to_base64_string(response.audio_content)
 
-        return (input_string, encoded_output)
+        db_interface = TextToSpeechDBM()
+        db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+
+        return (input_string, result)
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict):
@@ -177,7 +211,7 @@ class Transmute:
         return output
 
     @staticmethod
-    def post_process_dialogue(input_string:str, *args):
+    def post_process_dialogue(input_string: str, *args):
         """Replaces quotation/japanese quotation marks with []"""
 
         opening_characters = {"\"", "「"}
@@ -194,4 +228,3 @@ class Transmute:
             output_string = output_string
 
         return output_string
-

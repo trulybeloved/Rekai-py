@@ -25,6 +25,9 @@ class AppConfig:
     # Global Stop Flag
     GLOBAL_RUN_STOP: bool = False
 
+    # Manual Cancel Flag
+    MANUAL_RUN_STOP: bool = False
+
     ##=========== PATHS AND DIRECTORIES =============##
     # current working directory
     current_working_directory = os.getcwd()
@@ -36,6 +39,7 @@ class AppConfig:
     deep_log_databases: bool = False
     dataclasses_log_path: str = os.path.join(logging_directory, 'dataclasses.log')
     deep_log_dataclasses: bool = False
+    
 
     # paths to dictionary files
     dictionary_directory: str = os.path.join(current_working_directory, 'dictionaries')

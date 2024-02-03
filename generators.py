@@ -555,6 +555,8 @@ class GenerateHtml:
             else:
                 script_tag = f'''<script src="javascript/rekai.js"></script>'''
 
+            analytics_tag = '''<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "88f1749ec8c14ec185b8a86a3164cc5a"}'></script><!-- End Cloudflare Web Analytics -->'''
+
 
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
@@ -636,7 +638,8 @@ class GenerateHtml:
                 </div>
 
                 <!-- SCRIPT --------------------------------------------------------------------->
-                {script_tag}                
+                {script_tag}     
+                {analytics_tag}           
             </body>
             </html>
             '''
@@ -646,6 +649,7 @@ class GenerateHtml:
         @staticmethod
         def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
                       output_directory: str, post_process: Union[str, None], single_file_mode: bool) -> None:
+
 
             if not single_file_mode:
                 GenerateHtml.FileOutput.associated_files(output_directory=output_directory)

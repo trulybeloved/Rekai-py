@@ -293,7 +293,7 @@ class RekaiText(RekaiTextCommon):
                 self.preprocessed_text = self.preprocess(input_string=self.raw_text)
 
                 prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
-                self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
+                    self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
 
             self.preprocessed_available = True
         else:

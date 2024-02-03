@@ -95,17 +95,53 @@ def decode_bytes_from_base64_string(input_base64: str) -> bytes:
 
 class ProgressMonitor:
 
-    task_name: str
-    completed_task_count: int
-    total_task_count: int
+    _instances = []
 
     def __init__(self, task_name: str, total_task_count: int):
-        self.task_name = task_name
-        self.total_task_count = total_task_count
-        self.completed_task_count = 0
+        if not isinstance(task_name, str) or not isinstance(total_task_count, int):
+            raise ValueError(
+                "Invalid input types. task_name should be a string, and total_task_count should be an integer.")
 
-    def mark_completion(self):
-        self.completed_task_count += 1
+        if total_task_count <= 0:
+            raise ValueError("Total task count must be greater than 0.")
+
+        self._task_name = task_name
+        self._total_task_count = total_task_count
+        self._completed_task_count = 0
+
+        ProgressMonitor._instances.append(self)
+
+    def mark_completion(self, count: int = 1):
+        if not isinstance(count, int) or count <= 0:
+            raise ValueError("Invalid input type for count. It should be a positive integer.")
+
+        self._completed_task_count += count
 
     def get_progress(self):
-        return f'{self.task_name} completed for {self.completed_task_count}/{self.total_task_count} strings - {self.completed_task_count / self.total_task_count * 100}% complete'
+        progress_percentage = (self._completed_task_count / self._total_task_count) * 100
+        return f'{self._task_name} - {self._completed_task_count}/{self._total_task_count} completed - {progress_percentage:.2f}% complete'
+
+    def reset_progress(self):
+        self._completed_task_count = 0
+
+    def set_total_tasks(self, total_task_count: int):
+        if not isinstance(total_task_count, int) or total_task_count <= 0:
+            raise ValueError("Total task count must be a positive integer.")
+
+        self._total_task_count = total_task_count
+
+    @property
+    def task_name(self):
+        return self._task_name
+
+    @property
+    def total_task_count(self):
+        return self._total_task_count
+
+    @property
+    def completed_task_count(self):
+        return self._completed_task_count
+
+    @classmethod
+    def get_all_instances(cls):
+        return cls._instances

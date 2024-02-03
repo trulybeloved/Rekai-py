@@ -220,10 +220,10 @@ class JishoParseDBM(DBM):
     # operational flags
     db_updated = False
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(JishoParseDBM, cls).__new__(cls)
-        return cls._instance
+    # def __new__(cls, *args, **kwargs):
+    #     if cls._instance is None:
+    #         cls._instance = super(JishoParseDBM, cls).__new__(cls)
+    #     return cls._instance
 
 class TextToSpeechDBM(DBM):
 
@@ -241,10 +241,10 @@ class TextToSpeechDBM(DBM):
     # operational flags
     db_updated = False
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(TextToSpeechDBM, cls).__new__(cls)
-        return cls._instance
+    # def __new__(cls, *args, **kwargs):
+    #     if cls._instance is None:
+    #         cls._instance = super(TextToSpeechDBM, cls).__new__(cls)
+    #     return cls._instance
 
 class DeepLDBM(DBM):
 
@@ -262,10 +262,10 @@ class DeepLDBM(DBM):
     # operational flags
     db_updated = False
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(DeepLDBM, cls).__new__(cls)
-        return cls._instance
+    # def __new__(cls, *args, **kwargs):
+    #     if cls._instance is None:
+    #         cls._instance = super(DeepLDBM, cls).__new__(cls)
+    #     return cls._instance
 
 class GoogleTLDBM(DBM):
 
@@ -283,9 +283,9 @@ class GoogleTLDBM(DBM):
     # operational flags
     db_updated = False
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(GoogleTLDBM, cls).__new__(cls)
-        return cls._instance
+    # def __new__(cls, *args, **kwargs):
+    #     if cls._instance is None:
+    #         cls._instance = super(GoogleTLDBM, cls).__new__(cls)
+    #     return cls._instance
 
 

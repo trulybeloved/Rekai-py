@@ -21,7 +21,6 @@ from nlp_modules.kairyou_preprocessor import Kairyou
 from custom_modules import utilities
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
 
-
 class ApiKeyHandler:
 
     @staticmethod
@@ -34,7 +33,11 @@ class Transmute:
 
     # Jisho web scrape and parse
     @staticmethod
-    def parse_string_with_jisho(input_string: str, timestamp: int, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def parse_string_with_jisho(input_string: str,
+                                timestamp: int,
+                                progress_monitor: utilities.ProgressMonitor,
+                                index: int = 0,
+                                total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -81,11 +84,17 @@ class Transmute:
         db_interface = JishoParseDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=jisho_parsed_html_element, unix_timestamp=timestamp)
 
+        progress_monitor.mark_completion()
+
         return (input_string, jisho_parsed_html_element)
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(input_string: str, timestamp: int, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_deepl_api(input_string: str,
+                                        timestamp: int,
+                                        progress_monitor: utilities.ProgressMonitor,
+                                        index: int = 0,
+                                        total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -107,11 +116,17 @@ class Transmute:
         db_interface = DeepLDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
 
+        progress_monitor.mark_completion()
+
         return (input_string, result)
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(input_string: str, timestamp: int,  index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_google_tl_api(input_string: str,
+                                            timestamp: int,
+                                            progress_monitor: utilities.ProgressMonitor,
+                                            index: int = 0,
+                                            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a single string within a list.
@@ -148,16 +163,30 @@ class Transmute:
         else:
             result = ''.join(result)
 
+        progress_monitor.mark_completion()
+
         db_interface = GoogleTLDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+
+        progress_monitor.mark_completion()
 
         return (input_string, result)
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(input_string: str, timestamp: int, index: int = 0, total_count: int = 0) -> tuple[str, str]:
+    def tts_string_with_google_api(input_string: str,
+                                   timestamp: int,
+                                   progress_monitor: utilities.ProgressMonitor,
+                                   index: int = 0,
+                                   total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+        progress_monitor.mark_completion()
+
+        progress_monitor.mark_completion()
+
+        progress_monitor.mark_completion()
 
         if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
             return  # type: ignore
@@ -200,6 +229,8 @@ class Transmute:
 
         db_interface = TextToSpeechDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+
+        progress_monitor.mark_completion()
 
         return (input_string, result)
 

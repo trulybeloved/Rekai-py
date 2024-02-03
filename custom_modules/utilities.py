@@ -91,3 +91,21 @@ def encode_bytes_to_base64_string(input_bytes: bytes) -> str:
 def decode_bytes_from_base64_string(input_base64: str) -> bytes:
     decoded_data = base64.b64decode(input_base64)
     return decoded_data
+
+
+class ProgressMonitor:
+
+    task_name: str
+    completed_task_count: int
+    total_task_count: int
+
+    def __init__(self, task_name: str, total_task_count: int):
+        self.task_name = task_name
+        self.total_task_count = total_task_count
+        self.completed_task_count = 0
+
+    def mark_completion(self):
+        self.completed_task_count += 1
+
+    def get_progress(self):
+        return f'{self.task_name} completed for {self.completed_task_count}/{self.total_task_count} strings - {self.completed_task_count / self.total_task_count * 100}% complete'

@@ -39,7 +39,7 @@ class AppConfig:
     deep_log_databases: bool = False
     dataclasses_log_path: str = os.path.join(logging_directory, 'dataclasses.log')
     deep_log_dataclasses: bool = False
-    
+
 
     # paths to dictionary files
     dictionary_directory: str = os.path.join(current_working_directory, 'dictionaries')
@@ -106,6 +106,9 @@ class AppConfig:
 
 @dataclass
 class RunConfig:
+
+    _instances = []
+
     # This class is called by default by RekaiText.
     run_timestamp: int
 
@@ -185,3 +188,9 @@ class RunConfig:
         self.output_single_file = also_output_single_file
 
         self.run_timestamp = unix_timestamp
+
+        RunConfig._instances.append(self)
+
+    @classmethod
+    def get_all_instances(cls):
+        return cls._instances

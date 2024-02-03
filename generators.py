@@ -650,7 +650,6 @@ class GenerateHtml:
         def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
                       output_directory: str, post_process: Union[str, None], single_file_mode: bool) -> None:
 
-
             if not single_file_mode:
                 GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 

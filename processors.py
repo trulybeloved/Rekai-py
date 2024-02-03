@@ -2,16 +2,14 @@ from collections.abc import Callable
 from loguru import logger
 import asyncio
 import concurrent.futures
-import time
 from typing import Union
 import functools
 
 from appconfig import AppConfig
-from custom_dataclasses import RekaiText, Paragraph, Line
+from custom_dataclasses import RekaiText, Paragraph
 from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
-from custom_modules.utilities import log_execution_time
-
+from custom_modules.utilities import ProgressMonitor
 
 class Process:
     @staticmethod
@@ -31,24 +29,25 @@ class Process:
             logger.info('No strings required transmutation. API calls were not made')
             return
 
+        total_transmute_count = len(list_of_strings_to_transmute)
+        logger.info(f'Jisho Parse - Number of strings for transmutation: {total_transmute_count}')
+        progress_monitor = ProgressMonitor(task_name='Jisho Parse', total_task_count=total_transmute_count)
+
         if parallel_process:
-            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+            asyncio.run(SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.parse_string_with_jisho,
-                timestamp=timestamp))
+                timestamp=timestamp,
+                progress_monitor=progress_monitor))
 
         else:
-            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+            SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.parse_string_with_jisho,
-                timestamp=timestamp)
+                timestamp=timestamp,
+                progress_monitor=progress_monitor)
 
-        # SubProcess.update_database(
-        #     list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-        #     db_interface=JishoParseDBM(),
-        #     unix_timestamp=rekai_text_object.timestamp)
-
-        logger.info("Finished Jisho processing")
+        logger.success("Finished Jisho processing")
 
         return
 
@@ -69,23 +68,24 @@ class Process:
             logger.info('No strings required transmutation. API calls were not made')
             return
 
+        total_transmute_count = len(list_of_strings_to_transmute)
+        logger.info(f'GCloud TTS - Number of strings for transmutation: {total_transmute_count}')
+        progress_monitor = ProgressMonitor(task_name='GCloud TTS', total_task_count=total_transmute_count)
+
         if parallel_process:
-            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+            asyncio.run(SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.tts_string_with_google_api,
-                timestamp=timestamp))
+                timestamp=timestamp,
+                progress_monitor=progress_monitor))
         else:
-            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+            SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.tts_string_with_google_api,
-                timestamp=timestamp)
+                timestamp=timestamp,
+                progress_monitor=progress_monitor)
 
-        # SubProcess.update_database(
-        #     list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-        #     db_interface=TextToSpeechDBM(),
-        #     unix_timestamp=rekai_text_object.timestamp)
-
-        logger.info("Finished Google Cloud TTS processing")
+        logger.success("Finished Google Cloud TTS processing")
 
         return
 
@@ -106,23 +106,24 @@ class Process:
             logger.info('No strings required transmutation. API calls were not made')
             return
 
+        total_transmute_count = len(list_of_strings_to_transmute)
+        logger.info(f'Deepl TL - Number of strings for transmutation: {total_transmute_count}')
+        progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_transmute_count)
+
         if parallel_process:
-            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+            asyncio.run(SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_deepl_api,
-                timestamp=timestamp))
+                timestamp=timestamp,
+                progress_monitor=progress_monitor))
         else:
-            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+            SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_deepl_api,
-                timestamp=timestamp)
+                timestamp=timestamp,
+                progress_monitor=progress_monitor)
 
-        # SubProcess.update_database(
-        #     list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-        #     db_interface=DeepLDBM(),
-        #     unix_timestamp=rekai_text_object.timestamp)
-
-        logger.info('Finished DeepL Translation')
+        logger.success('Finished DeepL Translation')
 
         return
 
@@ -144,23 +145,24 @@ class Process:
             logger.info('No strings required transmutation. API calls were not made')
             return
 
+        total_transmute_count = len(list_of_strings_to_transmute)
+        logger.info(f'Google TL - Number of strings for transmutation: {total_transmute_count}')
+        progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_transmute_count)
+
         if parallel_process:
-            list_of_transmuted_data_tuples = asyncio.run(SubProcess.async_transmute(
+            asyncio.run(SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_google_tl_api,
-                timestamp=timestamp))
+                timestamp=timestamp,
+                progress_monitor=progress_monitor))
         else:
-            list_of_transmuted_data_tuples = SubProcess.sync_transmute(
+            SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_google_tl_api,
-                timestamp=timestamp)
+                timestamp=timestamp,
+                progress_monitor=progress_monitor)
 
-        # SubProcess.update_database(
-        #     list_of_transmuted_data_tuples=list_of_transmuted_data_tuples,
-        #     db_interface=GoogleTLDBM(),
-        #     unix_timestamp=rekai_text_object.timestamp)
-
-        logger.info('Finished Google Translation')
+        logger.success('Finished Google Translation')
 
         return
 
@@ -170,19 +172,21 @@ class SubProcess:
     @staticmethod
     def sync_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, int, int], tuple[str, Union[str, bytes]]],
-            timestamp: int) -> list[tuple[str,Union[str, bytes]]]:
+            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
+            timestamp: int,
+            progress_monitor: ProgressMonitor) -> list[tuple[str,Union[str, bytes]]]:
 
         total_string_count = len(list_of_strings_to_transmute)
 
-        list_of_transmuted_data = [transmutor(string, timestamp, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
+        list_of_transmuted_data = [transmutor(string, timestamp, progress_monitor, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
 
         return list_of_transmuted_data
 
     @staticmethod
     async def async_transmute(list_of_strings_to_transmute: list,
-                              transmutor: Callable[[str, int, int, int], tuple[str, Union[str, bytes]]],
-                              timestamp: int) -> list[tuple[str, any]]:
+                              transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
+                              timestamp: int,
+                              progress_monitor: ProgressMonitor) -> list[tuple[str, any]]:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -193,7 +197,8 @@ class SubProcess:
 
             return await loop.run_in_executor(None, partial_transmutor)
 
-        tasks = [async_func(transmutor, string, timestamp, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
+        tasks = [async_func(transmutor, string, timestamp, progress_monitor, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
+
         list_of_transmuted_data = await asyncio.gather(*tasks)
 
         return list_of_transmuted_data
@@ -273,20 +278,11 @@ class SubProcess:
         # As single clause lines and single line paragraphs being included can possibly result in duplicates
         list_of_unique_strings_for_transmutation = list(set(list_of_strings_for_transmutation))
 
-        logger.info(f'Number of lines to transmute: {len(list_of_unique_strings_for_transmutation)}')
-        logger.info(f'Lines for transmutation: {list_of_unique_strings_for_transmutation}')
-
         if not all(list_of_unique_strings_for_transmutation):
             return []
 
         return list_of_unique_strings_for_transmutation
-    #
-    # @staticmethod
-    # def update_database(list_of_transmuted_data_tuples: list, db_interface: DBM, unix_timestamp: int,  column_name: Union[str, None] = None) -> None:
-    #
-    #     for (raw_line, transmuted_data) in list_of_transmuted_data_tuples:
-    #         db_interface.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name, unix_timestamp=unix_timestamp)
-    #
+
     @staticmethod
     def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:
 

@@ -1,7 +1,6 @@
 import base64
 import os.path
 import shutil
-import zipfile
 from typing import Union
 
 from loguru import logger
@@ -11,6 +10,7 @@ import minify_html
 from custom_dataclasses import RekaiText, Paragraph, Line, Clause
 from appconfig import AppConfig, RunConfig
 from fetchers import Fetch
+from custom_modules.utilities import zip_directory
 
 
 class HtmlUtilities:
@@ -50,6 +50,7 @@ class HtmlUtilities:
             logger.error(f"Error: The file {css_path} was not found.")
         except Exception as e:
             logger.exception(f"Error: An unexpected error occurred - {str(e)}")
+
 
 class GenerateHtml:
     class Config:
@@ -129,7 +130,7 @@ class GenerateHtml:
                                                  and run_config_object.deepl_tl_lines)
 
             self.config_include_line_google_tl = (run_config_object.run_google_tl
-                                                 and run_config_object.google_tl_lines)
+                                                  and run_config_object.google_tl_lines)
 
             self.config_include_clause_analysis = run_config_object.include_clause_analysis
 
@@ -138,7 +139,6 @@ class GenerateHtml:
 
             self.config_include_clause_google_tl = (run_config_object.include_clause_analysis
                                                     and run_config_object.google_tl_clauses)
-
 
         # Inner Elements ===========================================
         def audio_button(self, line_id: str, line_raw: str, output_directory: str) -> str:
@@ -177,7 +177,6 @@ class GenerateHtml:
             paragraph_object = input_rekai_paragraph_object
             paragraph_id = f'P{paragraph_number}'
             paragraph_raw = paragraph_object.raw_text
-
 
             # PARA CARD START
             output_html = f'<div id="{paragraph_id}" class="para-card unparsable">'  # Unparsable class added
@@ -229,7 +228,8 @@ class GenerateHtml:
 
             return output_html
 
-        def clause_card(self, paragraph_number: int, line_number: int, clause_number: int, input_rekai_clause_object: Clause) -> str:
+        def clause_card(self, paragraph_number: int, line_number: int, clause_number: int,
+                        input_rekai_clause_object: Clause) -> str:
 
             clause_object = input_rekai_clause_object
             clause_id = f'P{paragraph_number}_L{line_number}_C{clause_number}'
@@ -260,7 +260,6 @@ class GenerateHtml:
 
             return output_html
 
-
         def line_card(self, paragraph_number: int, line_number: int, input_rekai_line_object: Line,
                       output_directory: str, total_lines: int) -> str:
 
@@ -271,7 +270,8 @@ class GenerateHtml:
             line_preprocessed = line_object.preprocessed_text
 
             if self.config_include_tts:
-                audio_button_html = self.audio_button(line_id=line_id, line_raw=line_raw, output_directory=output_directory)
+                audio_button_html = self.audio_button(line_id=line_id, line_raw=line_raw,
+                                                      output_directory=output_directory)
             else:
                 audio_button_html = ''
 
@@ -386,7 +386,8 @@ class GenerateHtml:
 
             return output_html
 
-        def para_card_header(self, paragraph_number: int, paragraph_id: str, input_rekai_paragraph_object: Paragraph) -> str:
+        def para_card_header(self, paragraph_number: int, paragraph_id: str,
+                             input_rekai_paragraph_object: Paragraph) -> str:
 
             paragraph_object = input_rekai_paragraph_object
 
@@ -431,7 +432,8 @@ class GenerateHtml:
             output_html = f'<div id="{paragraph_id}" class="para-card">'
 
             # PARA CARD HEADER
-            output_html += self.para_card_header(paragraph_number=paragraph_number, paragraph_id=paragraph_id, input_rekai_paragraph_object=input_rekai_paragraph_object)
+            output_html += self.para_card_header(paragraph_number=paragraph_number, paragraph_id=paragraph_id,
+                                                 input_rekai_paragraph_object=input_rekai_paragraph_object)
 
             # If adding container for para card contents, ensure to change addParaContentExpandOnClickEvent() in JS
             # PARA CARD CONTENTS
@@ -469,7 +471,6 @@ class GenerateHtml:
                         </div>
                     </div>'''
 
-
             # LINE CARD CONTAINER START
             output_html += '''<div class="line-card-container collapsed">'''
 
@@ -504,7 +505,6 @@ class GenerateHtml:
                 style_tag = f'''<style>{stylesheet}</style>'''
             else:
                 style_tag = f'''<link rel="stylesheet" href="css/styles.css">'''
-
 
             html_head = f'''
             <!DOCTYPE html>
@@ -556,7 +556,6 @@ class GenerateHtml:
                 script_tag = f'''<script src="javascript/rekai.js"></script>'''
 
             analytics_tag = '''<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "88f1749ec8c14ec185b8a86a3164cc5a"}'></script><!-- End Cloudflare Web Analytics -->'''
-
 
             output_html = f'''
                      <!-- SIDEBAR --------------------------------------------------------------------->
@@ -648,12 +647,13 @@ class GenerateHtml:
     class RekaiHtml:
         @staticmethod
         def full_html(run_config_object: RunConfig, html_title: str, input_rekai_text_object: RekaiText,
-                      output_directory: str, post_process: Union[str, None], single_file_mode: bool) -> None:
+                      output_directory: str, post_process: Union[str, None], single_file_mode: bool) -> str:
 
             if not single_file_mode:
                 GenerateHtml.FileOutput.associated_files(output_directory=output_directory)
 
-            generate = GenerateHtml.RekaiHtmlBlock(run_config_object=run_config_object, single_file_mode=single_file_mode)
+            generate = GenerateHtml.RekaiHtmlBlock(run_config_object=run_config_object,
+                                                   single_file_mode=single_file_mode)
 
             html = generate.html_head(html_title=html_title)
             html += generate.html_body_prefix()
@@ -676,6 +676,12 @@ class GenerateHtml:
             with open(output_html_file_path, 'w', encoding='utf-8') as rekai_html_file:
                 rekai_html_file.write(html)
 
+            # Zip file export
+            zip_file_name = f'Rekai_HTML_{run_config_object.run_timestamp}_{html_title}'
+            zip_file_path = zip_directory(output_directory, zip_file_name, AppConfig.output_directory)
+
             os.startfile(output_html_file_path)
 
             logger.info('RekaiHTML file generated sucessfully')
+
+            return zip_file_path

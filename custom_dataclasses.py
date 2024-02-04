@@ -227,7 +227,6 @@ class Paragraph(RekaiTextCommon):
 
 @dataclass
 class RekaiText(RekaiTextCommon):
-    log_sink = logger.add(sink=AppConfig.dataclasses_log_path)
 
     run_config: RunConfig = field(repr=False)
     timestamp: int

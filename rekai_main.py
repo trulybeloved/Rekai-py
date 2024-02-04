@@ -120,10 +120,10 @@ def main(japanese_text, preprocessed_text, header):
 
     asyncio.run(async_transmute())
 
-    GenerateHtml.RekaiHtml.full_html(
+    zip_file_path = GenerateHtml.RekaiHtml.full_html(
         run_config_object=run_config,
         input_rekai_text_object=rekai_text_object,
-        html_title='Rekai_Output',
+        html_title=header,
         output_directory=final_output_path,
         post_process='minify',
         single_file_mode=False)
@@ -132,7 +132,7 @@ def main(japanese_text, preprocessed_text, header):
         GenerateHtml.RekaiHtml.full_html(
             run_config_object=run_config,
             input_rekai_text_object=rekai_text_object,
-            html_title='Rekai_Test',
+            html_title=header,
             output_directory=final_output_path,
             post_process=None,
             single_file_mode=True)
@@ -143,8 +143,17 @@ def main(japanese_text, preprocessed_text, header):
 
     main_progress_monitor.mark_completion(1)
 
+    return zip_file_path
+
+# Associated Functions
+
+def progress_monitor():
+    progress_df = ProgressMonitor.get_progress_dataframe()
+    return progress_df
+
+
 # Frontend
-with gr.Blocks() as demo:
+with gr.Blocks() as rekai_webgui:
     gr.Markdown("""# Re:KAI""")
 
     with gr.Tab('RekaiHTML') as rekai_html_tab:
@@ -316,6 +325,14 @@ with gr.Blocks() as demo:
 
                 gr.Markdown('## Output')
 
+                output_rekai_html_file = gr.File(
+                    value=None,
+                    file_count="single",
+                    type="filepath",
+                    label="Output Zip File",
+                    container=True
+                )
+
                 transmutors_progress_barplot = gr.BarPlot(
                     value=ProgressMonitor.get_progress_dataframe(),
                     vertical=False,
@@ -345,17 +362,20 @@ with gr.Blocks() as demo:
     ## Event Listeners
     run_main = html_generate_button.click(
         fn=main,
-        inputs=[raw_input_text_box, preprocessed_input_text_box, html_header_input_textbox])
+        inputs=[raw_input_text_box, preprocessed_input_text_box, html_header_input_textbox],
+        outputs=[output_rekai_html_file])
 
-    progress_main = html_generate_button.click(
-        fn=ProgressMonitor.get_progress_dataframe,
+    progress_monitoring = html_generate_button.click(
+        fn=progress_monitor,
         inputs=[],
         outputs=[transmutors_progress_barplot],
         every=1)
 
-    interrupt_main = html_interrupt_button.click(fn=None, cancels=run_main)
+    html_interrupt_button.click(fn=None, inputs=None, outputs=None, cancels=[run_main, progress_monitoring])
+
+    output_rekai_html_file.change(fn=None, inputs=None, outputs=None, cancels=progress_monitoring)
 
 
 if __name__ == '__main__':
 
-    demo.queue().launch()
+    rekai_webgui.queue().launch()

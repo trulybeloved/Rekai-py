@@ -66,7 +66,7 @@ class Transmute:
             jisho_parsed_html_element += zen_html
 
         except Exception as e:
-            logger.error(f'An exception occured in jisho parse - f{input_string}')
+            logger.error(f'An exception occurred in jisho parse - {input_string}')
             zen_html = f'<p></p>'
             jisho_parsed_html_element += zen_html
 
@@ -78,6 +78,7 @@ class Transmute:
 
         db_interface = JishoParseDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=jisho_parsed_html_element, unix_timestamp=timestamp)
+        db_interface.close_connection()
 
         progress_monitor.mark_completion()
 
@@ -110,6 +111,7 @@ class Transmute:
 
         db_interface = DeepLDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+        db_interface.close_connection()
 
         progress_monitor.mark_completion()
 
@@ -162,6 +164,7 @@ class Transmute:
 
         db_interface = GoogleTLDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+        db_interface.close_connection()
 
         progress_monitor.mark_completion()
 
@@ -224,6 +227,7 @@ class Transmute:
 
         db_interface = TextToSpeechDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
+        db_interface.close_connection()
 
         progress_monitor.mark_completion()
 

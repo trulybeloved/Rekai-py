@@ -67,10 +67,8 @@ class AppConfig:
     ##=========== INTERNAL PARAMETERS =============##
     # concurrency limits
     # Right now all processors use asyncio. These settings will be deprecated.
-    general_multipro_max_workers: int = 8
-    jisho_multipro_max_workers: int = 16
-    deepl_multipro_max_workers: int = 4
-    tts_multipro_max_workers: int = 16
+    parallel_process: bool = True
+    general_multithread_max_workers: int = 40
 
     # text to speech configuration
     tts_file_extension: str = 'opus'

@@ -13,7 +13,7 @@ from custom_modules.utilities import ProgressMonitor
 
 class Process:
     @staticmethod
-    def jisho_parse(rekai_text_object: RekaiText, parallel_process: bool = True):
+    async def jisho_parse(rekai_text_object: RekaiText):
         logger.info("Starting Jisho processing")
         timestamp = rekai_text_object.timestamp
 
@@ -33,12 +33,12 @@ class Process:
         logger.info(f'Jisho Parse - Number of strings for transmutation: {total_transmute_count}')
         progress_monitor = ProgressMonitor(task_name='Jisho Parse', total_task_count=total_transmute_count)
 
-        if parallel_process:
-            asyncio.run(SubProcess.async_transmute(
+        if AppConfig.parallel_process:
+            await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.parse_string_with_jisho,
                 timestamp=timestamp,
-                progress_monitor=progress_monitor))
+                progress_monitor=progress_monitor)
 
         else:
             SubProcess.sync_transmute(
@@ -52,7 +52,7 @@ class Process:
         return
 
     @staticmethod
-    def gcloud_tts(rekai_text_object: RekaiText, parallel_process: bool = True):
+    async def gcloud_tts(rekai_text_object: RekaiText):
         logger.info("Starting Google Cloud TTS processing")
         timestamp = rekai_text_object.timestamp
 
@@ -72,12 +72,12 @@ class Process:
         logger.info(f'GCloud TTS - Number of strings for transmutation: {total_transmute_count}')
         progress_monitor = ProgressMonitor(task_name='GCloud TTS', total_task_count=total_transmute_count)
 
-        if parallel_process:
-            asyncio.run(SubProcess.async_transmute(
+        if AppConfig.parallel_process:
+            await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.tts_string_with_google_api,
                 timestamp=timestamp,
-                progress_monitor=progress_monitor))
+                progress_monitor=progress_monitor)
         else:
             SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -90,7 +90,7 @@ class Process:
         return
 
     @staticmethod
-    def deepl_tl(rekai_text_object: RekaiText, parallel_process: bool = True):
+    async def deepl_tl(rekai_text_object: RekaiText):
         logger.info("Starting DeepL Translation")
         timestamp = rekai_text_object.timestamp
 
@@ -110,12 +110,12 @@ class Process:
         logger.info(f'Deepl TL - Number of strings for transmutation: {total_transmute_count}')
         progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_transmute_count)
 
-        if parallel_process:
-            asyncio.run(SubProcess.async_transmute(
+        if AppConfig.parallel_process:
+            await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_deepl_api,
                 timestamp=timestamp,
-                progress_monitor=progress_monitor))
+                progress_monitor=progress_monitor)
         else:
             SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -129,7 +129,7 @@ class Process:
 
 
     @staticmethod
-    def google_tl(rekai_text_object: RekaiText, parallel_process: bool = True):
+    async def google_tl(rekai_text_object: RekaiText):
         logger.info("Starting Google Translation")
         timestamp = rekai_text_object.timestamp
 
@@ -149,12 +149,12 @@ class Process:
         logger.info(f'Google TL - Number of strings for transmutation: {total_transmute_count}')
         progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_transmute_count)
 
-        if parallel_process:
-            asyncio.run(SubProcess.async_transmute(
+        if AppConfig.parallel_process:
+            await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_google_tl_api,
                 timestamp=timestamp,
-                progress_monitor=progress_monitor))
+                progress_monitor=progress_monitor)
         else:
             SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -193,23 +193,16 @@ class SubProcess:
         loop = asyncio.get_event_loop()
 
         async def async_func(transmutor, *args):
-            partial_transmutor = functools.partial(transmutor, *args)
 
-            return await loop.run_in_executor(None, partial_transmutor)
+            partial_transmutor = functools.partial(transmutor, *args)  # partial functions
+
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
+
+            return await loop.run_in_executor(executor=executor, func=partial_transmutor)
 
         tasks = [async_func(transmutor, string, timestamp, progress_monitor, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
 
         list_of_transmuted_data = await asyncio.gather(*tasks)
-
-        return list_of_transmuted_data
-
-    @staticmethod
-    def parallel_transmute(list_of_strings_to_transmute: list,
-                           transmutor: Callable[[str], tuple[str, str]],
-                           max_workers=AppConfig.general_multipro_max_workers) -> list[tuple[str, Union[str, bytes]]]:
-
-        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-            list_of_transmuted_data = list(executor.map(transmutor, list_of_strings_to_transmute))
 
         return list_of_transmuted_data
 

@@ -53,6 +53,7 @@ class DBM:
         self._archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
 
         self.db_connection = sqlite3.connect(self._db_path)
+        self.db_connection.execute('PRAGMA journal_mode=wal')  # allows for simultaneous writes to db.
         self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if self.deep_log:
@@ -83,7 +84,7 @@ class DBM:
                 cursor.execute(self._archive_table_create_query)
                 if self.deep_log:
                     logger.info(
-                    f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                        f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
                 self.db_connection.commit()
                 self.db_updated = True
             except Exception as e:
@@ -108,7 +109,8 @@ class DBM:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
             raise EntryNotFound
 
-    def insert(self, raw_line: str, transmuted_data: Union[str, bytes], unix_timestamp: int, column_name: str = None) -> None:
+    def insert(self, raw_line: str, transmuted_data: Union[str, bytes], unix_timestamp: int,
+               column_name: str = None) -> None:
         cursor = self.db_connection.cursor()
 
         if isinstance(transmuted_data, bytes):
@@ -132,7 +134,8 @@ class DBM:
                     f'{self._database_name}:Insert of {column_name} for line {raw_line} in {self._main_table_name} was successful')
         else:
             self.archive(raw_line=raw_line)
-            self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name, unix_timestamp=unix_timestamp)
+            self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name,
+                        unix_timestamp=unix_timestamp)
             if self.deep_log:
                 logger.info(
                     f'{self._database_name}:Insert of {column_name} into {self._main_table_name} was completed with archival of previously existing line')
@@ -205,7 +208,6 @@ class DBM:
 
 
 class JishoParseDBM(DBM):
-
     # intrinsic settings
     _database_name = 'jisho_parse_db'
     _instance = None
@@ -225,8 +227,8 @@ class JishoParseDBM(DBM):
     #         cls._instance = super(JishoParseDBM, cls).__new__(cls)
     #     return cls._instance
 
-class TextToSpeechDBM(DBM):
 
+class TextToSpeechDBM(DBM):
     # intrinsic settings
     _database_name = 'je_tts'
     _instance = None
@@ -246,8 +248,8 @@ class TextToSpeechDBM(DBM):
     #         cls._instance = super(TextToSpeechDBM, cls).__new__(cls)
     #     return cls._instance
 
-class DeepLDBM(DBM):
 
+class DeepLDBM(DBM):
     # intrinsic settings
     _database_name = 'deepl_tl'
     _instance = None
@@ -267,8 +269,8 @@ class DeepLDBM(DBM):
     #         cls._instance = super(DeepLDBM, cls).__new__(cls)
     #     return cls._instance
 
-class GoogleTLDBM(DBM):
 
+class GoogleTLDBM(DBM):
     # intrinsic settings
     _database_name = 'google_tl'
     _instance = None
@@ -287,5 +289,3 @@ class GoogleTLDBM(DBM):
     #     if cls._instance is None:
     #         cls._instance = super(GoogleTLDBM, cls).__new__(cls)
     #     return cls._instance
-
-

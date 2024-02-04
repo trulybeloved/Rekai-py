@@ -20,6 +20,7 @@ Todo
 """
 import os.path
 import time
+import asyncio
 
 import gradio as gr
 from loguru import logger
@@ -59,29 +60,53 @@ def main(japanese_text, preprocessed_text, header):
         logger.critical(f'GLOBAL STOP FLAG RAISED. FUNCTION TERMINATED')
         return
 
-    if run_config.run_jisho_parse:
+    async def run_jisho_parse(rekai_text_object):
         jisho_start_time = time.time()
-        Process.jisho_parse(rekai_text_object=rekai_text_object)
+        await Process.jisho_parse(rekai_text_object=rekai_text_object)
         jisho_end_time = time.time()
-        logger.success(f'Function complete. Time taken: {jisho_end_time - jisho_start_time}')
+        logger.success(f'Jisho Parse - Function complete. Time taken: {jisho_end_time - jisho_start_time}')
 
-    if run_config.run_tts:
+    async def run_gcloud_tts(rekai_text_object):
         tts_start_time = time.time()
-        Process.gcloud_tts(rekai_text_object=rekai_text_object)
+        await Process.gcloud_tts(rekai_text_object=rekai_text_object)
         tts_end_time = time.time()
-        logger.success(f'Function complete. Time taken: {tts_end_time - tts_start_time}')
+        logger.success(f'TTS - Function complete. Time taken: {tts_end_time - tts_start_time}')
 
-    if run_config.run_deepl_tl:
+    async def run_deepl_tl(rekai_text_object):
         deepl_start_time = time.time()
-        Process.deepl_tl(rekai_text_object=rekai_text_object)
+        await Process.deepl_tl(rekai_text_object=rekai_text_object)
         deepl_end_time = time.time()
-        logger.success(f'Function complete. Time taken: {deepl_end_time - deepl_start_time}')
+        logger.success(f'Deepl TL - Function complete. Time taken: {deepl_end_time - deepl_start_time}')
 
-    if run_config.run_google_tl:
-        gtl_start_time = time.time()
-        Process.google_tl(rekai_text_object=rekai_text_object)
-        gtl_end_time = time.time()
-        logger.success(f'Function complete. Time taken: {gtl_end_time - gtl_start_time}')
+    async def run_google_tl(rekai_text_object):
+        jisho_start_time = time.time()
+        await Process.google_tl(rekai_text_object=rekai_text_object)
+        jisho_end_time = time.time()
+        logger.success(f'Google TL - Function complete. Time taken: {jisho_end_time - jisho_start_time}')
+
+    async def async_transmute():
+        tasks = []
+
+        if run_config.run_jisho_parse:
+            task_jisho = asyncio.create_task(run_jisho_parse(rekai_text_object))
+            tasks.append(task_jisho)
+
+        if run_config.run_tts:
+            task_tts = asyncio.create_task(run_gcloud_tts(rekai_text_object))
+            tasks.append(task_tts)
+
+        if run_config.run_deepl_tl:
+            task_deepl = asyncio.create_task(run_deepl_tl(rekai_text_object))
+            tasks.append(task_deepl)
+
+        if run_config.run_google_tl:
+            task_google = asyncio.create_task(run_google_tl(rekai_text_object))
+            tasks.append(task_google)
+
+        # Wait for all tasks to complete
+        await asyncio.gather(*tasks)
+
+    asyncio.run(async_transmute())
 
     GenerateHtml.RekaiHtml.full_html(run_config_object=run_config, input_rekai_text_object=rekai_text_object,
                                      html_title='Rekai_Test', output_directory=final_output_path, post_process='minify', single_file_mode=False)
@@ -181,4 +206,4 @@ with gr.Blocks() as demo:
 
 if __name__ == '__main__':
 
-    demo.launch()
+    demo.queue().launch()

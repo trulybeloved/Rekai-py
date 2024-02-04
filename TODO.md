@@ -12,6 +12,11 @@
 - Need to implement Backoff/retry for transmutors
 - Implement cutlet for romanization
 - WEBGUI
+- Enable TL of Paragraphs Directly
+
+Eventually
+- Other forms of output, like Markdown or Plaintext
+- Better Databases
 
 
 - ~~Implement preprocessing function. Bikatr6/Kudasai/Kairyou can be refactored and incorporated.~~

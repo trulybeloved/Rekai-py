@@ -1,9 +1,10 @@
 from collections.abc import Callable
-from loguru import logger
 import asyncio
 import concurrent.futures
 from typing import Union
 import functools
+
+from loguru import logger
 
 from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph
@@ -12,6 +13,7 @@ from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleT
 from custom_modules.utilities import ProgressMonitor
 
 class Process:
+
     @staticmethod
     async def jisho_parse(rekai_text_object: RekaiText):
         logger.info("Starting Jisho processing")

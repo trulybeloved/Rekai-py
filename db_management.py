@@ -13,7 +13,6 @@ class DBM:
     # Base variables
 
     # logging
-    logger.add(sink=AppConfig.db_log_path)
     deep_log: bool = AppConfig.deep_log_databases
 
     # placeholder variables

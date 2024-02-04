@@ -19,6 +19,7 @@ import api_keys
 from nlp_modules.kairyou_preprocessor import Kairyou
 from custom_modules import utilities
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
+from custom_modules.utilities import ProgressMonitor
 
 class ApiKeyHandler:
 
@@ -28,7 +29,6 @@ class ApiKeyHandler:
 
 
 class Transmute:
-    logger.add(sink=AppConfig.rekai_log_path)
 
     # Jisho web scrape and parse
     @staticmethod
@@ -51,11 +51,13 @@ class Transmute:
         url = f'https://jisho.org/search/{input_string}'
 
         try:
-
-            logger.info(f'Trying to parse line {index} out of {total_count}')
+            if AppConfig.deep_log_transmutors:
+                logger.info(f'Trying to parse line {index} out of {total_count}')
 
             driver.get(url=url)
-            logger.info(f'Webdriver instance Started for {index} started')
+
+            if AppConfig.deep_log_transmutors:
+                logger.info(f'Webdriver instance Started for {index} started')
 
             zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
             zen_outer_html = zen_bar_element.get_attribute('outerHTML')
@@ -94,7 +96,6 @@ class Transmute:
 
         """DOCSTRING PENDING"""
 
-
         if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
             return  # type: ignore
 
@@ -103,7 +104,8 @@ class Transmute:
 
         translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
 
-        logger.info(f'CALLING_DEEPL_API: Line {index} of {total_count}: {input_string}')
+        if AppConfig.deep_log_transmutors:
+            logger.info(f'CALLING_DEEPL_API: Line {index} of {total_count}: {input_string}')
 
         response = translator.translate_text(text=input_string, source_lang=source_lang, target_lang="EN-US")
 
@@ -141,7 +143,8 @@ class Transmute:
 
         client = translate.TranslationServiceClient()
 
-        logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_string}')
+        if AppConfig.deep_log_transmutors:
+            logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_string}')
 
         response = client.translate_text(
             request={
@@ -160,8 +163,6 @@ class Transmute:
         else:
             result = ''.join(result)
 
-        progress_monitor.mark_completion()
-
         db_interface = GoogleTLDBM()
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
         db_interface.close_connection()
@@ -179,12 +180,6 @@ class Transmute:
                                    total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
-
-        progress_monitor.mark_completion()
-
-        progress_monitor.mark_completion()
-
-        progress_monitor.mark_completion()
 
         if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
             return  # type: ignore
@@ -216,7 +211,8 @@ class Transmute:
             }
         )
 
-        logger.info(f'CALLING_GCLOUD_TTS_API: Line {index} of {total_count}: {input_string}')
+        if AppConfig.deep_log_transmutors:
+            logger.info(f'CALLING_GCLOUD_TTS_API: Line {index} of {total_count}: {input_string}')
 
         response = tts_client.synthesize_speech(
             input=input_for_synthesis,

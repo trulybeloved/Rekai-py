@@ -1,11 +1,14 @@
 """Utilities module"""
 
 import os
+import sys
 import zipfile
 import base64
 from datetime import datetime
 import time
+
 from loguru import logger
+import pandas as pd
 
 from appconfig import AppConfig
 
@@ -130,6 +133,9 @@ class ProgressMonitor:
 
         self._total_task_count = total_task_count
 
+    def get_percentage_completion(self) -> int:
+        return round((self._completed_task_count / self._total_task_count * 100))
+
     @property
     def task_name(self):
         return self._task_name
@@ -145,3 +151,34 @@ class ProgressMonitor:
     @classmethod
     def get_all_instances(cls):
         return cls._instances
+
+    @classmethod
+    def get_progress_dataframe(cls) -> pd.DataFrame:
+
+        instances: list[ProgressMonitor] = cls.get_all_instances()
+
+        if instances:
+            transmutors = []
+            progress = []
+
+            for instance in instances:
+                transmutors.append(instance.task_name)
+                progress.append(instance.get_percentage_completion())
+
+            progress_df = pd.DataFrame(
+                {
+                    "Transmutor": transmutors,
+                    "Progress": progress
+                }
+            )
+
+            return progress_df
+
+        else:
+            return pd.DataFrame(
+                {
+                    "Transmutor": ["None"],
+                    "Progress": [0]
+                }
+            )
+

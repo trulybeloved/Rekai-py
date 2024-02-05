@@ -65,7 +65,10 @@ class AppConfig:
     # concurrency limits
     # Right now all processors use asyncio. These settings will be deprecated.
     parallel_process: bool = True
-    general_multithread_max_workers: int = 40
+    general_multithread_max_workers: int = 10
+
+    # Chunk size for APIs that accept chunks of text - Eg: Google TL v2
+    transmutor_chunk_size: int = 20
 
     # text to speech configuration
     tts_file_extension: str = 'opus'
@@ -84,6 +87,7 @@ class AppConfig:
         source_language_code: str = 'ja-JP'
         target_language_code: str = 'en_US'
         location: str = 'global'
+
 
     class DeeplTranslateConfig:
         source_language_code: str = 'JA'

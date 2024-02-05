@@ -12,6 +12,7 @@ from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.utilities import ProgressMonitor
 
+
 class Process:
 
     @staticmethod
@@ -129,7 +130,6 @@ class Process:
 
         return
 
-
     @staticmethod
     async def google_tl(rekai_text_object: RekaiText):
         logger.info("Starting Google Translation")
@@ -152,9 +152,9 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            await SubProcess.async_transmute(
+            await SubProcess.async_transmute_chunks(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.translate_string_with_google_tl_api,
+                transmutor=Transmute.translate_chunk_with_google_tl_api,
                 timestamp=timestamp,
                 progress_monitor=progress_monitor)
         else:
@@ -176,33 +176,67 @@ class SubProcess:
             list_of_strings_to_transmute: list,
             transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
             timestamp: int,
-            progress_monitor: ProgressMonitor) -> list[tuple[str,Union[str, bytes]]]:
+            progress_monitor: ProgressMonitor) -> list[tuple[str, Union[str, bytes]]]:
 
         total_string_count = len(list_of_strings_to_transmute)
 
-        list_of_transmuted_data = [transmutor(string, timestamp, progress_monitor, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
+        list_of_transmuted_data = [transmutor(string, timestamp, progress_monitor, index+1, total_string_count) for
+                                   index, string in enumerate(list_of_strings_to_transmute)]
 
         return list_of_transmuted_data
 
     @staticmethod
-    async def async_transmute(list_of_strings_to_transmute: list,
-                              transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
-                              timestamp: int,
-                              progress_monitor: ProgressMonitor) -> list[tuple[str, any]]:
+    async def async_transmute(
+            list_of_strings_to_transmute: list,
+            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
+            timestamp: int,
+            progress_monitor: ProgressMonitor) -> list[tuple[str, any]]:
 
         total_string_count = len(list_of_strings_to_transmute)
 
         loop = asyncio.get_event_loop()
 
         async def async_func(transmutor, *args):
-
             partial_transmutor = functools.partial(transmutor, *args)  # partial functions
 
-            executor = concurrent.futures.ThreadPoolExecutor(max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
+            executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
 
             return await loop.run_in_executor(executor=executor, func=partial_transmutor)
 
-        tasks = [async_func(transmutor, string, timestamp, progress_monitor, index, total_string_count) for index, string in enumerate(list_of_strings_to_transmute)]
+        tasks = [async_func(transmutor, string, timestamp, progress_monitor, index+1, total_string_count) for
+                 index, string in enumerate(list_of_strings_to_transmute)]
+
+        list_of_transmuted_data = await asyncio.gather(*tasks)
+
+        return list_of_transmuted_data
+
+    @staticmethod
+    async def async_transmute_chunks(
+            list_of_strings_to_transmute: list,
+            transmutor: Callable[[str, int, ProgressMonitor, int, int]],
+            timestamp: int,
+            progress_monitor: ProgressMonitor,
+            chunk_size: int = AppConfig.transmutor_chunk_size) -> list[tuple[str, any]]:
+
+        total_string_count = len(list_of_strings_to_transmute)
+
+        loop = asyncio.get_event_loop()
+
+        async def async_func(transmutor, *args):
+            partial_transmutor = functools.partial(transmutor, *args)  # partial functions
+
+            executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
+
+            return await loop.run_in_executor(executor=executor, func=partial_transmutor)
+
+        list_of_chunks_to_transmute = [list_of_strings_to_transmute[i:i + chunk_size] for i in range(0, total_string_count, chunk_size)]
+
+        total_chunk_count = len(list_of_strings_to_transmute)
+
+        tasks = [async_func(transmutor, chunk, timestamp, progress_monitor, index+1, total_chunk_count) for
+                 index, chunk in enumerate(list_of_chunks_to_transmute)]
 
         list_of_transmuted_data = await asyncio.gather(*tasks)
 

@@ -1,4 +1,7 @@
+import time
 from typing import Union
+import asyncio
+
 import deepl
 from loguru import logger
 
@@ -6,12 +9,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 
 # Google Cloud
 from google.cloud import texttospeech
 from google.cloud import translate
+from google.cloud import translate_v2 as translatev2
 
 
 from appconfig import AppConfig
@@ -141,7 +146,7 @@ class Transmute:
         project_id = api_keys.google_project_id
         parent = f"projects/{project_id}/locations/{location}"
 
-        client = translate.TranslationServiceClient()
+        client = translate.TranslationServiceClient()  # This is v3 of the API
 
         if AppConfig.deep_log_transmutors:
             logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_string}')
@@ -170,6 +175,50 @@ class Transmute:
         progress_monitor.mark_completion()
 
         return (input_string, result)
+
+    @staticmethod
+    def translate_chunk_with_google_tl_api(input_chunk: list,
+                                           timestamp: int,
+                                           progress_monitor: utilities.ProgressMonitor,
+                                           index: int = 0,
+                                           total_count: int = 0):
+
+        """DOCSTRING PENDING
+        This API expects a list of strings.
+        """
+
+
+        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
+            return  # type: ignore
+
+        source_lang = AppConfig.GoogleTranslateConfig.source_language_code
+        target_lang = AppConfig.GoogleTranslateConfig.target_language_code
+        location = AppConfig.GoogleTranslateConfig.location
+        project_id = api_keys.google_project_id
+        parent = f"projects/{project_id}/locations/{location}"  # not needed for v2
+
+        client = translatev2.Client()  # NOT v3 but v2
+
+        if AppConfig.deep_log_transmutors:
+            logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_chunk}')
+
+        response = client.translate(
+            values=input_chunk,
+            source_language=source_lang,
+            target_language=target_lang,
+            format_='text',
+            model='nmt')
+
+        db_interface = GoogleTLDBM()
+        for result in response:
+            input_text = result['input']
+            translated_text = result['translatedText']
+            db_interface.insert(raw_line=input_text, transmuted_data=translated_text, unix_timestamp=timestamp)
+        db_interface.close_connection()
+
+        progress_monitor.mark_completion()
+
+        return
 
     # Google Cloud Text-to-Speech
     @staticmethod

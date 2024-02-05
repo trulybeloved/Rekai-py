@@ -1,3 +1,4 @@
+import math
 from collections.abc import Callable
 import asyncio
 import concurrent.futures
@@ -132,6 +133,8 @@ class Process:
 
     @staticmethod
     async def google_tl(rekai_text_object: RekaiText):
+        """ THIS USES CHUNKED PROCESSING"""
+
         logger.info("Starting Google Translation")
         timestamp = rekai_text_object.timestamp
 
@@ -149,7 +152,9 @@ class Process:
 
         total_transmute_count = len(list_of_strings_to_transmute)
         logger.info(f'Google TL - Number of strings for transmutation: {total_transmute_count}')
-        progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_transmute_count)
+        total_chunk_count = math.ceil((total_transmute_count / AppConfig.transmutor_chunk_size))
+
+        progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_chunk_count)
 
         if AppConfig.parallel_process:
             await SubProcess.async_transmute_chunks(
@@ -174,23 +179,22 @@ class SubProcess:
     @staticmethod
     def sync_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
+            transmutor: Callable[[str, int, ProgressMonitor, int, int], None],
             timestamp: int,
-            progress_monitor: ProgressMonitor) -> list[tuple[str, Union[str, bytes]]]:
+            progress_monitor: ProgressMonitor) -> None:
 
         total_string_count = len(list_of_strings_to_transmute)
 
         list_of_transmuted_data = [transmutor(string, timestamp, progress_monitor, index+1, total_string_count) for
                                    index, string in enumerate(list_of_strings_to_transmute)]
 
-        return list_of_transmuted_data
 
     @staticmethod
     async def async_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, Union[str, bytes]]],
+            transmutor: Callable[[str, int, ProgressMonitor, int, int], None],
             timestamp: int,
-            progress_monitor: ProgressMonitor) -> list[tuple[str, any]]:
+            progress_monitor: ProgressMonitor) -> None:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -207,17 +211,16 @@ class SubProcess:
         tasks = [async_func(transmutor, string, timestamp, progress_monitor, index+1, total_string_count) for
                  index, string in enumerate(list_of_strings_to_transmute)]
 
-        list_of_transmuted_data = await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
-        return list_of_transmuted_data
 
     @staticmethod
     async def async_transmute_chunks(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int]],
+            transmutor: Callable[[list, int, ProgressMonitor, int, int], None],
             timestamp: int,
             progress_monitor: ProgressMonitor,
-            chunk_size: int = AppConfig.transmutor_chunk_size) -> list[tuple[str, any]]:
+            chunk_size: int = AppConfig.transmutor_chunk_size) -> None:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -238,9 +241,8 @@ class SubProcess:
         tasks = [async_func(transmutor, chunk, timestamp, progress_monitor, index+1, total_chunk_count) for
                  index, chunk in enumerate(list_of_chunks_to_transmute)]
 
-        list_of_transmuted_data = await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
-        return list_of_transmuted_data
 
     @staticmethod
     def prepare_data(rekai_text_object: RekaiText,

@@ -99,6 +99,7 @@ def decode_bytes_from_base64_string(input_base64: str) -> bytes:
 class ProgressMonitor:
 
     _instances = []
+    log_path: str
 
     def __init__(self, task_name: str, total_task_count: int):
         if not isinstance(task_name, str) or not isinstance(total_task_count, int):
@@ -182,3 +183,13 @@ class ProgressMonitor:
                 }
             )
 
+    @classmethod
+    def destroy_all_instances(cls):
+        for instance in cls._instances:
+            del instance
+        cls._instances = []
+
+    # def read_log(self):
+    #     with open(self.log_path, 'r', encoding='utf-8') as log_file:
+    #         log_text = log_file.read()
+    #         return log_text

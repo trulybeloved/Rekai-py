@@ -38,7 +38,7 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Jisho Parse', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            await SubProcess.async_transmute(
+            _ = await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.parse_string_with_jisho,
                 timestamp=timestamp,
@@ -77,7 +77,7 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='GCloud TTS', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            await SubProcess.async_transmute(
+            _ = await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.tts_string_with_google_api,
                 timestamp=timestamp,
@@ -115,7 +115,7 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            await SubProcess.async_transmute(
+            _ = await SubProcess.async_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_deepl_api,
                 timestamp=timestamp,
@@ -179,7 +179,7 @@ class SubProcess:
     @staticmethod
     def sync_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int], None],
+            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor) -> None:
 
@@ -192,9 +192,9 @@ class SubProcess:
     @staticmethod
     async def async_transmute(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int], None],
+            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
-            progress_monitor: ProgressMonitor) -> None:
+            progress_monitor: ProgressMonitor) -> list:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -206,21 +206,23 @@ class SubProcess:
             executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
 
-            return await loop.run_in_executor(executor=executor, func=partial_transmutor)
+            return await loop.run_in_executor(executor=None, func=partial_transmutor)
 
         tasks = [async_func(transmutor, string, timestamp, progress_monitor, index+1, total_string_count) for
                  index, string in enumerate(list_of_strings_to_transmute)]
 
-        await asyncio.gather(*tasks)
+        _ = await asyncio.gather(*tasks)
+
+        return _
 
 
     @staticmethod
     async def async_transmute_chunks(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[list, int, ProgressMonitor, int, int], None],
+            transmutor: Callable[[list, int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor,
-            chunk_size: int = AppConfig.transmutor_chunk_size) -> None:
+            chunk_size: int = AppConfig.transmutor_chunk_size) -> list:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -232,7 +234,7 @@ class SubProcess:
             executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
 
-            return await loop.run_in_executor(executor=executor, func=partial_transmutor)
+            return await loop.run_in_executor(executor=None, func=partial_transmutor)
 
         list_of_chunks_to_transmute = [list_of_strings_to_transmute[i:i + chunk_size] for i in range(0, total_string_count, chunk_size)]
 
@@ -241,7 +243,9 @@ class SubProcess:
         tasks = [async_func(transmutor, chunk, timestamp, progress_monitor, index+1, total_chunk_count) for
                  index, chunk in enumerate(list_of_chunks_to_transmute)]
 
-        await asyncio.gather(*tasks)
+        _ = await asyncio.gather(*tasks)
+
+        return _
 
 
     @staticmethod

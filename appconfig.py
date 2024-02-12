@@ -34,7 +34,7 @@ class AppConfig:
 
     # paths and variables pertaining to logging
     logging_directory: str = os.path.join(current_working_directory, 'logs')
-    deep_log_transmutors: bool = False
+    deep_log_transmutors: bool = True
     deep_log_databases: bool = False
     deep_log_dataclasses: bool = False
 
@@ -51,7 +51,11 @@ class AppConfig:
     deepl_tl_db_path: str = os.path.join(datastores_directory, 'deepl_tl.db')
     google_tl_db_path: str = os.path.join(datastores_directory, 'google_tl.db')
     je_tts_db: str = os.path.join(datastores_directory, 'je_text_to_speech.db')
-    translations_db_path: str = os.path.join(datastores_directory, 'translations.db')
+    openai_gpt_db_path: str = os.path.join(datastores_directory, 'openai_gpt')
+
+    # path to the system database
+    sys_directory: str = os.path.join(current_working_directory, 'sys')
+    system_db_path: str = os.path.join(sys_directory, 'system.db')
 
     # Path to CSS and JS source files
     path_to_css_source = os.path.join(current_working_directory, 'html_src', 'css', 'styles.css')
@@ -65,7 +69,7 @@ class AppConfig:
     # concurrency limits
     # Right now all processors use asyncio. These settings will be deprecated.
     parallel_process: bool = True
-    general_multithread_max_workers: int = 10
+    general_multithread_max_workers: int = 6
 
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2
     transmutor_chunk_size: int = 20
@@ -76,7 +80,7 @@ class AppConfig:
 
     class GoogleTTSConfig:
         language_code: str = 'ja-JP'
-        # ssml_gender = texttospeech.SsmlVoiceGender.NEUTRAL # Not all voices support this flag
+        # ssml_gender = texttospeech.SsmlVoiceGender.NEUTRAL # Not all voices support this
         voice_name: str = 'ja-JP-Neural2-B'
         audio_encoding = texttospeech.AudioEncoding.OGG_OPUS
         speaking_rate: float = 0.9
@@ -101,6 +105,14 @@ class AppConfig:
         # options.setBinary('/path/to/chrome/binary')
         # PROFILES ARE NOT WORKING RIGHT NOW
         # options.add_argument(f'--user-data-dir={user_profile_path}')
+
+    class OpenAIConfig:
+        model: str = 'gpt-3.5-turbo-0125'
+        temperature: float = 1
+        top_p: int = 1
+        n: int = 1
+        stream: bool = False
+
 
 
 @dataclass
@@ -193,3 +205,15 @@ class RunConfig:
     @classmethod
     def get_all_instances(cls):
         return cls._instances
+
+
+app_config = AppConfig()
+def config_object_to_dict(config_object):
+    return {key: getattr(config_object, key) for key in dir(config_object) if not key.startswith('_') and not callable(getattr(config_object, key))}
+
+def update_config_from_dict(config_dict, config_obect):
+    for key, value in config_dict.items():
+        setattr(config_obect, key, value)
+    return config_obect
+
+print(config_object_to_dict(app_config))

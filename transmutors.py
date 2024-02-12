@@ -17,6 +17,7 @@ from selenium.common.exceptions import NoSuchElementException
 from google.cloud import texttospeech
 from google.cloud import translate
 from google.cloud import translate_v2 as translatev2
+from openai import AsyncOpenAI
 
 
 from appconfig import AppConfig
@@ -89,7 +90,9 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-        return (input_string, jisho_parsed_html_element)
+        _ = "success"
+
+        return (input_string, _)  # An explicit return only for asyncio to work properly.
 
     # DeepL API translation
     @staticmethod
@@ -122,7 +125,9 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-        return (input_string, result)
+        _ = "success"
+
+        return (input_string, _)
 
     # Google Cloud Translate API
     @staticmethod
@@ -174,14 +179,17 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-        return (input_string, result)
+
+        _ = "success"
+
+        return (input_string, _)
 
     @staticmethod
     def translate_chunk_with_google_tl_api(input_chunk: list,
                                            timestamp: int,
                                            progress_monitor: utilities.ProgressMonitor,
                                            index: int = 0,
-                                           total_count: int = 0):
+                                           total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a list of strings.
@@ -218,7 +226,11 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-        return
+
+        _ = "success"
+
+        return (_, _)
+
 
     # Google Cloud Text-to-Speech
     @staticmethod
@@ -276,7 +288,28 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-        return (input_string, result)
+        _ = "success"
+
+        return (input_string, _)
+
+
+    @staticmethod
+    async def infer_openai_gpt(db_key_string: str, system_message: str, prompt: str):
+
+        openai_client = AsyncOpenAI(api_key=api_keys.openai_api_key, max_retries=0)
+
+        inference = await openai_client.chat.completions.create(
+            model=AppConfig.OpenAIConfig.model,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt}],
+            temperature=AppConfig.OpenAIConfig.temperature,
+            top_p=AppConfig.OpenAIConfig.top_p,
+            n=AppConfig.OpenAIConfig.n,
+            stream=AppConfig.OpenAIConfig.stream
+            )
+
+
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict):

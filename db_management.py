@@ -1,8 +1,11 @@
 import sqlite3
+from typing import Union
+
+from loguru import logger
+from cryptography.fernet import Fernet
+
 from appconfig import AppConfig
 from custom_modules.custom_exceptions import EntryNotFound
-from loguru import logger
-from typing import Union
 
 
 # TODO
@@ -288,3 +291,60 @@ class GoogleTLDBM(DBM):
     #     if cls._instance is None:
     #         cls._instance = super(GoogleTLDBM, cls).__new__(cls)
     #     return cls._instance
+
+
+class OpenAIGPTDBM(DBM):
+    # intrinsic settings
+    _database_name = 'openai_gpt_infer'
+    _instance = None
+    _db_path = AppConfig.openai_gpt_db_path
+
+    _main_table_name = 'gpt_infer'
+    _archive_table_name = 'gpt_infer_archive'
+
+    _key_column_name = 'db_key_string'  # the column in which the unique string that was transmuted is stored
+    _output_column_name = 'inference'
+
+    # operational flags
+    db_updated = False
+
+    # def __new__(cls, *args, **kwargs):
+    #     if cls._instance is None:
+    #         cls._instance = super(GoogleTLDBM, cls).__new__(cls)
+    #     return cls._instance
+
+
+class SystemDBM:
+
+    _database_name = 'system_db'
+    _instance = []
+    _db_path = AppConfig.system_db_path
+
+    _db_structure = \
+        [
+            ['app_state',
+                [
+                'id',
+                'first_run',
+                'deepl_api_available',
+                'google_auth_configured'
+                ]
+            ],
+            ['app_config', ['id', 'app_config_dict', 'timestamp']],
+            ['run_config', ['id', 'run_config_dict', 'timestamp']],
+            ['api_crypt', ['id', 'api_name', 'encrypted_api_key']],
+        ]
+
+    @property
+    def db_path(self):
+        return self._db_path
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(SystemDBM, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        self.db_connection = sqlite3.connect(self._db_path)
+
+

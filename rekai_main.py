@@ -19,6 +19,7 @@ Todo
 - add paragraph classifier
 """
 import os.path
+import random
 import time
 import asyncio
 
@@ -45,6 +46,7 @@ from custom_modules.utilities import log_execution_time, ProgressMonitor
 def main(japanese_text, preprocessed_text, header):
 
     start_time = time.time()
+    ProgressMonitor.destroy_all_instances()
     main_progress_monitor = ProgressMonitor(task_name='Overall', total_task_count=10)
     timestamp_str, timestamp_unix = get_current_timestamps()
     log_path = os.path.join(AppConfig.logging_directory, f'rekai_log_{timestamp_str}_{header}.log')
@@ -70,30 +72,34 @@ def main(japanese_text, preprocessed_text, header):
 
     async def run_jisho_parse(rekai_text_object):
         jisho_start_time = time.time()
-        await Process.jisho_parse(rekai_text_object=rekai_text_object)
+        _ = await Process.jisho_parse(rekai_text_object=rekai_text_object)
         jisho_end_time = time.time()
-        logger.success(f'Jisho Parse - Function complete. Time taken: {jisho_end_time - jisho_start_time}')
+        if not AppConfig.MANUAL_RUN_STOP:
+            logger.success(f'Jisho Parse - Function complete. Time taken: {jisho_end_time - jisho_start_time}')
         main_progress_monitor.mark_completion(2)
 
     async def run_gcloud_tts(rekai_text_object):
         tts_start_time = time.time()
-        await Process.gcloud_tts(rekai_text_object=rekai_text_object)
+        _ = await Process.gcloud_tts(rekai_text_object=rekai_text_object)
         tts_end_time = time.time()
-        logger.success(f'TTS - Function complete. Time taken: {tts_end_time - tts_start_time}')
+        if not AppConfig.MANUAL_RUN_STOP:
+            logger.success(f'TTS - Function complete. Time taken: {tts_end_time - tts_start_time}')
         main_progress_monitor.mark_completion(2)
 
     async def run_deepl_tl(rekai_text_object):
         deepl_start_time = time.time()
-        await Process.deepl_tl(rekai_text_object=rekai_text_object)
+        _ = await Process.deepl_tl(rekai_text_object=rekai_text_object)
         deepl_end_time = time.time()
-        logger.success(f'Deepl TL - Function complete. Time taken: {deepl_end_time - deepl_start_time}')
+        if not AppConfig.MANUAL_RUN_STOP:
+            logger.success(f'Deepl TL - Function complete. Time taken: {deepl_end_time - deepl_start_time}')
         main_progress_monitor.mark_completion(2)
 
     async def run_google_tl(rekai_text_object):
         jisho_start_time = time.time()
-        await Process.google_tl(rekai_text_object=rekai_text_object)
+        _ = await Process.google_tl(rekai_text_object=rekai_text_object)
         jisho_end_time = time.time()
-        logger.success(f'Google TL - Function complete. Time taken: {jisho_end_time - jisho_start_time}')
+        if not AppConfig.MANUAL_RUN_STOP:
+            logger.success(f'Google TL - Function complete. Time taken: {jisho_end_time - jisho_start_time}')
         main_progress_monitor.mark_completion(2)
 
     async def async_transmute():
@@ -118,24 +124,32 @@ def main(japanese_text, preprocessed_text, header):
         # Wait for all tasks to complete
         await asyncio.gather(*tasks)
 
-    asyncio.run(async_transmute())
+    if not AppConfig.MANUAL_RUN_STOP:
+        asyncio.run(async_transmute())
+    else:
+        logger.critical(f'MANUAL STOP FLAG RAISED. FUNCTION TERMINATED')
+        return
 
-    zip_file_path = GenerateHtml.RekaiHtml.full_html(
-        run_config_object=run_config,
-        input_rekai_text_object=rekai_text_object,
-        html_title=header,
-        output_directory=final_output_path,
-        post_process='minify',
-        single_file_mode=False)
-
-    if run_config.output_single_file:
-        GenerateHtml.RekaiHtml.full_html(
+    if not AppConfig.MANUAL_RUN_STOP:
+        zip_file_path = GenerateHtml.RekaiHtml.full_html(
             run_config_object=run_config,
             input_rekai_text_object=rekai_text_object,
             html_title=header,
             output_directory=final_output_path,
-            post_process=None,
-            single_file_mode=True)
+            post_process='minify',
+            single_file_mode=False)
+
+        if run_config.output_single_file:
+            GenerateHtml.RekaiHtml.full_html(
+                run_config_object=run_config,
+                input_rekai_text_object=rekai_text_object,
+                html_title=header,
+                output_directory=final_output_path,
+                post_process=None,
+                single_file_mode=True)
+    else:
+        logger.critical(f'MANUAL STOP FLAG RAISED. FUNCTION TERMINATED')
+        return
 
     end_time = time.time()
 
@@ -151,6 +165,9 @@ def progress_monitor():
     progress_df = ProgressMonitor.get_progress_dataframe()
     return progress_df
 
+def set_manual_stop_flag():
+    AppConfig.MANUAL_RUN_STOP = True
+    logger.critical('MANUAL STOP FLAG SET')
 
 # Frontend
 with gr.Blocks() as rekai_webgui:
@@ -177,7 +194,7 @@ with gr.Blocks() as rekai_webgui:
                     label='Japanese Raw Text',
                     value='',
                     lines=10,
-                    max_lines=20,
+                    max_lines=10,
                     visible=True,
                     interactive=True,
                     placeholder='Input Japanese Raw text here')
@@ -188,7 +205,7 @@ with gr.Blocks() as rekai_webgui:
                     label='Preprocessed Text',
                     value='',
                     lines=10,
-                    max_lines=20,
+                    max_lines=10,
                     visible=True,
                     interactive=True,
                     placeholder='Input Preprocessed text here')
@@ -371,7 +388,7 @@ with gr.Blocks() as rekai_webgui:
         outputs=[transmutors_progress_barplot],
         every=1)
 
-    html_interrupt_button.click(fn=None, inputs=None, outputs=None, cancels=[run_main, progress_monitoring])
+    html_interrupt_button.click(fn=set_manual_stop_flag, inputs=[], outputs=[], cancels=[run_main, progress_monitoring])
 
     output_rekai_html_file.change(fn=None, inputs=None, outputs=None, cancels=progress_monitoring)
 

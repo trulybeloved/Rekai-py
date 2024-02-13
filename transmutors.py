@@ -22,7 +22,7 @@ from openai import AsyncOpenAI
 
 from appconfig import AppConfig
 import api_keys
-from nlp_modules.kairyou_preprocessor import Kairyou
+from kairyou import Kairyou
 from custom_modules import utilities
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
 from custom_modules.utilities import ProgressMonitor
@@ -312,11 +312,16 @@ class Transmute:
 
 
     @staticmethod
-    def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict):
-        preprocessor = Kairyou(text_to_preprocess=input_string, replacements_json=input_replacements_dict)
-        preprocessor.preprocess()
-        output = preprocessor.text_to_preprocess
-        return output
+    def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict) -> str:
+
+        ## new method
+        preprocessed_text, _, _ = Kairyou.preprocess(input_string, input_replacements_dict)
+        return preprocessed_text
+        ## old kairyou
+       ## preprocessor = Kairyou(text_to_preprocess=input_string, replacements_json=input_replacements_dict)
+       ## preprocessor.preprocess()
+        ##output = preprocessor.text_to_preprocess
+        ##return output
 
     @staticmethod
     def post_process_dialogue(input_string: str, *args):

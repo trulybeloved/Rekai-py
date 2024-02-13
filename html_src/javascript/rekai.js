@@ -221,24 +221,8 @@ function toggleDisplay(button, elementClass, displayType) {
 
   });
 
-  updateDivMaxHeight(".line-card-contents-container");
-  updateDivMaxHeight(".line-card-container");
 };
 
-function updateDivMaxHeight(divClass) {
-  const divElements = document.querySelectorAll(divClass);
-  divElements.forEach(function (divElement) {
-    try {
-      if (divElement.classList.contains("collapsed")) {
-        return;
-      } else {
-        divElement.style.maxHeight = divElement.scrollHeight + 100 + "px";
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  })
-}
 
 function toggleRightSidebar() {
   const root = document.documentElement;
@@ -324,21 +308,31 @@ function expandParaCard(paraCardID) {
   }
   paraCard.classList.add("expanded");
   try {
-    paraCard.querySelector(".line-card-container").classList.remove("collapsed");
-    paraCard.querySelector(".line-card-container").style.maxHeight = paraCard.querySelector(".line-card-container").scrollHeight + "px";
+    var lineCardContainer = paraCard.querySelector(".line-card-container");
+    childElements = lineCardContainer.children;
+    for (var i = 0; i < childElements.length; i++) {
+      childElements[i].style.display = "flex";
+    }
+    lineCardContainer.style.maxHeight = lineCardContainer.scrollHeight + 10000 + "px";
     button = paraCard.querySelector(".expand-collapse-button");
     button.textContent = "Collapse";
+    lineCardContainer.classList.remove("collapsed");
   } catch (err) {}
   };
 
 function collapseParaCard(paraCardID) {
   const paraCard = document.getElementById(paraCardID);
   paraCard.classList.remove("expanded");
-  try {  
-    paraCard.querySelector(".line-card-container").classList.add("collapsed");
-    paraCard.querySelector(".line-card-container").style.maxHeight = "0px";
+  try {
+    var lineCardContainer = paraCard.querySelector(".line-card-container");  
+    lineCardContainer.style.maxHeight = "0px";
+    childElements = lineCardContainer.children;
+    for (var i = 0; i < childElements.length; i++) {
+      childElements[i].style.display = "none";
+    }
     button = paraCard.querySelector(".expand-collapse-button");
     button.textContent = "Expand";
+    lineCardContainer.classList.add("collapsed");
   } catch (err) {}
   };
 
@@ -378,9 +372,9 @@ function expandCollapseLineContents(lineID) {
   if (lineContent.classList.contains("collapsed")) {
     lineContent.style.maxHeight = "0px";  
   } else {
-    lineContent.style.maxHeight = lineContent.scrollHeight + "px";
+    lineContent.style.maxHeight = lineContent.scrollHeight + 10000 + "px";
     lineCardContainer = para.querySelector('.line-card-container');
-    lineCardContainer.style.maxHeight = lineContent.scrollHeight + 5000 + "px";
+    lineCardContainer.style.maxHeight = lineContent.scrollHeight + 10000 + "px";
   };
 
   };

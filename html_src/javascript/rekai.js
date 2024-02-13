@@ -496,69 +496,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lineCards.forEach((container, index) => {
     const audioElement = container.querySelector('.audioPlayer');
+    audioElement.setAttribute('data-initialized', 'false');
     const waveformContainer = container.querySelector('.audio-waveform');
 
-    if (audioElement.getAttribute('base64ogg')) {
-    const audioBase64Ogg = audioElement.getAttribute('base64ogg');
-
-    // Create a Blob from the base64 data
-    var binaryData = atob(audioBase64Ogg);
-    var arrayBuffer = new ArrayBuffer(binaryData.length);
-    var view = new Uint8Array(arrayBuffer);
-    for (var i = 0; i < binaryData.length; i++) {
-        view[i] = binaryData.charCodeAt(i);
-    }
-    var blob = new Blob([arrayBuffer], { type: 'audio/ogg' });
-
-    // Create an Object URL from the Blob
-    audio_url = URL.createObjectURL(blob);
-    } else {
-      var src = audioElement.getAttribute('src');
-      audio_url = src;
-    }
-
-    // Create the waveform
+    // Create the wavesurfer object
     const wavesurfer = WaveSurfer.create({
       container: waveformContainer,
       waveColor: "#7B7B7B",
       progressColor: "#3CAD20",
       barWidth: 1,
-      url: audio_url,
       responsive: true,
-      height: 30,
+      height: 0,
       hideScrollbar: true,
       cursorWidth: 0,
       audioRate: 1,
-      autoplay: false,
     });
+
 
     // Play/pause on button click
     const audioButton = container.querySelector('.audioButton');
     audioButton.addEventListener('click', () => {
-      if (currentlyPlayingWaveSurfer && currentlyPlayingWaveSurfer !== wavesurfer) {
-        currentlyPlayingWaveSurfer.stop();
-        resetButtonState(currentlyPlayingAudioButton);
-      }
 
-      if (wavesurfer.isPlaying()) {
-        wavesurfer.stop();
-        currentlyPlayingWaveSurfer = null;
-        resetButtonState(audioButton);
-      } else {
+      // Check if audio content has been already loaded, if not, load then play
+      if (audioElement.getAttribute('data-initialized') === 'false') {
+        
+        // Stop any other already playing wavesurfer objects
+        if (currentlyPlayingWaveSurfer && currentlyPlayingWaveSurfer !== wavesurfer) {
+          currentlyPlayingWaveSurfer.stop();
+          resetButtonState(currentlyPlayingAudioButton);
+        }
+        
+        // For single file mode
+        if (audioElement.getAttribute('base64ogg')) {
+        const audioBase64Ogg = audioElement.getAttribute('base64ogg');
+    
+        // Create a Blob from the base64 data
+        var binaryData = atob(audioBase64Ogg);
+        var arrayBuffer = new ArrayBuffer(binaryData.length);
+        var view = new Uint8Array(arrayBuffer);
+        for (var i = 0; i < binaryData.length; i++) {
+            view[i] = binaryData.charCodeAt(i);
+        }
+        var blob = new Blob([arrayBuffer], { type: 'audio/ogg' });
+    
+        // Create an Object URL from the Blob
+        audio_url = URL.createObjectURL(blob);
+        } else {
+          // For normal mode with external audio files
+          var src = audioElement.getAttribute('src');
+          audio_url = src;
+        };
+
+        wavesurfer.setOptions({
+          height: 30
+        })
+        wavesurfer.load(audio_url);
         wavesurfer.play();
+
+        thisWavesurfer = wavesurfer
         currentlyPlayingWaveSurfer = wavesurfer;
         currentlyPlayingAudioButton = audioButton;
         updateButtonState(audioButton, "◼ TTS", "audioButton audioButton-stop");
+        audioElement.setAttribute('data-initialized', 'true');
+        
+        wavesurfer.on('finish', () => {
+        if (currentlyPlayingWaveSurfer === wavesurfer) {
+          currentlyPlayingWaveSurfer = null;
+          resetButtonState(audioButton);}})
+
+      } else {
+        // since it's already loaded just play/stop
+
+        if (currentlyPlayingWaveSurfer && currentlyPlayingWaveSurfer !== wavesurfer) {
+          currentlyPlayingWaveSurfer.stop();
+          resetButtonState(currentlyPlayingAudioButton);
+        }
+  
+        if (wavesurfer.isPlaying()) {
+          wavesurfer.stop();
+          currentlyPlayingWaveSurfer = null;
+          resetButtonState(audioButton);
+        } else {
+          wavesurfer.play();
+          currentlyPlayingWaveSurfer = wavesurfer;
+          currentlyPlayingAudioButton = audioButton;
+          updateButtonState(audioButton, "◼ TTS", "audioButton audioButton-stop");
+        }
+  
+        wavesurfer.on('finish', () => {
+        if (currentlyPlayingWaveSurfer === wavesurfer) {
+          currentlyPlayingWaveSurfer = null;
+          resetButtonState(audioButton);}})
       }
+            
     });
-
-    wavesurfer.on('finish', () => {
-      if (currentlyPlayingWaveSurfer === wavesurfer) {
-        currentlyPlayingWaveSurfer = null;
-        resetButtonState(audioButton);
-      }  
-
-    })
   });
 });
 

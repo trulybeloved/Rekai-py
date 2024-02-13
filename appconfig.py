@@ -40,7 +40,6 @@ class AppConfig:
 
     # paths to dictionary files
     dictionary_directory: str = os.path.join(current_working_directory, 'dictionaries')
-    path_to_katakana_words: str = os.path.join(dictionary_directory, 'katakana_words.txt')
 
     # path to replacement json
     path_to_replacements_json: str = os.path.join(dictionary_directory, 'replacements.json')

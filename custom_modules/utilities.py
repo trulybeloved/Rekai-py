@@ -10,10 +10,11 @@ import time
 from loguru import logger
 import pandas as pd
 
+from typing import List, Union
 from appconfig import AppConfig
 
 
-def get_current_timestamps() -> [str, int]:
+def get_current_timestamps() -> tuple[str, int]:
     current_time = datetime.utcnow()
     return current_time.strftime('%Y_%m_%d_%H_%M_%S'), int(current_time.timestamp())
 

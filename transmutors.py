@@ -313,15 +313,8 @@ class Transmute:
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict) -> str:
-
-        ## new method
         preprocessed_text, _, _ = Kairyou.preprocess(input_string, input_replacements_dict)
         return preprocessed_text
-        ## old kairyou
-       ## preprocessor = Kairyou(text_to_preprocess=input_string, replacements_json=input_replacements_dict)
-       ## preprocessor.preprocess()
-        ##output = preprocessor.text_to_preprocess
-        ##return output
 
     @staticmethod
     def post_process_dialogue(input_string: str, *args):

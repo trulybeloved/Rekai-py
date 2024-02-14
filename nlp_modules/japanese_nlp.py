@@ -186,6 +186,25 @@ class TextSplitter:
         if not clauses:
             return [input_text]
 
+        reassembled_line = ''.join(clauses)
+        if reassembled_line != input_text:
+            captured_substring_pattern = re.compile(reassembled_line)
+            split_result: list = re.split(captured_substring_pattern, input_text)
+            if len(split_result) > 1:
+                pre_substring = split_result[0]
+                post_substring = split_result[1]
+                clauses.insert(0, pre_substring)
+                clauses.append(post_substring)
+            else:
+                missed_substring = ''.join(split_result)
+                if input_text.startswith(missed_substring):
+                    clauses.insert(0, missed_substring)
+                elif input_text.endswith(missed_substring):
+                    clauses.append(missed_substring)
+                else:
+                    logger.error(
+                        f'REGEX MATCH for CLAUSES missed a substring in the middle of string. Input Text: {input_text} Result: {clauses}')
+
         if ''.join(clauses) != input_text:
             logger.error(f'REGEX MATCH did not include all characters. Input Text: {input_text} Result: {clauses}')
             if AppConfig.STOP_RUN_IF_TEXT_PROCESSING_ERRORS:

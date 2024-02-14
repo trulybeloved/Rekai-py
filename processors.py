@@ -1,12 +1,16 @@
-import math
+## built-in libraries
 from collections.abc import Callable
+from typing import Union
+
+import math
 import asyncio
 import concurrent.futures
-from typing import Union
 import functools
 
+## third-party libraries
 from loguru import logger
 
+## custom modules
 from appconfig import AppConfig
 from custom_dataclasses import RekaiText, Paragraph
 from transmutors import Transmute

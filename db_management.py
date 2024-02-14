@@ -29,7 +29,7 @@ class DBM:
     _key_column_name = ''  # the column in which the unique string that was transmuted is stored
     _output_column_name = ''
 
-    cached_raw_lines_dict = {}
+    cached_raw_lines_dict: dict = {}
     db_updated: bool
 
     @property

@@ -1,5 +1,7 @@
+## third-party libraries
 from loguru import logger
 
+## custom modules
 from db_management import JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.custom_exceptions import EntryNotFound
 from custom_modules.utilities import decode_bytes_from_base64_string

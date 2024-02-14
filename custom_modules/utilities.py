@@ -1,16 +1,18 @@
 """Utilities module"""
 
+## built-in modules
+from datetime import datetime
+
 import os
-import sys
 import zipfile
 import base64
-from datetime import datetime
 import time
 
+## third-party modules
 from loguru import logger
 import pandas as pd
 
-from typing import List, Union
+## custom modules
 from appconfig import AppConfig
 
 

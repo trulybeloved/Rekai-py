@@ -1,9 +1,12 @@
-import sqlite3
+## built-in libraries
 from typing import Union
 
+## third-party libraries
 from loguru import logger
-from cryptography.fernet import Fernet
 
+import sqlite3
+
+## custom modules
 from appconfig import AppConfig
 from custom_modules.custom_exceptions import EntryNotFound
 

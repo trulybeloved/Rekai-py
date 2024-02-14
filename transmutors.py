@@ -1,8 +1,4 @@
-import time
-from typing import Union
-import asyncio
-
-import deepl
+## third-party libraries
 from loguru import logger
 
 from selenium import webdriver
@@ -10,22 +6,23 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
-from selenium.common.exceptions import TimeoutException
-from selenium.common.exceptions import NoSuchElementException
-
-# Google Cloud
 from google.cloud import texttospeech
 from google.cloud import translate
 from google.cloud import translate_v2 as translatev2
+
 from openai import AsyncOpenAI
 
-
-from appconfig import AppConfig
-import api_keys
 from kairyou import Kairyou
+
+import deepl
+
+## custom modules
+from appconfig import AppConfig
 from custom_modules import utilities
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
-from custom_modules.utilities import ProgressMonitor
+
+import api_keys
+
 
 class ApiKeyHandler:
 

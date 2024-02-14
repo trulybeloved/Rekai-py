@@ -1,8 +1,12 @@
+## built-in libraries
 import os
 
+## third-party libraries
 from google.cloud import texttospeech
-from dataclasses import dataclass
 from selenium.webdriver.chrome.options import Options
+
+## custom modules
+from dataclasses import dataclass
 
 
 @dataclass

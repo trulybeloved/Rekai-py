@@ -1,12 +1,17 @@
+## built-in libraries
+from typing import Union
+
 import base64
 import os.path
 import shutil
-from typing import Union
 
+## third-party libraries
 from loguru import logger
 from bs4 import BeautifulSoup
+
 import minify_html
 
+## custom modules
 from custom_dataclasses import RekaiText, Paragraph, Line, Clause
 from appconfig import AppConfig, RunConfig
 from fetchers import Fetch

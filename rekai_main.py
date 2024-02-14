@@ -1,37 +1,20 @@
-# -*- coding: utf-8 -*-
-
-"""
-@author: beloved
-
-This app will take japanese text as input, carry out all the NLP tasks, and save everything in a structured database
-along with media files in proper folders
-
-Features:
-- gradio UI for interfacing
-- Incorporate Kudasai Preprocessor
--
-
-Todo
-
-- Add check for internet connectivity
-- add assertion error try accept blocks to data processing pipelines
-- improve unparsability check
-- add paragraph classifier
-"""
+## built-in libraries
 import os.path
-import random
 import time
 import asyncio
-
 import gradio as gr
+
+## third-party libraries
 from loguru import logger
 
+## custom modules
 from appconfig import AppConfig, RunConfig
 from custom_dataclasses import RekaiText
 from processors import Process
 from generators import GenerateHtml
 from custom_modules.utilities import get_current_timestamps
 from custom_modules.utilities import log_execution_time, ProgressMonitor
+
 # ----------------------------------------------------------------------------------------------------------------------#
 # GLOBAL VARIABLES
 # ----------------------------------------------------------------------------------------------------------------------#

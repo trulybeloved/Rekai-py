@@ -111,3 +111,6 @@ lib
 ## api_keys
 /api_keys.py
 sample_text.py
+
+## db files
+*.db

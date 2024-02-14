@@ -395,4 +395,4 @@ with gr.Blocks() as rekai_webgui:
 
 if __name__ == '__main__':
 
-    rekai_webgui.queue().launch()
+    rekai_webgui.queue().launch(inbrowser=True)

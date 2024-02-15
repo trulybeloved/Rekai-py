@@ -9,6 +9,7 @@ import functools
 
 ## third-party libraries
 from loguru import logger
+from pyppeteer import launch as PyppeteerLaunch
 
 ## custom modules
 from appconfig import AppConfig
@@ -41,19 +42,12 @@ class Process:
         logger.info(f'Jisho Parse - Number of strings for transmutation: {total_transmute_count}')
         progress_monitor = ProgressMonitor(task_name='Jisho Parse', total_task_count=total_transmute_count)
 
-        if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.parse_string_with_jisho,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor)
-
-        else:
-            SubProcess.sync_transmute(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.parse_string_with_jisho,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor)
+        _ = await SubProcess.async_webscrape(
+            list_of_strings_to_transmute=list_of_strings_to_transmute,
+            transmutor=Transmute.parse_string_with_jisho,
+            timestamp=timestamp,
+            progress_monitor=progress_monitor,
+            max_concurrent_coroutines=AppConfig.async_webscrape_semaphore_value)
 
         logger.success("Finished Jisho processing")
 
@@ -81,7 +75,7 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='GCloud TTS', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute(
+            _ = await SubProcess.async_transmute_multithreaded(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.tts_string_with_google_api,
                 timestamp=timestamp,
@@ -119,7 +113,7 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute(
+            _ = await SubProcess.async_transmute_multithreaded(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_string_with_deepl_api,
                 timestamp=timestamp,
@@ -161,7 +155,7 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_chunk_count)
 
         if AppConfig.parallel_process:
-            await SubProcess.async_transmute_chunks(
+            await SubProcess.async_transmute_chunks_multithreaded(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_chunk_with_google_tl_api,
                 timestamp=timestamp,
@@ -194,11 +188,11 @@ class SubProcess:
 
 
     @staticmethod
-    async def async_transmute(
+    async def async_transmute_multithreaded(
             list_of_strings_to_transmute: list,
             transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
-            progress_monitor: ProgressMonitor) -> list:
+            progress_monitor: ProgressMonitor) -> tuple:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -219,14 +213,42 @@ class SubProcess:
 
         return _
 
+    @staticmethod
+    async def async_webscrape(
+            list_of_strings_to_transmute: list,
+            transmutor: Callable[[str, int, ProgressMonitor, int, int, PyppeteerLaunch], tuple[str, str]],
+            timestamp: int,
+            progress_monitor: ProgressMonitor,
+            max_concurrent_coroutines: int) -> tuple:
+
+        semaphore = asyncio.Semaphore(max_concurrent_coroutines)
+
+        total_string_count = len(list_of_strings_to_transmute)
+
+        browser = await PyppeteerLaunch(
+            handleSIGINT=False,
+            handleSIGTERM=False,
+            handleSIGHUP=False)
+
+        logger.info('Async Webscrape: Browser launched')
+
+        tasks = [transmutor(string, timestamp, progress_monitor, semaphore, index+1, total_string_count, browser) for
+                 index, string in enumerate(list_of_strings_to_transmute)]
+
+        _ = await asyncio.gather(*tasks)
+
+        await browser.close()
+
+        return _
+
 
     @staticmethod
-    async def async_transmute_chunks(
+    async def async_transmute_chunks_multithreaded(
             list_of_strings_to_transmute: list,
             transmutor: Callable[[list, int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor,
-            chunk_size: int = AppConfig.transmutor_chunk_size) -> list:
+            chunk_size: int = AppConfig.transmutor_chunk_size) -> tuple:
 
         total_string_count = len(list_of_strings_to_transmute)
 

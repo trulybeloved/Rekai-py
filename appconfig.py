@@ -3,7 +3,6 @@ import os
 
 ## third-party libraries
 from google.cloud import texttospeech
-from selenium.webdriver.chrome.options import Options
 
 ## custom modules
 from dataclasses import dataclass
@@ -73,6 +72,7 @@ class AppConfig:
     # Right now all processors use asyncio. These settings will be deprecated.
     parallel_process: bool = True
     general_multithread_max_workers: int = 6
+    async_webscrape_semaphore_value: int = 15
 
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2
     transmutor_chunk_size: int = 20

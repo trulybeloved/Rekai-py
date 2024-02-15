@@ -1,10 +1,9 @@
 ## third-party libraries
+import asyncio
+
 from loguru import logger
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
+from pyppeteer import launch as PyppeteerLaunch
 
 from google.cloud import texttospeech
 from google.cloud import translate
@@ -35,47 +34,72 @@ class Transmute:
 
     # Jisho web scrape and parse
     @staticmethod
-    def parse_string_with_jisho(input_string: str,
+    async def parse_string_with_jisho(
+                                input_string: str,
                                 timestamp: int,
                                 progress_monitor: utilities.ProgressMonitor,
+                                semaphore: asyncio.Semaphore,
                                 index: int = 0,
-                                total_count: int = 0) -> tuple[str, str]:
+                                total_count: int = 0,
+                                browser: PyppeteerLaunch = None) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+        async def get_element_outer_html(_url: str, _selector: str, _semaphore: asyncio.Semaphore, _browser: PyppeteerLaunch = None):
+            async with _semaphore:
+                if not _browser:
+                    _browser = await PyppeteerLaunch(
+
+                        handleSIGINT=False,
+                        handleSIGTERM=False,
+                        handleSIGHUP=False)
+                    browser_launched_within_fucntion = True
+                    logger.warning('Browser was not provided. A new browser instance will be run for each iteration. '
+                                   'This will add considerable overhead.')
+                else:
+                    browser_launched_within_fucntion = False
+
+                page = await _browser.newPage()
+
+                await page.goto(_url)
+                element = await page.querySelector(_selector)
+
+                if AppConfig.deep_log_transmutors:
+                    logger.info(f'Webpage loaded for {index}')
+
+                if element:
+                    outer_html = await page.evaluate('(element) => element.outerHTML', element)
+                    if browser_launched_within_fucntion:
+                        await _browser.close()
+                    return outer_html
+                else:
+                    if browser_launched_within_fucntion:
+                        await _browser.close()
+                    return None
 
         if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
             return  # type: ignore
 
-        options = AppConfig.ChromeOptions.options
-        driver = webdriver.Chrome(options=options)
-
         jisho_parsed_html_element = str()
 
         url = f'https://jisho.org/search/{input_string}'
+        selector = f'#zen_bar'
 
         try:
-            if AppConfig.deep_log_transmutors:
-                logger.info(f'Trying to parse line {index} out of {total_count}')
+            outer_html = await get_element_outer_html(url, selector, _semaphore=semaphore, _browser=browser)
+            if outer_html:
+                zen_outer_html = outer_html
 
-            driver.get(url=url)
+                # replace linebreaks that mess with the html when assigned to a string_list
+                zen_html = str(zen_outer_html).replace('\n', "").strip()
 
-            if AppConfig.deep_log_transmutors:
-                logger.info(f'Webdriver instance Started for {index} started')
-
-            zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
-            zen_outer_html = zen_bar_element.get_attribute('outerHTML')
-
-            # Selenium also extracts linebreaks that mess with the html when assigned to a string_list
-            zen_html = str(zen_outer_html).replace('\n', "").strip()
-
-            jisho_parsed_html_element += zen_html
+                jisho_parsed_html_element += zen_html
 
         except Exception as e:
-            logger.error(f'An exception occurred in jisho parse - {input_string}')
+            logger.error(f'An exception occurred in jisho parse - {input_string} \n Exception: {e}')
+
             zen_html = f'<p></p>'
             jisho_parsed_html_element += zen_html
-
-        driver.quit()
 
         jisho_parsed_html_element = jisho_parsed_html_element.replace('/search/', 'https://jisho.org/search/')
         jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
@@ -304,8 +328,7 @@ class Transmute:
             top_p=AppConfig.OpenAIConfig.top_p,
             n=AppConfig.OpenAIConfig.n,
             stream=AppConfig.OpenAIConfig.stream
-            )
-
+        )
 
 
     @staticmethod

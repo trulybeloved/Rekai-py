@@ -40,6 +40,7 @@ class Process:
 
         total_transmute_count = len(list_of_strings_to_transmute)
         logger.info(f'Jisho Parse - Number of strings for transmutation: {total_transmute_count}')
+
         progress_monitor = ProgressMonitor(task_name='Jisho Parse', total_task_count=total_transmute_count)
 
         _ = await SubProcess.async_webscrape(
@@ -72,20 +73,14 @@ class Process:
 
         total_transmute_count = len(list_of_strings_to_transmute)
         logger.info(f'GCloud TTS - Number of strings for transmutation: {total_transmute_count}')
+
         progress_monitor = ProgressMonitor(task_name='GCloud TTS', total_task_count=total_transmute_count)
 
-        if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute_multithreaded(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.tts_string_with_google_api,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor)
-        else:
-            SubProcess.sync_transmute(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.tts_string_with_google_api,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor)
+        _ = await SubProcess.async_transmute_multithreaded(
+            list_of_strings_to_transmute=list_of_strings_to_transmute,
+            transmutor=Transmute.tts_string_with_google_api,
+            timestamp=timestamp,
+            progress_monitor=progress_monitor)
 
         logger.success("Finished Google Cloud TTS processing")
 
@@ -117,19 +112,12 @@ class Process:
 
         progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_chunk_count)
 
-        if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute_chunks_multithreaded(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.translate_chunk_with_deepl_api,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor,
-                chunk_size=AppConfig.deepl_transmutor_chunk_size)
-        else:
-            SubProcess.sync_transmute(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.translate_string_with_deepl_api,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor)
+        _ = await SubProcess.async_transmute_chunks_multithreaded(
+            list_of_strings_to_transmute=list_of_strings_to_transmute,
+            transmutor=Transmute.translate_chunk_with_deepl_api,
+            timestamp=timestamp,
+            progress_monitor=progress_monitor,
+            chunk_size=AppConfig.deepl_transmutor_chunk_size)
 
         logger.success('Finished DeepL Translation')
 
@@ -161,19 +149,12 @@ class Process:
 
         progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_chunk_count)
 
-        if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute_chunks_multithreaded(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.translate_chunk_with_google_tl_api,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor,
-                chunk_size=AppConfig.google_tl_transmutor_chunk_size)
-        else:
-            SubProcess.sync_transmute(
-                list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.translate_string_with_google_tl_api,
-                timestamp=timestamp,
-                progress_monitor=progress_monitor)
+        _ = await SubProcess.async_transmute_chunks_multithreaded(
+            list_of_strings_to_transmute=list_of_strings_to_transmute,
+            transmutor=Transmute.translate_chunk_with_google_tl_api,
+            timestamp=timestamp,
+            progress_monitor=progress_monitor,
+            chunk_size=AppConfig.google_tl_transmutor_chunk_size)
 
         logger.success('Finished Google Translation')
 
@@ -212,7 +193,7 @@ class SubProcess:
             executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
 
-            return await loop.run_in_executor(executor=None, func=partial_transmutor)
+            return await loop.run_in_executor(executor=executor, func=partial_transmutor)
 
         tasks = [async_func(transmutor, string, timestamp, progress_monitor, index+1, total_string_count) for
                  index, string in enumerate(list_of_strings_to_transmute)]
@@ -268,7 +249,7 @@ class SubProcess:
             executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=AppConfig.general_multithread_max_workers)  # asyncio can run coroutines with other context managers like executors from concurrent.futures
 
-            return await loop.run_in_executor(executor=None, func=partial_transmutor)
+            return await loop.run_in_executor(executor=executor, func=partial_transmutor)
 
         list_of_chunks_to_transmute = [list_of_strings_to_transmute[i:i + chunk_size] for i in range(0, total_string_count, chunk_size)]
 

@@ -39,13 +39,13 @@ class Transmute:
     # Jisho web scrape and parse
     @staticmethod
     async def parse_string_with_jisho(
-        input_string: str,
-        timestamp: int,
-        progress_monitor: utilities.ProgressMonitor,
-        semaphore: asyncio.Semaphore,
-        index: int = 0,
-        total_count: int = 0,
-        browser: PyppeteerLaunch = None) -> tuple[str, str]:
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            semaphore: asyncio.Semaphore,
+            index: int = 0,
+            total_count: int = 0,
+            browser: PyppeteerLaunch = None) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -84,11 +84,9 @@ class Transmute:
 
                 if element:
                     outer_html = await page.evaluate('(element) => element.outerHTML', element)
-
                     if browser_launched_within_fucntion:
                         await _browser.close()
                     return outer_html
-
                 else:
                     if browser_launched_within_fucntion:
                         await _browser.close()
@@ -137,11 +135,12 @@ class Transmute:
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(input_string: str,
-                                        timestamp: int,
-                                        progress_monitor: utilities.ProgressMonitor,
-                                        index: int = 0,
-                                        total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_deepl_api(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -171,11 +170,12 @@ class Transmute:
         return (input_string, _)
 
     @staticmethod
-    def translate_chunk_with_deepl_api(input_chunk: list,
-                                           timestamp: int,
-                                           progress_monitor: utilities.ProgressMonitor,
-                                           index: int = 0,
-                                           total_count: int = 0) -> tuple[str, str]:
+    def translate_chunk_with_deepl_api(
+            input_chunk: list,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -206,11 +206,12 @@ class Transmute:
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(input_string: str,
-                                            timestamp: int,
-                                            progress_monitor: utilities.ProgressMonitor,
-                                            index: int = 0,
-                                            total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_google_tl_api(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a single string within a list.
@@ -258,11 +259,12 @@ class Transmute:
         return (input_string, _)
 
     @staticmethod
-    def translate_chunk_with_google_tl_api(input_chunk: list,
-                                           timestamp: int,
-                                           progress_monitor: utilities.ProgressMonitor,
-                                           index: int = 0,
-                                           total_count: int = 0) -> tuple[str, str]:
+    def translate_chunk_with_google_tl_api(
+            input_chunk: list,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a list of strings.
@@ -306,11 +308,12 @@ class Transmute:
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(input_string: str,
-                                   timestamp: int,
-                                   progress_monitor: utilities.ProgressMonitor,
-                                   index: int = 0,
-                                   total_count: int = 0) -> tuple[str, str]:
+    def tts_string_with_google_api(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 

@@ -101,13 +101,6 @@ class AppConfig:
         target_language_code: str = 'EN_US'
 
     # Selenium Webdriver configuration
-    class ChromeOptions:
-        options = Options()
-        options.add_argument('--headless')
-        # user_profile_path = ""
-        # options.setBinary('/path/to/chrome/binary')
-        # PROFILES ARE NOT WORKING RIGHT NOW
-        # options.add_argument(f'--user-data-dir={user_profile_path}')
 
     class OpenAIConfig:
         model: str = 'gpt-3.5-turbo-0125'

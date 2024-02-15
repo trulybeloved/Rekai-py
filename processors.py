@@ -112,7 +112,10 @@ class Process:
 
         total_transmute_count = len(list_of_strings_to_transmute)
         logger.info(f'Deepl TL - Number of strings for transmutation: {total_transmute_count}')
-        progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_transmute_count)
+        total_chunk_count = math.ceil((total_transmute_count / AppConfig.deepl_transmutor_chunk_size))
+        logger.info(f'Deepl TL - Number of CHUNKS for transmutation: {total_chunk_count}')
+
+        progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_chunk_count)
 
         if AppConfig.parallel_process:
             _ = await SubProcess.async_transmute_chunks_multithreaded(
@@ -153,7 +156,8 @@ class Process:
 
         total_transmute_count = len(list_of_strings_to_transmute)
         logger.info(f'Google TL - Number of strings for transmutation: {total_transmute_count}')
-        total_chunk_count = math.ceil((total_transmute_count / AppConfig.transmutor_chunk_size))
+        total_chunk_count = math.ceil((total_transmute_count / AppConfig.google_tl_transmutor_chunk_size))
+        logger.info(f'Google TL - Number of CHUNKS for transmutation: {total_chunk_count}')
 
         progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_chunk_count)
 
@@ -220,7 +224,7 @@ class SubProcess:
     @staticmethod
     async def async_webscrape(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int, PyppeteerLaunch], tuple[str, str]],
+            transmutor: Callable[[str, int, ProgressMonitor, asyncio.Semaphore, int, int, PyppeteerLaunch], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor,
             max_concurrent_coroutines: int) -> tuple:

@@ -75,7 +75,9 @@ class AppConfig:
     async_webscrape_semaphore_value: int = 15
 
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2
-    transmutor_chunk_size: int = 20
+    default_transmutor_chunk_size: int = 20
+    deepl_transmutor_chunk_size: int = 30
+    google_tl_transmutor_chunk_size: int = 20
 
     # text to speech configuration
     tts_file_extension: str = 'opus'

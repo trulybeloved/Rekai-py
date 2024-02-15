@@ -6,3 +6,6 @@ class ClassificationError(Exception):
 
 class TextSplitError(Exception):
     pass
+
+class WebPageLoadError(Exception):
+    pass

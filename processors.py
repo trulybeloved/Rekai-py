@@ -93,6 +93,8 @@ class Process:
 
     @staticmethod
     async def deepl_tl(rekai_text_object: RekaiText):
+        """ THIS USES CHUNKED PROCESSING"""
+
         logger.info("Starting DeepL Translation")
         timestamp = rekai_text_object.timestamp
 
@@ -113,11 +115,12 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Deepl TL', total_task_count=total_transmute_count)
 
         if AppConfig.parallel_process:
-            _ = await SubProcess.async_transmute_multithreaded(
+            _ = await SubProcess.async_transmute_chunks_multithreaded(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
-                transmutor=Transmute.translate_string_with_deepl_api,
+                transmutor=Transmute.translate_chunk_with_deepl_api,
                 timestamp=timestamp,
-                progress_monitor=progress_monitor)
+                progress_monitor=progress_monitor,
+                chunk_size=AppConfig.deepl_transmutor_chunk_size)
         else:
             SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -155,11 +158,12 @@ class Process:
         progress_monitor = ProgressMonitor(task_name='Google TL', total_task_count=total_chunk_count)
 
         if AppConfig.parallel_process:
-            await SubProcess.async_transmute_chunks_multithreaded(
+            _ = await SubProcess.async_transmute_chunks_multithreaded(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
                 transmutor=Transmute.translate_chunk_with_google_tl_api,
                 timestamp=timestamp,
-                progress_monitor=progress_monitor)
+                progress_monitor=progress_monitor,
+                chunk_size=AppConfig.google_tl_transmutor_chunk_size)
         else:
             SubProcess.sync_transmute(
                 list_of_strings_to_transmute=list_of_strings_to_transmute,
@@ -248,7 +252,7 @@ class SubProcess:
             transmutor: Callable[[list, int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor,
-            chunk_size: int = AppConfig.transmutor_chunk_size) -> tuple:
+            chunk_size: int = AppConfig.default_transmutor_chunk_size) -> tuple:
 
         total_string_count = len(list_of_strings_to_transmute)
 
@@ -264,7 +268,7 @@ class SubProcess:
 
         list_of_chunks_to_transmute = [list_of_strings_to_transmute[i:i + chunk_size] for i in range(0, total_string_count, chunk_size)]
 
-        total_chunk_count = len(list_of_strings_to_transmute)
+        total_chunk_count = len(list_of_chunks_to_transmute)
 
         tasks = [async_func(transmutor, chunk, timestamp, progress_monitor, index+1, total_chunk_count) for
                  index, chunk in enumerate(list_of_chunks_to_transmute)]

@@ -6,8 +6,7 @@ High Priority:
 - Create a system to store config files/prepare a dedicated db for config and avoid hard coded values.
 - Refactor to improve readability and organization
 - Better API handling - Implement cryptographically hashed API keys stored in Local DB with Private Key in user folder. (Fernet)
-- Webscraping is presently super slow. Needs optimization or replacement with a function equivalent to Jisho Sentence Parsing
-  - Replace Selelium with pypeteer or playwrite-python, which supports async
+
 - Need to implement Backoff/retry for transmutors
 
 - WEBGUI
@@ -30,6 +29,8 @@ Eventually
   - ~~Clause wise TTS and copy buttons~~
   - ~~Clause wise translations~~
 - ~~Implement DeepL TL via API~~
+- ~~Webscraping is presently super slow. Needs optimization or replacement with a function equivalent to Jisho Sentence Parsing~~
+- ~~Replace Selelium with pypeteer or playwrite-python, which supports async~~
 
 ## Rekai_HTML
 

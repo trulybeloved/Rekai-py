@@ -112,13 +112,13 @@ class Transmute:
                             handleSIGINT=False,
                             handleSIGTERM=False,
                             handleSIGHUP=False)
-                        browser_launched_within_fucntion = True
+                        browser_launched_within_function = True
                         logger.warning('Browser was not provided. A new browser instance will be run for each iteration. '
                                        'This will add considerable overhead.')
                     except BrowserError as e:
                         raise e
                 else:
-                    browser_launched_within_fucntion = False
+                    browser_launched_within_function = False
 
                 page = await _browser.newPage()
 
@@ -137,11 +137,11 @@ class Transmute:
 
                 if element:
                     outer_html = await page.evaluate('(element) => element.outerHTML', element)
-                    if browser_launched_within_fucntion:
+                    if browser_launched_within_function:
                         await _browser.close()
                     return outer_html
                 else:
-                    if browser_launched_within_fucntion:
+                    if browser_launched_within_function:
                         await _browser.close()
                     raise PageError
 
@@ -238,18 +238,19 @@ class Transmute:
 
         """DOCSTRING PENDING"""
 
+        if Transmute.deepl_client is None:
+            raise custom_exceptions.TransmuterNotAvailable("DeepL API client is not available.")
+
         if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
             return  # type: ignore
 
         source_lang = AppConfig.DeeplTranslateConfig.source_language_code
         target_lang = AppConfig.DeeplTranslateConfig.target_language_code
 
-        translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
-
         if AppConfig.deep_log_transmutors:
             logger.info(f'CALLING_DEEPL_API: Chunk {index} of {total_count}: {input_chunk}')
 
-        response = translator.translate_text(text=input_chunk, source_lang=source_lang, target_lang="EN-US")
+        response = Transmute.deepl_client.translate_text(text=input_chunk, source_lang=source_lang, target_lang=target_lang)
 
         db_interface = DeepLDBM()
         for input_text, result in zip(input_chunk, response):

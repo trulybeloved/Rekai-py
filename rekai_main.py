@@ -35,6 +35,21 @@ def main(japanese_text, preprocessed_text, header):
     log_path = os.path.join(AppConfig.logging_directory, f'rekai_log_{timestamp_str}_{header}.log')
     logger.add(sink=log_path, enqueue=True)
 
+    ## get api keys working
+    if not os.path.exists(AppConfig.deepl_api_key_path) or os.path.getsize(AppConfig.deepl_api_key_path) == 0:
+        api_key = input('Enter your DeepL API Key: ')
+        logger.warning(f'No DeepL API Key found. Prompting user to enter one')
+
+        with open(AppConfig.deepl_api_key_path, 'w') as f:
+            f.write(api_key)
+
+    if not os.path.exists(AppConfig.openai_api_key_path) or os.path.getsize(AppConfig.openai_api_key_path) == 0:
+        api_key = input('Enter your OpenAI API Key: ')
+        logger.warning(f'No OpenAI API Key found. Prompting user to enter one')
+
+        with open(AppConfig.openai_api_key_path, 'w') as f:
+            f.write(api_key)
+
     output_directory = AppConfig.output_directory
 
     run_config = RunConfig(timestamp_unix)

@@ -12,7 +12,6 @@ from pyppeteer.errors import TimeoutError, PageError, NetworkError, BrowserError
 
 from google.cloud import texttospeech
 from google.cloud import translate
-from google.cloud import translate_v2
 
 from google.cloud.texttospeech import TextToSpeechClient
 from google.cloud.translate_v2 import Client as translatev2
@@ -31,22 +30,29 @@ from custom_modules import utilities
 from custom_modules.custom_exceptions import WebPageLoadError
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
 
-import api_keys
 
 
-class ApiKeyHandler:
 
-    @staticmethod
-    def get_deepl_api_key() -> str:
-        return api_keys.deepl_api_key
+def get_deepl_api_key() -> str:
+    
+    with open(AppConfig.deepl_api_key_path, 'r') as file:
+        api_key = file.read().strip()
+
+    return api_key
+
+def get_openai_api_key() -> str:
+    
+    with open(AppConfig.openai_api_key_path, 'r') as file:
+        api_key = file.read().strip()
+
+    return api_key
     
 
 def create_transmutors() -> tuple[typing.Union[TextToSpeechClient, None], typing.Union[translatev2, None], typing.Union[TranslationServiceClient, None], typing.Union[Translator, None], typing.Union[AsyncOpenAI, None]]:
+    
     try:
 
-        tts_client = texttospeech.TextToSpeechClient(
-                client_options={"api_key": api_keys.google_cloud_api_key, "quota_project_id": api_keys.google_project_id}
-            )
+        tts_client = texttospeech.TextToSpeechClient()
         
     except Exception as e:
         logger.warning(f'Skipping Google Text-to-Speech API client creation: {e}')
@@ -63,7 +69,7 @@ def create_transmutors() -> tuple[typing.Union[TextToSpeechClient, None], typing
 
     try:
 
-        deepl_client = Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
+        deepl_client = Translator(auth_key=get_deepl_api_key())
 
     except Exception as e:
         logger.warning(f'Skipping DeepL API client creation: {e}')
@@ -71,7 +77,7 @@ def create_transmutors() -> tuple[typing.Union[TextToSpeechClient, None], typing
 
     try:
 
-        openai_client = AsyncOpenAI(api_key=api_keys.openai_api_key, max_retries=0)
+        openai_client = AsyncOpenAI(api_key=get_openai_api_key(), max_retries=0)
 
     except Exception as e:
         logger.warning(f'Skipping OpenAI API client creation: {e}')
@@ -281,16 +287,12 @@ class Transmute:
 
         source_lang = AppConfig.GoogleTranslateConfig.source_language_code
         target_lang = AppConfig.GoogleTranslateConfig.target_language_code
-        location = AppConfig.GoogleTranslateConfig.location
-        project_id = api_keys.google_project_id
-        parent = f"projects/{project_id}/locations/{location}"
 
         if AppConfig.deep_log_transmutors:
             logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_string}')
 
         response = Transmute.gtl3_client.translate_text(
             request={
-                "parent": parent,
                 "contents": [input_string],
                 "mime_type": "text/plain",
                 "source_language_code": source_lang,
@@ -335,9 +337,6 @@ class Transmute:
 
         source_lang = AppConfig.GoogleTranslateConfig.source_language_code
         target_lang = AppConfig.GoogleTranslateConfig.target_language_code
-        location = AppConfig.GoogleTranslateConfig.location
-        project_id = api_keys.google_project_id
-        parent = f"projects/{project_id}/locations/{location}"  # not needed for v2
 
         if AppConfig.deep_log_transmutors:
             logger.info(f'CALLING_GCLOUD_Translate_API: Chunk {index} of {total_count}: {input_chunk}')

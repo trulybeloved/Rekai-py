@@ -35,6 +35,12 @@ class AppConfig:
     # current working directory
     current_working_directory = os.getcwd()
 
+    ## secrets are under appdata on windows, and under .config on linux
+    if(os.name == 'nt'):  ## Windows
+        secrets_dir = os.path.join(os.environ['APPDATA'],"KudasaiSecrets")
+    else:  ## Linux
+        secrets_dir = os.path.join(os.path.expanduser("~"), ".config", "KudasaiSecrets")
+
     # paths and variables pertaining to logging
     logging_directory: str = os.path.join(current_working_directory, 'logs')
     deep_log_transmutors: bool = True
@@ -66,6 +72,26 @@ class AppConfig:
     # paths pertaining to generator outputs
     output_directory = os.path.join(current_working_directory, 'outputs')
     path_to_rekai_html_src = os.path.join(current_working_directory, 'html_src')
+
+    ## api keys and credentials
+    
+    deepl_api_key_path = os.path.join(secrets_dir, "deepl_api_key.txt")
+    openai_api_key_path = os.path.join(secrets_dir,'openai_api_key.txt')
+
+    ##=========== Path Creation =============##
+
+    ## for the secrets directory and the api key files
+    if(os.path.isdir(secrets_dir) == False):
+        os.mkdir(secrets_dir)
+
+    if(os.path.exists(deepl_api_key_path) == False):
+        with open(deepl_api_key_path, 'w') as f:
+            f.truncate(0)
+
+    if(os.path.exists(openai_api_key_path) == False):
+
+        with open(openai_api_key_path, 'w') as f:
+            f.truncate(0)
 
     ##=========== INTERNAL PARAMETERS =============##
     # concurrency limits

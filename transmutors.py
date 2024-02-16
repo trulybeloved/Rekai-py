@@ -7,10 +7,6 @@ import backoff
 
 from loguru import logger
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
 from pyppeteer import launch as PyppeteerLaunch
 from pyppeteer.errors import TimeoutError, PageError, NetworkError, BrowserError
 

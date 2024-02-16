@@ -6,7 +6,6 @@ High Priority:
 - Create a system to store config files/prepare a dedicated db for config and avoid hard coded values.
 - Refactor to improve readability and organization
 - Better API handling - Implement cryptographically hashed API keys stored in Local DB with Private Key in user folder. (Fernet)
-
 - Need to implement Backoff/retry for transmutors
 
 - WEBGUI
@@ -42,13 +41,13 @@ Eventually
 - Chapter Search iframe
 - Click to send to chapter search feature
 
-- ~~Making the natural appearance of paras less conspicous and appear more like a text document. Elements like the para number and collapse button should appear only on hover and after being selected~~
+- ~~Making the natural appearance of paras less conspicuous and appear more like a text document. Elements like the para number and collapse button should appear only on hover and after being selected~~
 - ~~HTML - cards need to be collapsible to make the page appear less cluttered with info~~
 - ~~Update HTML source and generator functions for translations and associated functionality and layout~~
 
 
 ## Known Issues
-- The deeplapi target language is unlinked from appconfig
+- The deepl api target language is unlinked from appconfig
 - ~~Setting preprocess as False breaks the flow, generating blank strings for transmutation as well as several errors withing the RekaiText object~~
-- ~~Single words cannot be parsed by Jisho - implement a better error return from transmutor (HTML coded so that it appears better)~~
+- ~~Single words cannot be parsed by Jisho - implement a better error return from transmuter (HTML coded so that it appears better)~~
 - 

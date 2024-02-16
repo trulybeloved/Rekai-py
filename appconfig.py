@@ -100,7 +100,7 @@ class AppConfig:
 
     class DeeplTranslateConfig:
         source_language_code: str = 'JA'
-        target_language_code: str = 'EN_US'
+        target_language_code: str = 'EN-US'
 
     # Selenium Webdriver configuration
 

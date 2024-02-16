@@ -324,6 +324,9 @@ class SubProcess:
 
     @staticmethod
     def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:
+        
+        if column_name is None:
+            column_name = ""  # Provide a default value for column_name when it is None
 
         result = db_interface.query(raw_line=key, column_name=column_name)
         return result

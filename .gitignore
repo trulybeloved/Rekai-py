@@ -114,3 +114,7 @@ sample_text.py
 
 ## db files
 *.db
+datastores/deepl_tl.db
+datastores/google_tl.db
+datastores/je_text_to_speech.db
+datastores/jisho_parse.db

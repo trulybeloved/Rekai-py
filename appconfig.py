@@ -3,7 +3,6 @@ import os
 
 ## third-party libraries
 from google.cloud import texttospeech
-from selenium.webdriver.chrome.options import Options
 
 ## custom modules
 from dataclasses import dataclass
@@ -70,12 +69,16 @@ class AppConfig:
 
     ##=========== INTERNAL PARAMETERS =============##
     # concurrency limits
-    # Right now all processors use asyncio. These settings will be deprecated.
-    parallel_process: bool = True
-    general_multithread_max_workers: int = 6
+
+    # the python default is  min(32, os.cpu_count() + 4).
+    # os.cpu_count() returns total number of logical processors and not number of physical cpu cores.
+    general_multithread_max_workers: int = min(32, os.cpu_count() + 4)
+    async_webscrape_semaphore_value: int = 15
 
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2
-    transmutor_chunk_size: int = 20
+    default_transmutor_chunk_size: int = 20
+    deepl_transmutor_chunk_size: int = 30
+    google_tl_transmutor_chunk_size: int = 20
 
     # text to speech configuration
     tts_file_extension: str = 'opus'
@@ -95,19 +98,11 @@ class AppConfig:
         target_language_code: str = 'en_US'
         location: str = 'global'
 
-
     class DeeplTranslateConfig:
         source_language_code: str = 'JA'
         target_language_code: str = 'EN_US'
 
     # Selenium Webdriver configuration
-    class ChromeOptions:
-        options = Options()
-        options.add_argument('--headless')
-        # user_profile_path = ""
-        # options.setBinary('/path/to/chrome/binary')
-        # PROFILES ARE NOT WORKING RIGHT NOW
-        # options.add_argument(f'--user-data-dir={user_profile_path}')
 
     class OpenAIConfig:
         model: str = 'gpt-3.5-turbo-0125'
@@ -117,10 +112,8 @@ class AppConfig:
         stream: bool = False
 
 
-
 @dataclass
 class RunConfig:
-
     _instances = []
 
     # This class is called by default by RekaiText.
@@ -211,12 +204,17 @@ class RunConfig:
 
 
 app_config = AppConfig()
+
+
 def config_object_to_dict(config_object):
-    return {key: getattr(config_object, key) for key in dir(config_object) if not key.startswith('_') and not callable(getattr(config_object, key))}
+    return {key: getattr(config_object, key) for key in dir(config_object) if
+            not key.startswith('_') and not callable(getattr(config_object, key))}
+
 
 def update_config_from_dict(config_dict, config_obect):
     for key, value in config_dict.items():
         setattr(config_obect, key, value)
     return config_obect
+
 
 print(config_object_to_dict(app_config))

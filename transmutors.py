@@ -1,13 +1,18 @@
 ## built-in libraries
 import typing
+import asyncio
 
 ## third-party libraries
+import backoff
+
 from loguru import logger
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from pyppeteer import launch as PyppeteerLaunch
+from pyppeteer.errors import TimeoutError, PageError, NetworkError, BrowserError
 
 from google.cloud import texttospeech
 from google.cloud import translate
@@ -18,7 +23,6 @@ from google.cloud.translate_v2 import Client as translatev2
 from google.cloud.translate_v3 import TranslationServiceClient
 
 from openai import AsyncOpenAI
-
 from kairyou import Kairyou
 
 from deepl.translator import Translator
@@ -27,6 +31,8 @@ from deepl.api_data import TextResult
 ## custom modules
 from appconfig import AppConfig
 from custom_modules import utilities, custom_exceptions
+from custom_modules import utilities
+from custom_modules.custom_exceptions import WebPageLoadError
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
 
 import api_keys
@@ -85,47 +91,86 @@ class Transmute:
 
     # Jisho web scrape and parse
     @staticmethod
-    def parse_string_with_jisho(input_string: str,
-                                timestamp: int,
-                                progress_monitor: utilities.ProgressMonitor,
-                                index: int = 0,
-                                total_count: int = 0) -> tuple[str, str]:
+    async def parse_string_with_jisho(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            semaphore: asyncio.Semaphore,
+            index: int = 0,
+            total_count: int = 0,
+            browser: PyppeteerLaunch = None) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
+
+        @backoff.on_exception(backoff.expo, WebPageLoadError, max_tries=3, max_time=20)
+        async def get_element_outer_html(_url: str, _selector: str, _semaphore: asyncio.Semaphore, _browser: PyppeteerLaunch = None):
+            async with _semaphore:
+                if not _browser:
+                    try:
+                        _browser = await PyppeteerLaunch(
+
+                            handleSIGINT=False,
+                            handleSIGTERM=False,
+                            handleSIGHUP=False)
+                        browser_launched_within_fucntion = True
+                        logger.warning('Browser was not provided. A new browser instance will be run for each iteration. '
+                                       'This will add considerable overhead.')
+                    except BrowserError as e:
+                        raise e
+                else:
+                    browser_launched_within_fucntion = False
+
+                page = await _browser.newPage()
+
+                try:
+                    await page.goto(_url)
+                    # Check if the webpage has actually loaded by locating the search bar
+                    _ = await page.querySelector('#search_main')
+                except (NetworkError, TimeoutError, PageError) as e:
+                    logger.error(f'There was an error while loading the page for {_url}')
+                    raise WebPageLoadError()
+
+                if AppConfig.deep_log_transmutors:
+                    logger.info(f'Webpage loaded for {index}: {_url}')
+
+                element = await page.querySelector(_selector)
+
+                if element:
+                    outer_html = await page.evaluate('(element) => element.outerHTML', element)
+                    if browser_launched_within_fucntion:
+                        await _browser.close()
+                    return outer_html
+                else:
+                    if browser_launched_within_fucntion:
+                        await _browser.close()
+                    raise PageError
 
         if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
             return  # type: ignore
 
-        options = AppConfig.ChromeOptions.options
-        driver = webdriver.Chrome(options=options)
-
         jisho_parsed_html_element = str()
 
         url = f'https://jisho.org/search/{input_string}'
+        selector = f'#zen_bar'
 
         try:
-            if AppConfig.deep_log_transmutors:
-                logger.info(f'Trying to parse line {index} out of {total_count}')
-
-            driver.get(url=url)
-
-            if AppConfig.deep_log_transmutors:
-                logger.info(f'Webdriver instance Started for {index} started')
-
-            zen_bar_element = WebDriverWait(driver, 10).until(ec.visibility_of_element_located((By.ID, "zen_bar")))
-            zen_outer_html = zen_bar_element.get_attribute('outerHTML')
-
-            # Selenium also extracts linebreaks that mess with the html when assigned to a string_list
-            zen_html = str(zen_outer_html).replace('\n', "").strip()
-
-            jisho_parsed_html_element += zen_html
-
-        except Exception as e:
-            logger.error(f'An exception occurred in jisho parse - {input_string}')
+            outer_html = await get_element_outer_html(url, selector, _semaphore=semaphore, _browser=browser)
+            if outer_html:
+                zen_outer_html = outer_html
+                # replace linebreaks that mess with the html when assigned to a string_list
+                zen_html = str(zen_outer_html).replace('\n', "").strip()
+                jisho_parsed_html_element += zen_html
+        except PageError as e:
+            logger.error(f'A page error occurred in jisho parse - {input_string} '
+                         f'Probable cause: The sentence parse HTML element was not found on page'
+                         f'\n Reason: Line may not have a valid sentence parsing. Eg: Single words')
             zen_html = f'<p></p>'
             jisho_parsed_html_element += zen_html
-
-        driver.quit()
+        except Exception as e:
+            logger.critical(f'A CRITICAL exception occurred in jisho parse - {input_string} \n Exception: {e} \n PARSE FAILED')
+            AppConfig.GLOBAL_RUN_STOP = True
+            logger.warning(f'CRITICAL ERROR: GLOBAL RUN STOP FLAG SET')
+            return (input_string, "failed")
 
         jisho_parsed_html_element = jisho_parsed_html_element.replace('/search/', 'https://jisho.org/search/')
         jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
@@ -143,11 +188,12 @@ class Transmute:
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(input_string: str,
-                                        timestamp: int,
-                                        progress_monitor: utilities.ProgressMonitor,
-                                        index: int = 0,
-                                        total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_deepl_api(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -182,13 +228,49 @@ class Transmute:
 
         return (input_string, _)
 
+    @staticmethod
+    def translate_chunk_with_deepl_api(
+            input_chunk: list,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
+
+        """DOCSTRING PENDING"""
+
+        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
+            return  # type: ignore
+
+        source_lang = AppConfig.DeeplTranslateConfig.source_language_code
+        target_lang = AppConfig.DeeplTranslateConfig.target_language_code
+
+        translator = deepl.Translator(auth_key=ApiKeyHandler.get_deepl_api_key())
+
+        if AppConfig.deep_log_transmutors:
+            logger.info(f'CALLING_DEEPL_API: Chunk {index} of {total_count}: {input_chunk}')
+
+        response = translator.translate_text(text=input_chunk, source_lang=source_lang, target_lang="EN-US")
+
+        db_interface = DeepLDBM()
+        for input_text, result in zip(input_chunk, response):
+            translated_text = result.text
+            db_interface.insert(raw_line=input_text, transmuted_data=translated_text, unix_timestamp=timestamp)
+        db_interface.close_connection()
+
+        progress_monitor.mark_completion()
+
+        _ = "success"
+
+        return (str(index), _)
+
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(input_string: str,
-                                            timestamp: int,
-                                            progress_monitor: utilities.ProgressMonitor,
-                                            index: int = 0,
-                                            total_count: int = 0) -> tuple[str, str]:
+    def translate_string_with_google_tl_api(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a single string within a list.
@@ -232,17 +314,17 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-
         _ = "success"
 
         return (input_string, _)
 
     @staticmethod
-    def translate_chunk_with_google_tl_api(input_chunk: list,
-                                           timestamp: int,
-                                           progress_monitor: utilities.ProgressMonitor,
-                                           index: int = 0,
-                                           total_count: int = 0) -> tuple[str, str]:
+    def translate_chunk_with_google_tl_api(
+            input_chunk: list,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING
         This API expects a list of strings.
@@ -261,7 +343,7 @@ class Transmute:
         parent = f"projects/{project_id}/locations/{location}"  # not needed for v2
 
         if AppConfig.deep_log_transmutors:
-            logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_chunk}')
+            logger.info(f'CALLING_GCLOUD_Translate_API: Chunk {index} of {total_count}: {input_chunk}')
 
         response = Transmute.gtl2_client.translate(
             values=input_chunk,
@@ -279,19 +361,19 @@ class Transmute:
 
         progress_monitor.mark_completion()
 
-
         _ = "success"
 
-        return (_, _)
+        return (str(index), _)
 
 
     # Google Cloud Text-to-Speech
     @staticmethod
-    def tts_string_with_google_api(input_string: str,
-                                   timestamp: int,
-                                   progress_monitor: utilities.ProgressMonitor,
-                                   index: int = 0,
-                                   total_count: int = 0) -> tuple[str, str]:
+    def tts_string_with_google_api(
+            input_string: str,
+            timestamp: int,
+            progress_monitor: utilities.ProgressMonitor,
+            index: int = 0,
+            total_count: int = 0) -> tuple[str, str]:
 
         """DOCSTRING PENDING"""
 
@@ -361,8 +443,7 @@ class Transmute:
             top_p=AppConfig.OpenAIConfig.top_p,
             n=AppConfig.OpenAIConfig.n,
             stream=AppConfig.OpenAIConfig.stream
-            )
-
+        )
 
 
     @staticmethod

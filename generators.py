@@ -281,7 +281,7 @@ class GenerateHtml:
                 audio_button_html = ''
 
             # CARD SLAVE START
-            output_html = f'<div id="{line_id}" class="line-card">'
+            output_html = f'<div id="{line_id}" class="line-card" style="display: none;">'
 
             # CARD SLAVE HEADER
             output_html += f'''
@@ -568,15 +568,15 @@ class GenerateHtml:
                             <div id="right-sidebar" class="right-sidebar sidebar-expanded">
                             
                                 <div class="sidebar-tab-buttons">
-                                    <div id="jisho-tab-button" class="tab-button tab-button-generic" onclick="showTab('.right-sidebar-iframe-container')">Jisho</div>
-                                    <div id="chapter-search-tab-button" class="tab-button tab-button-generic" onclick="showTab('.chapter-search-iframe-container')">Chapter Search</div>
+                                    <div id="jisho-tab-button" class="tab-button tab-button-generic" onclick="showTab('#jisho-iframe-container')">Jisho</div>
+                                    <div id="chapter-search-tab-button" class="tab-button tab-button-generic" onclick="showTab('#chapter-search-iframe-container')">Chapter Search</div>
                                 </div>
 
-                                <div class="sidebar-tab right-sidebar-iframe-container">
+                                <div id="jisho-iframe-container" class="sidebar-tab right-sidebar-iframe-container">
                                     <iframe class=sidebar-iframe id=sidebar-iframe name=sidebar-iframe src=https://jisho.org/ frameborder="0"></iframe>
                                 </div>
 
-                                <div class="sidebar-tab chapter-search-iframe-container">
+                                <div id="chapter-search-iframe-container" class="sidebar-tab chapter-search-iframe-container">
                                     <iframe class=chapter-search-iframe id=chapter-search-iframe name=sidebar-chapter-search-iframe src="https://re-zero-chapter-search-ui.web.app/" frameborder="0"></iframe>
                                 </div>                           
                                 

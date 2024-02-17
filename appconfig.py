@@ -31,15 +31,18 @@ class AppConfig:
     # Manual Cancel Flag
     MANUAL_RUN_STOP: bool = False
 
+    # Transmute Failure
+
+
     ##=========== PATHS AND DIRECTORIES =============##
     # current working directory
     current_working_directory = os.getcwd()
 
     ## secrets are under appdata on windows, and under .config on linux
     if(os.name == 'nt'):  ## Windows
-        secrets_dir = os.path.join(os.environ['APPDATA'],"KudasaiSecrets")
+        secrets_dir = os.path.join(os.environ['APPDATA'],"RekaiSecrets")
     else:  ## Linux
-        secrets_dir = os.path.join(os.path.expanduser("~"), ".config", "KudasaiSecrets")
+        secrets_dir = os.path.join(os.path.expanduser("~"), ".config", "RekaiSecrets")
 
     # paths and variables pertaining to logging
     logging_directory: str = os.path.join(current_working_directory, 'logs')
@@ -94,6 +97,10 @@ class AppConfig:
             f.truncate(0)
 
     ##=========== INTERNAL PARAMETERS =============##
+    # backoff-retry parameters
+    backoff_max_tries: int = 3
+    backoff_max_time: int = 20
+
     # concurrency limits
 
     # the python default is  min(32, os.cpu_count() + 4).

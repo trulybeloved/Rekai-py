@@ -1,6 +1,7 @@
 ## built-in libraries
 import typing
 import asyncio
+import inspect
 
 ## third-party libraries
 import backoff
@@ -10,57 +11,57 @@ from loguru import logger
 from pyppeteer import launch as PyppeteerLaunch
 from pyppeteer.errors import TimeoutError, PageError, NetworkError, BrowserError
 
-from google.cloud import texttospeech
-from google.cloud import translate
+from deepl.translator import Translator as DeepLTranslator
+from deepl.api_data import TextResult
+from deepl import exceptions as DeepLExceptions
 
-from google.cloud.texttospeech import TextToSpeechClient
-from google.cloud.translate_v2 import Client as translatev2
-from google.cloud.translate_v3 import TranslationServiceClient
+from google.cloud import texttospeech as GCloudTTS
+from google.cloud.texttospeech import TextToSpeechClient as GCloudTTSClient
+from google.cloud.translate_v2 import Client as GCloudTranslateV2
+from google.cloud.translate_v3 import TranslationServiceClient as GCloudTranslateV3
+from google.api_core import exceptions as GCloudExceptions
 
 from openai import AsyncOpenAI
-from kairyou import Kairyou
 
-from deepl.translator import Translator
-from deepl.api_data import TextResult
+from kairyou import Kairyou
 
 ## custom modules
 from appconfig import AppConfig
-from custom_modules import utilities, custom_exceptions
+from custom_modules import custom_exceptions
 from custom_modules import utilities
+from custom_modules.utilities import MetaLogger
 from custom_modules.custom_exceptions import WebPageLoadError
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
 
 
-
-
 def get_deepl_api_key() -> str:
-    
     with open(AppConfig.deepl_api_key_path, 'r') as file:
         api_key = file.read().strip()
 
     return api_key
 
+
 def get_openai_api_key() -> str:
-    
     with open(AppConfig.openai_api_key_path, 'r') as file:
         api_key = file.read().strip()
 
     return api_key
-    
 
-def create_transmutors() -> tuple[typing.Union[TextToSpeechClient, None], typing.Union[translatev2, None], typing.Union[TranslationServiceClient, None], typing.Union[Translator, None], typing.Union[AsyncOpenAI, None]]:
-    
+
+def create_api_clients() -> tuple[
+    typing.Union[GCloudTTSClient, None], typing.Union[GCloudTranslateV2, None], typing.Union[
+        GCloudTranslateV3, None], typing.Union[DeepLTranslator, None], typing.Union[AsyncOpenAI, None]]:
     try:
 
-        tts_client = texttospeech.TextToSpeechClient()
-        
+        tts_client = GCloudTTS.TextToSpeechClient()
+
     except Exception as e:
         logger.warning(f'Skipping Google Text-to-Speech API client creation: {e}')
         tts_client = None
-    
+
     try:
-        gtl2_client = translatev2() ## v2 of the API
-        gtl3_client = translate.TranslationServiceClient()  ## v3 of the API
+        gtl2_client = GCloudTranslateV2()  ## v2 of the API
+        gtl3_client = GCloudTranslateV3()  ## v3 of the API
 
     except Exception as e:
         logger.warning(f'Skipping Google Cloud Translate API client creation: {e}')
@@ -69,7 +70,7 @@ def create_transmutors() -> tuple[typing.Union[TextToSpeechClient, None], typing
 
     try:
 
-        deepl_client = Translator(auth_key=get_deepl_api_key())
+        deepl_client = DeepLTranslator(auth_key=get_deepl_api_key())
 
     except Exception as e:
         logger.warning(f'Skipping DeepL API client creation: {e}')
@@ -86,10 +87,118 @@ def create_transmutors() -> tuple[typing.Union[TextToSpeechClient, None], typing
     return tts_client, gtl2_client, gtl3_client, deepl_client, openai_client
 
 
+class APIRequest:
+
+    @staticmethod
+    @backoff.on_exception(
+        backoff.expo,
+        exception=(DeepLExceptions.DeepLException, DeepLExceptions.TooManyRequestsException),
+        max_tries=AppConfig.backoff_max_tries,
+        max_time=AppConfig.backoff_max_time,
+        on_backoff=MetaLogger.log_backoff_retry,
+        on_giveup=MetaLogger.log_backoff_giveup,
+        on_success=MetaLogger.log_backoff_success)
+    def deepl(
+            text: typing.Union[str, list[str]],
+            source_lang: str,
+            target_lang: str,
+            api_client: DeepLTranslator = None) -> typing.Union[TextResult, list[TextResult]]:
+        """
+        Returns a TextResult object as defined by the deepl python client
+        TextResult.text = <<Translated Text>>
+        TextResult.detectedSourceLang
+        """
+
+        # if an API client was not provided, instantiate one
+        if not api_client:
+            try:
+                api_client = DeepLTranslator(auth_key=get_deepl_api_key())
+            except Exception as e:
+                # TO DO
+                raise e
+
+        try:
+            response = api_client.translate_text(
+                text=text,  # The client can accept a singular string, or a list of stings
+                source_lang=source_lang,
+                target_lang=target_lang)
+
+        except DeepLExceptions.QuotaExceededException as e:
+            logger.critical('DeepL API request failed due to your quota being exceeded.')
+            raise e
+        except DeepLExceptions.TooManyRequestsException as e:
+            raise e
+        except DeepLExceptions.DeepLException as e:
+            raise e
+        except Exception as e:
+            logger.critical(f'Deepl API request failed due to an unexpected error')
+            raise e
+
+        return response
+
+    @staticmethod
+    @backoff.on_exception(
+        backoff.expo,
+        exception=(
+                GCloudExceptions.BadGateway,
+                GCloudExceptions.DataLoss,
+                GCloudExceptions.DeadlineExceeded,
+                GCloudExceptions.GatewayTimeout,
+                GCloudExceptions.GoogleAPICallError,
+                GCloudExceptions.GoogleAPIError,
+                GCloudExceptions.ServerError,
+                GCloudExceptions.ServiceUnavailable,
+                GCloudExceptions.TooManyRequests),
+        # Google APIs do implement exponential backoff-retry for 5xx errors within it's client libraries.
+        max_tries=AppConfig.backoff_max_tries,
+        max_time=AppConfig.backoff_max_time,
+        on_backoff=MetaLogger.log_backoff_retry,
+        on_giveup=MetaLogger.log_backoff_giveup,
+        on_success=MetaLogger.log_backoff_success)
+    def google_translate_v2(
+            text: typing.Union[str, list[str]],
+            source_lang: str,
+            target_lang: str,
+            api_client: GCloudTranslateV2 = None) -> list[dict]:
+        """
+        Returns: A list of dictionaries for each queried value. Each
+                  dictionary typically contains three keys (though not
+                  all will be present in all cases)
+
+                  "detectedSourceLanguage": The detected language (as an
+                    ISO 639-1 language code) of the text.
+                  "translatedText": The translation of the text into the
+                    target language.
+                  "input": The corresponding input value.
+                  "model": The model used to translate the text.
+
+                  If only a single value is passed, then only a single
+                  dictionary will be returned.
+        """
+        # if an API client was not provided, instantiate one
+        if not api_client:
+            try:
+                api_client = GCloudTranslateV2()
+            except Exception as e:
+                # TO DO
+                raise e
+
+        try:
+            response = api_client.translate(
+                values=text,  # The client can accept a singular string, or a list of stings
+                source_language=source_lang,
+                target_language=target_lang,
+                format_='text',
+                model='nmt')
+        except Exception as e:
+            MetaLogger.log_exception(function=str(inspect.currentframe().f_code.co_name), exception=e)
+            raise e
+
+        return response
+
 
 class Transmute:
-
-    tts_client, gtl2_client, gtl3_client, deepl_client, openai_client = create_transmutors()
+    tts_client, gtl2_client, gtl3_client, deepl_client, openai_client = create_api_clients()
 
     # Jisho web scrape and parse
     @staticmethod
@@ -104,8 +213,14 @@ class Transmute:
 
         """DOCSTRING PENDING"""
 
-        @backoff.on_exception(backoff.expo, WebPageLoadError, max_tries=3, max_time=20)
-        async def get_element_outer_html(_url: str, _selector: str, _semaphore: asyncio.Semaphore, _browser: PyppeteerLaunch = None):
+        @backoff.on_exception(
+            backoff.expo,
+            exception=(WebPageLoadError),
+            max_tries=AppConfig.backoff_max_tries,
+            max_time=AppConfig.backoff_max_time,
+            on_backoff=MetaLogger.log_backoff_retry)
+        async def get_element_outer_html(_url: str, _selector: str, _semaphore: asyncio.Semaphore,
+                                         _browser: PyppeteerLaunch = None):
             async with _semaphore:
                 if not _browser:
                     try:
@@ -115,8 +230,9 @@ class Transmute:
                             handleSIGTERM=False,
                             handleSIGHUP=False)
                         browser_launched_within_function = True
-                        logger.warning('Browser was not provided. A new browser instance will be run for each iteration. '
-                                       'This will add considerable overhead.')
+                        logger.warning(
+                            'Browser was not provided. A new browser instance will be run for each iteration. '
+                            'This will add considerable overhead.')
                     except BrowserError as e:
                         raise e
                 else:
@@ -169,7 +285,8 @@ class Transmute:
             zen_html = f'<p></p>'
             jisho_parsed_html_element += zen_html
         except Exception as e:
-            logger.critical(f'A CRITICAL exception occurred in jisho parse - {input_string} \n Exception: {e} \n PARSE FAILED')
+            logger.critical(
+                f'A CRITICAL exception occurred in jisho parse - {input_string} \n Exception: {e} \n PARSE FAILED')
             AppConfig.GLOBAL_RUN_STOP = True
             logger.warning(f'CRITICAL ERROR: GLOBAL RUN STOP FLAG SET')
             return (input_string, "failed")
@@ -190,8 +307,8 @@ class Transmute:
 
     # DeepL API translation
     @staticmethod
-    def translate_string_with_deepl_api(
-            input_string: str,
+    def translate_with_deepl_api(
+            input_data: typing.Union[str, list[str]],
             timestamp: int,
             progress_monitor: utilities.ProgressMonitor,
             index: int = 0,
@@ -209,53 +326,16 @@ class Transmute:
         target_lang = AppConfig.DeeplTranslateConfig.target_language_code
 
         if AppConfig.deep_log_transmutors:
-            logger.info(f'CALLING_DEEPL_API: Line {index} of {total_count}: {input_string}')
+            logger.info(f'CALLING_DEEPL_API: Chunk {index} of {total_count}: {input_data}')
 
-        response:typing.Union[TextResult, typing.List[TextResult]] = Transmute.deepl_client.translate_text(text=input_string, source_lang=source_lang, target_lang=target_lang)
-
-        if isinstance(response, list):
-            result = [translation.text for translation in response]
-            result = ''.join(result)
-            
-        else:
-            result = response.text
+        response = APIRequest.deepl(
+            text=input_data,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            api_client=Transmute.deepl_client)
 
         db_interface = DeepLDBM()
-        db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
-        db_interface.close_connection()
-
-        progress_monitor.mark_completion()
-
-        _ = "success"
-
-        return (input_string, _)
-
-    @staticmethod
-    def translate_chunk_with_deepl_api(
-            input_chunk: list,
-            timestamp: int,
-            progress_monitor: utilities.ProgressMonitor,
-            index: int = 0,
-            total_count: int = 0) -> tuple[str, str]:
-
-        """DOCSTRING PENDING"""
-
-        if Transmute.deepl_client is None:
-            raise custom_exceptions.TransmuterNotAvailable("DeepL API client is not available.")
-
-        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
-            return  # type: ignore
-
-        source_lang = AppConfig.DeeplTranslateConfig.source_language_code
-        target_lang = AppConfig.DeeplTranslateConfig.target_language_code
-
-        if AppConfig.deep_log_transmutors:
-            logger.info(f'CALLING_DEEPL_API: Chunk {index} of {total_count}: {input_chunk}')
-
-        response = Transmute.deepl_client.translate_text(text=input_chunk, source_lang=source_lang, target_lang=target_lang)
-
-        db_interface = DeepLDBM()
-        for input_text, result in zip(input_chunk, response):
+        for input_text, result in zip(input_data, response):
             translated_text = result.text
             db_interface.insert(raw_line=input_text, transmuted_data=translated_text, unix_timestamp=timestamp)
         db_interface.close_connection()
@@ -268,66 +348,14 @@ class Transmute:
 
     # Google Cloud Translate API
     @staticmethod
-    def translate_string_with_google_tl_api(
-            input_string: str,
+    def translate_with_google_tl_api(
+            input_data: typing.Union[str, list[str]],
             timestamp: int,
             progress_monitor: utilities.ProgressMonitor,
             index: int = 0,
             total_count: int = 0) -> tuple[str, str]:
 
-        """DOCSTRING PENDING
-        This API expects a single string within a list.
-        """
-
-        if Transmute.gtl3_client is None:
-            raise custom_exceptions.TransmuterNotAvailable("Google Translate API client is not available.")
-
-        if AppConfig.MANUAL_RUN_STOP or AppConfig.GLOBAL_RUN_STOP:
-            return  # type: ignore
-
-        source_lang = AppConfig.GoogleTranslateConfig.source_language_code
-        target_lang = AppConfig.GoogleTranslateConfig.target_language_code
-
-        if AppConfig.deep_log_transmutors:
-            logger.info(f'CALLING_GCLOUD_Translate_API: Line {index} of {total_count}: {input_string}')
-
-        response = Transmute.gtl3_client.translate_text(
-            request={
-                "contents": [input_string],
-                "mime_type": "text/plain",
-                "source_language_code": source_lang,
-                "target_language_code": target_lang,
-            }
-        )
-
-        result = [translation.translated_text for translation in response.translations]
-
-        if len(result) == 1:
-            result = str(result[0])
-        else:
-            result = ''.join(result)
-
-        db_interface = GoogleTLDBM()
-        db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
-        db_interface.close_connection()
-
-        progress_monitor.mark_completion()
-
-        _ = "success"
-
-        return (input_string, _)
-
-    @staticmethod
-    def translate_chunk_with_google_tl_api(
-            input_chunk: list,
-            timestamp: int,
-            progress_monitor: utilities.ProgressMonitor,
-            index: int = 0,
-            total_count: int = 0) -> tuple[str, str]:
-
-        """DOCSTRING PENDING
-        This API expects a list of strings.
-        """
+        """DOCSTRING PENDING"""
 
         if Transmute.gtl2_client is None:
             raise custom_exceptions.TransmuterNotAvailable("Google Translate API client is not available.")
@@ -339,14 +367,13 @@ class Transmute:
         target_lang = AppConfig.GoogleTranslateConfig.target_language_code
 
         if AppConfig.deep_log_transmutors:
-            logger.info(f'CALLING_GCLOUD_Translate_API: Chunk {index} of {total_count}: {input_chunk}')
+            logger.info(f'CALLING_GCLOUD_Translate_API: Chunk {index} of {total_count}: {input_data}')
 
-        response = Transmute.gtl2_client.translate(
-            values=input_chunk,
-            source_language=source_lang,
-            target_language=target_lang,
-            format_='text',
-            model='nmt')
+        response = APIRequest.google_translate_v2(
+            text=input_data,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            api_client=Transmute.gtl2_client)
 
         db_interface = GoogleTLDBM()
         for result in response:
@@ -360,7 +387,6 @@ class Transmute:
         _ = "success"
 
         return (str(index), _)
-
 
     # Google Cloud Text-to-Speech
     @staticmethod
@@ -387,14 +413,14 @@ class Transmute:
         pitch: float = AppConfig.GoogleTTSConfig.pitch
         volume_gain_db: float = AppConfig.GoogleTTSConfig.volume_gain_db
 
-        input_for_synthesis = texttospeech.SynthesisInput({"text": f"{input_string}"})
-        voice_settings = texttospeech.VoiceSelectionParams(
+        input_for_synthesis = GCloudTTS.SynthesisInput({"text": f"{input_string}"})
+        voice_settings = GCloudTTS.VoiceSelectionParams(
             {
                 "language_code": language_code,
                 "name": voice_name
             }
         )
-        audio_configuration = texttospeech.AudioConfig(
+        audio_configuration = GCloudTTS.AudioConfig(
             {
                 "audio_encoding": audio_encoding,
                 "speaking_rate": speaking_rate,
@@ -423,7 +449,6 @@ class Transmute:
 
         return (input_string, _)
 
-
     @staticmethod
     async def infer_openai_gpt(db_key_string: str, system_message: str, prompt: str):
 
@@ -440,7 +465,6 @@ class Transmute:
             n=AppConfig.OpenAIConfig.n,
             stream=AppConfig.OpenAIConfig.stream
         )
-
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict) -> str:

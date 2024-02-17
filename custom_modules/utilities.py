@@ -196,3 +196,29 @@ class ProgressMonitor:
     #     with open(self.log_path, 'r', encoding='utf-8') as log_file:
     #         log_text = log_file.read()
     #         return log_text
+
+class MetaLogger:
+    @staticmethod
+    def log_backoff_retry(details: dict):
+        logger.warning(
+            "Backing off {wait:0.1f} seconds after {tries} tries "
+            "calling function {target} with args {args} and kwargs "
+            "{kwargs}".format(**details))
+
+    @staticmethod
+    def log_backoff_giveup(details: dict):
+        logger.critical(
+            "Backing off failed after {tries} tries "
+            "for function {target} with args {args} and kwargs "
+            "{kwargs}".format(**details))
+
+    @staticmethod
+    def log_backoff_success(details: dict):
+        logger.info(
+            "function {target} was successful after {tries} tries "
+            "for function {target} with args {args} and kwargs "
+            "{kwargs}".format(**details))
+
+    @staticmethod
+    def log_exception(function: str, exception: Exception):
+        logger.exception(f'The function {function} raised sn exception: {exception}')

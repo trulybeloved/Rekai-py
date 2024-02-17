@@ -114,7 +114,7 @@ class Process:
 
         _ = await SubProcess.async_transmute_chunks_multithreaded(
             list_of_strings_to_transmute=list_of_strings_to_transmute,
-            transmutor=Transmute.translate_chunk_with_deepl_api,
+            transmutor=Transmute.translate_with_deepl_api,
             timestamp=timestamp,
             progress_monitor=progress_monitor,
             chunk_size=AppConfig.deepl_transmutor_chunk_size)
@@ -151,7 +151,7 @@ class Process:
 
         _ = await SubProcess.async_transmute_chunks_multithreaded(
             list_of_strings_to_transmute=list_of_strings_to_transmute,
-            transmutor=Transmute.translate_chunk_with_google_tl_api,
+            transmutor=Transmute.translate_with_google_tl_api,
             timestamp=timestamp,
             progress_monitor=progress_monitor,
             chunk_size=AppConfig.google_tl_transmutor_chunk_size)

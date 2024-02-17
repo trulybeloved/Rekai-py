@@ -245,6 +245,9 @@ body {
   display: flex;
   align-items: center;
   flex-direction: column;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Media queries for body associated with top bar are in the top bar section */

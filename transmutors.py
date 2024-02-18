@@ -33,6 +33,15 @@ from custom_modules.utilities import MetaLogger
 from custom_modules.custom_exceptions import WebPageLoadError
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
 
+def log_backoff_retry(details):
+    MetaLogger.log_backoff_retry(details)
+
+def log_backoff_giveup(details):
+    MetaLogger.log_backoff_giveup(details)
+
+def log_backoff_success(details):
+    MetaLogger.log_backoff_success(details)
+
 
 def get_deepl_api_key() -> str:
     with open(AppConfig.deepl_api_key_path, 'r') as file:
@@ -95,14 +104,15 @@ class APIRequest:
         exception=(DeepLExceptions.DeepLException, DeepLExceptions.TooManyRequestsException),
         max_tries=AppConfig.backoff_max_tries,
         max_time=AppConfig.backoff_max_time,
-        on_backoff=MetaLogger.log_backoff_retry,
-        on_giveup=MetaLogger.log_backoff_giveup,
-        on_success=MetaLogger.log_backoff_success)
+        on_backoff=log_backoff_retry,
+        on_giveup=log_backoff_giveup,
+        on_success=log_backoff_success)
+    
     def deepl(
             text: typing.Union[str, list[str]],
             source_lang: str,
             target_lang: str,
-            api_client: DeepLTranslator = None) -> typing.Union[TextResult, list[TextResult]]:
+            api_client: typing.Union[DeepLTranslator,None] = None) -> typing.Union[TextResult, list[TextResult]]:
         """
         Returns a TextResult object as defined by the deepl python client
         TextResult.text = <<Translated Text>>
@@ -152,14 +162,15 @@ class APIRequest:
         # Google APIs do implement exponential backoff-retry for 5xx errors within it's client libraries.
         max_tries=AppConfig.backoff_max_tries,
         max_time=AppConfig.backoff_max_time,
-        on_backoff=MetaLogger.log_backoff_retry,
-        on_giveup=MetaLogger.log_backoff_giveup,
-        on_success=MetaLogger.log_backoff_success)
+        on_backoff=log_backoff_retry,
+        on_giveup=log_backoff_giveup,
+        on_success=log_backoff_success)
+    
     def google_translate_v2(
             text: typing.Union[str, list[str]],
             source_lang: str,
             target_lang: str,
-            api_client: GCloudTranslateV2 = None) -> list[dict]:
+            api_client: typing.Union[GCloudTranslateV2, None] = None) -> list[dict]:
         """
         Returns: A list of dictionaries for each queried value. Each
                   dictionary typically contains three keys (though not
@@ -191,7 +202,7 @@ class APIRequest:
                 format_='text',
                 model='nmt')
         except Exception as e:
-            MetaLogger.log_exception(function=str(inspect.currentframe().f_code.co_name), exception=e)
+            MetaLogger.log_exception(function='parse_string_with_jisho', exception=e)
             raise e
 
         return response
@@ -218,7 +229,7 @@ class Transmute:
             exception=(WebPageLoadError),
             max_tries=AppConfig.backoff_max_tries,
             max_time=AppConfig.backoff_max_time,
-            on_backoff=MetaLogger.log_backoff_retry)
+            on_backoff=log_backoff_retry)
         async def get_element_outer_html(_url: str, _selector: str, _semaphore: asyncio.Semaphore,
                                          _browser: PyppeteerLaunch = None):
             async with _semaphore:
@@ -334,7 +345,12 @@ class Transmute:
             target_lang=target_lang,
             api_client=Transmute.deepl_client)
 
+        ## If the response is a single TextResult, convert it to a list
+        if isinstance(response, TextResult):
+            response = [response]
+
         db_interface = DeepLDBM()
+        
         for input_text, result in zip(input_data, response):
             translated_text = result.text
             db_interface.insert(raw_line=input_text, transmuted_data=translated_text, unix_timestamp=timestamp)

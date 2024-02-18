@@ -4,7 +4,7 @@ from loguru import logger
 ## custom modules
 from db_management import JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.custom_exceptions import EntryNotFound
-from custom_modules.utilities import decode_bytes_from_base64_string, encode_bytes_to_base64_string
+from custom_modules.utilities import decode_bytes_from_base64_string
 
 
 
@@ -16,12 +16,7 @@ class Fetch:
         db_interface = JishoParseDBM()
         try:
             parsed_html = db_interface.query(raw_line=raw_line)
-
-            if isinstance(parsed_html, bytes):
-                parsed_html = encode_bytes_to_base64_string(parsed_html)
-
-            return parsed_html #type: ignore
-        
+            return parsed_html
         except EntryNotFound as e:
             logger.exception(e)
             raise e
@@ -32,12 +27,9 @@ class Fetch:
         db_interface = TextToSpeechDBM()
         try:
             base64_string = db_interface.query(raw_line=raw_line)
-
-            if isinstance(base64_string, str):
-                tts_bytes = decode_bytes_from_base64_string(base64_string)
+            tts_bytes = decode_bytes_from_base64_string(base64_string)
 
             return tts_bytes
-        
         except EntryNotFound as e:
             logger.exception(e)
             raise e
@@ -48,12 +40,7 @@ class Fetch:
         db_interface = DeepLDBM()
         try:
             result = db_interface.query(raw_line=raw_line)
-
-            if isinstance(result, str):
-                result = decode_bytes_from_base64_string(result)
-
-            return result 
-        
+            return result
         except EntryNotFound as e:
             logger.exception(e)
             raise e
@@ -64,14 +51,8 @@ class Fetch:
         db_interface = GoogleTLDBM()
         try:
             result = db_interface.query(raw_line=raw_line)
-
-            if isinstance(result, str):
-                result = decode_bytes_from_base64_string(result)
-
-            return result 
-        
+            return result
         except EntryNotFound as e:
             logger.exception(e)
             raise e
-
 

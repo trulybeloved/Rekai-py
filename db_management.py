@@ -1,5 +1,5 @@
 ## built-in libraries
-from typing import Union
+import typing
 
 ## third-party libraries
 from loguru import logger
@@ -95,7 +95,7 @@ class DBM:
             except Exception as e:
                 logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
-    def query(self, raw_line: str, column_name: str = None) -> Union[str, bytes]:
+    def query(self, raw_line: str, column_name:typing.Union[str, None] = None) -> typing.Union[str, bytes]:
 
         if column_name is None:
             column_name = self._output_column_name
@@ -114,8 +114,9 @@ class DBM:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
             raise EntryNotFound
 
-    def insert(self, raw_line: str, transmuted_data: Union[str, bytes], unix_timestamp: int,
-               column_name: str = None) -> None:
+    def insert(self, raw_line: str, transmuted_data: typing.Union[str, bytes], unix_timestamp: int,
+               column_name:typing.Union[str,None] = None) -> None:
+        
         cursor = self.db_connection.cursor()
 
         if isinstance(transmuted_data, bytes):

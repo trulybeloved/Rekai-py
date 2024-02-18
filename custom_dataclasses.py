@@ -65,14 +65,14 @@ class Clause(RekaiTextCommon):
     preprocessed_text: str
     original_preprocessed_text: str
 
-    def __init__(self, input_clause: str, input_prepro_clause: Union[str, None], run_config: RunConfig, para_info: ParaInfo):
+    def __init__(self, input_clause: str, input_preprocessed_clause: Union[str, None], run_config: RunConfig, para_info: ParaInfo):
         self.run_config = run_config
         self.para_info = para_info
 
         self.raw_text = input_clause
         self.original_raw_text = input_clause
-        self.preprocessed_text = input_prepro_clause
-        self.original_preprocessed_text = input_prepro_clause
+        self.preprocessed_text = input_preprocessed_clause if input_preprocessed_clause is not None else ""
+        self.original_preprocessed_text = input_preprocessed_clause if input_preprocessed_clause is not None else ""
 
         if self.run_config.clean_post_split and para_info.is_dialogue:
             self.raw_text = self.clean_post_split(self.raw_text)

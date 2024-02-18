@@ -37,15 +37,15 @@ def main(japanese_text, preprocessed_text, header):
 
     ## get api keys working
     if not os.path.exists(AppConfig.deepl_api_key_path) or os.path.getsize(AppConfig.deepl_api_key_path) == 0:
-        api_key = input('Enter your DeepL API Key: ')
         logger.warning(f'No DeepL API Key found. Prompting user to enter one')
+        api_key = input('Enter your DeepL API Key: ')
 
         with open(AppConfig.deepl_api_key_path, 'w') as f:
             f.write(api_key)
 
     if not os.path.exists(AppConfig.openai_api_key_path) or os.path.getsize(AppConfig.openai_api_key_path) == 0:
-        api_key = input('Enter your OpenAI API Key: ')
         logger.warning(f'No OpenAI API Key found. Prompting user to enter one')
+        api_key = input('Enter your OpenAI API Key: ')
 
         with open(AppConfig.openai_api_key_path, 'w') as f:
             f.write(api_key)

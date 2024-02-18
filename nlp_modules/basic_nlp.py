@@ -1,6 +1,5 @@
-"""Functions related to basic NLP"""
-
 ## built-in libraries
+import typing
 import string
 
 class FundamentalPatterns:
@@ -30,7 +29,7 @@ class TextSplitter:
     """
 
     @staticmethod
-    def splitlines_to_list(input_text: str, *, prefix: [str, None] = None, suffix: [str, None] = None,
+    def splitlines_to_list(input_text: str, *, prefix: typing.Union[str, None] = None, suffix: typing.Union[str, None] = None,
                            keepends: bool = False, strip_each_line: bool = True, trim_list: bool = True) -> list:
 
         """

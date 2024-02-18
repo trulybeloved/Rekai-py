@@ -56,4 +56,3 @@ class Fetch:
             logger.exception(e)
             raise e
 
-

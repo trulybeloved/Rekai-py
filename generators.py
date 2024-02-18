@@ -687,6 +687,6 @@ class GenerateHtml:
 
             os.startfile(output_html_file_path)
 
-            logger.info('RekaiHTML file generated sucessfully')
+            logger.info('RekaiHTML file generated successfully')
 
             return zip_file_path

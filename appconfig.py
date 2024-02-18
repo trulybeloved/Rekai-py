@@ -7,7 +7,6 @@ from google.cloud import texttospeech
 ## custom modules
 from dataclasses import dataclass
 
-
 @dataclass
 class AppConfig:
     _instance = None
@@ -104,8 +103,9 @@ class AppConfig:
     # concurrency limits
 
     # the python default is  min(32, os.cpu_count() + 4).
-    # os.cpu_count() returns total number of logical processors and not number of physical cpu cores.
-    general_multithread_max_workers: int = min(32, os.cpu_count() + 4)
+    # os.cpu_count() returns total number of logical processors and not number of physical cpu cores, and can actually return None on some systems
+    cpu_count = os.cpu_count()
+    general_multithread_max_workers: int = min(32, cpu_count + 4) if cpu_count is not None else 32
     async_webscrape_semaphore_value: int = 15
 
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2

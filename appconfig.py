@@ -244,10 +244,10 @@ def config_object_to_dict(config_object):
             not key.startswith('_') and not callable(getattr(config_object, key))}
 
 
-def update_config_from_dict(config_dict, config_obect):
+def update_config_from_dict(config_dict, config_object):
     for key, value in config_dict.items():
-        setattr(config_obect, key, value)
-    return config_obect
+        setattr(config_object, key, value)
+    return config_object
 
 
 print(config_object_to_dict(app_config))

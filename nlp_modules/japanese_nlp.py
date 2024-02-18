@@ -85,7 +85,9 @@ class Extractor:
     def extract_kanji_block(input_text: str) -> tuple[str, str]:
         regex_pattern_for_kanji_block = re.compile(Regex.continuous_blocks_of_kanji)
         kanji_block_match = regex_pattern_for_kanji_block.match(input_text)
-        kanji_block = kanji_block_match.group(0)
+
+        ## need to handle the case where there is no kanji in the input text since match() can return None
+        kanji_block = kanji_block_match.group(0) if kanji_block_match else ''
         non_kanji_block = input_text.replace(kanji_block, '')
         return kanji_block, non_kanji_block
 
@@ -223,7 +225,7 @@ class Parser:
     @staticmethod
     def get_word_pos_from_jisho_html(jisho_html: str) -> list:
 
-        # This function is intended to recieve the html zenbar section for a single sentence. But will handle multiple sentences.
+        # This function is intended to receive the html zenbar section for a single sentence. But will handle multiple sentences.
         # Can be postprocessed to break at the . period separator in japanese
 
         soup = BeautifulSoup(jisho_html, 'html.parser')
@@ -235,7 +237,7 @@ class Parser:
         regex_for_Punctuation_symbols = r'([\u2000-\u206F\u3000-\u303F\uFF01-\uFF0F\uFF1A-\uFF20\uFF3B-\uFF40\uFF5B-\uFF65]+)'
 
         pos_tag_pattern = re.compile(regex_for_pos_tag, re.IGNORECASE)
-        puctuation_pattern = re.compile(regex_for_Punctuation_symbols, re.IGNORECASE)
+        punctuation_pattern = re.compile(regex_for_Punctuation_symbols, re.IGNORECASE)
         data_word_pattern = re.compile(regex_for_japanese_word, re.IGNORECASE)
 
         list_of_pos_tags = list()
@@ -249,9 +251,9 @@ class Parser:
 
                 if pos_tag_match is None:
                     list_item_text_content = li_element.get_text
-                    puctuation_match = puctuation_pattern.search(str(list_item_text_content))
+                    punctuation_match = punctuation_pattern.search(str(list_item_text_content))
 
-                    if puctuation_match is not None:
+                    if punctuation_match is not None:
                         pos_tag_match = 'Punctuation'
                         list_of_pos_tags.append(pos_tag_match)
 
@@ -275,10 +277,10 @@ class Parser:
 
                 if word_match is None:
                     list_item_text_content = li_element.get_text
-                    puctuation_match = puctuation_pattern.search(str(list_item_text_content))
+                    punctuation_match = punctuation_pattern.search(str(list_item_text_content))
 
-                    if puctuation_match is not None:
-                        word_match = puctuation_match.group(1)
+                    if punctuation_match is not None:
+                        word_match = punctuation_match.group(1)
                         list_of_words.append(word_match)
 
                     else:

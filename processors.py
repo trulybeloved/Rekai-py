@@ -271,6 +271,7 @@ class SubProcess:
                      transmute_lines: bool = True,
                      transmute_clauses: bool = False) -> list[str]:
 
+
         dict_of_keystrings_in_db = db_interface.get_dict_of_keystrings_in_db()
 
         list_of_strings_for_transmutation = []

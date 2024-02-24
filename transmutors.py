@@ -42,20 +42,17 @@ def log_backoff_giveup(details):
 def log_backoff_success(details):
     MetaLogger.log_backoff_success(details)
 
-
 def get_deepl_api_key() -> str:
     with open(AppConfig.deepl_api_key_path, 'r') as file:
         api_key = file.read().strip()
 
     return api_key
 
-
 def get_openai_api_key() -> str:
     with open(AppConfig.openai_api_key_path, 'r') as file:
         api_key = file.read().strip()
 
     return api_key
-
 
 def create_api_clients() -> tuple[
     typing.Union[GCloudTTSClient, None], typing.Union[GCloudTranslateV2, None], typing.Union[

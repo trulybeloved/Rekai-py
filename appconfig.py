@@ -31,7 +31,7 @@ class AppConfig:
     MANUAL_RUN_STOP: bool = False
 
     # Transmute Failure
-
+    TRANSMUTE_FAILURE: bool = False
 
     ##=========== PATHS AND DIRECTORIES =============##
     # current working directory
@@ -105,7 +105,7 @@ class AppConfig:
     # the python default is  min(32, os.cpu_count() + 4).
     # os.cpu_count() returns total number of logical processors and not number of physical cpu cores, and can actually return None on some systems
     cpu_count = os.cpu_count()
-    general_multithread_max_workers: int = min(32, cpu_count + 4) if cpu_count is not None else 32
+    general_multithread_max_workers: int = min(4, cpu_count + 1) if cpu_count is not None else 4
     async_webscrape_semaphore_value: int = 15
 
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2

@@ -35,6 +35,11 @@ def main(japanese_text, preprocessed_text, header):
     log_path = os.path.join(AppConfig.logging_directory, f'rekai_log_{timestamp_str}_{header}.log')
     logger.add(sink=log_path, enqueue=True)
 
+    # Reset previously rased flags
+    AppConfig.MANUAL_RUN_STOP = False
+    AppConfig.GLOBAL_RUN_STOP = False
+    AppConfig.TRANSMUTE_FAILURE = False
+
     ## get api keys working
     if not os.path.exists(AppConfig.deepl_api_key_path) or os.path.getsize(AppConfig.deepl_api_key_path) == 0:
         logger.warning(f'No DeepL API Key found. Prompting user to enter one')

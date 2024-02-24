@@ -26,21 +26,27 @@ from openai import AsyncOpenAI
 from kairyou import Kairyou
 
 ## custom modules
-from appconfig import AppConfig
+from appconfig import AppConfig, FukuinConfig
 from custom_modules import custom_exceptions
 from custom_modules import utilities
 from custom_modules.utilities import MetaLogger
 from custom_modules.custom_exceptions import WebPageLoadError
 from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
+from nlp_modules.kroatoanjp_fukuin.preprocess import preprocessor as Fukuin
+from nlp_modules.kroatoanjp_fukuin.preprocess.tokenizer.spacy_tokenizer import SpacyTokenizer
+
 
 def log_backoff_retry(details):
     MetaLogger.log_backoff_retry(details)
 
+
 def log_backoff_giveup(details):
     MetaLogger.log_backoff_giveup(details)
 
+
 def log_backoff_success(details):
     MetaLogger.log_backoff_success(details)
+
 
 def get_deepl_api_key() -> str:
     with open(AppConfig.deepl_api_key_path, 'r') as file:
@@ -48,49 +54,64 @@ def get_deepl_api_key() -> str:
 
     return api_key
 
+
 def get_openai_api_key() -> str:
     with open(AppConfig.openai_api_key_path, 'r') as file:
         api_key = file.read().strip()
 
     return api_key
 
-def create_api_clients() -> tuple[
-    typing.Union[GCloudTTSClient, None], typing.Union[GCloudTranslateV2, None], typing.Union[
-        GCloudTranslateV3, None], typing.Union[DeepLTranslator, None], typing.Union[AsyncOpenAI, None]]:
-    try:
+class Initialize:
+    @staticmethod
+    def api_clients() -> tuple[
+        typing.Union[GCloudTTSClient, None], typing.Union[GCloudTranslateV2, None], typing.Union[
+            GCloudTranslateV3, None], typing.Union[DeepLTranslator, None], typing.Union[AsyncOpenAI, None]]:
+        try:
 
-        tts_client = GCloudTTS.TextToSpeechClient()
+            tts_client = GCloudTTS.TextToSpeechClient()
 
-    except Exception as e:
-        logger.warning(f'Skipping Google Text-to-Speech API client creation: {e}')
-        tts_client = None
+        except Exception as e:
+            logger.warning(f'Skipping Google Text-to-Speech API client creation: {e}')
+            tts_client = None
 
-    try:
-        gtl2_client = GCloudTranslateV2()  ## v2 of the API
-        gtl3_client = GCloudTranslateV3()  ## v3 of the API
+        try:
+            gtl2_client = GCloudTranslateV2()  ## v2 of the API
+            gtl3_client = GCloudTranslateV3()  ## v3 of the API
 
-    except Exception as e:
-        logger.warning(f'Skipping Google Cloud Translate API client creation: {e}')
-        gtl2_client = None
-        gtl3_client = None
+        except Exception as e:
+            logger.warning(f'Skipping Google Cloud Translate API client creation: {e}')
+            gtl2_client = None
+            gtl3_client = None
 
-    try:
+        try:
 
-        deepl_client = DeepLTranslator(auth_key=get_deepl_api_key())
+            deepl_client = DeepLTranslator(auth_key=get_deepl_api_key())
 
-    except Exception as e:
-        logger.warning(f'Skipping DeepL API client creation: {e}')
-        deepl_client = None
+        except Exception as e:
+            logger.warning(f'Skipping DeepL API client creation: {e}')
+            deepl_client = None
 
-    try:
+        try:
 
-        openai_client = AsyncOpenAI(api_key=get_openai_api_key(), max_retries=0)
+            openai_client = AsyncOpenAI(api_key=get_openai_api_key(), max_retries=0)
 
-    except Exception as e:
-        logger.warning(f'Skipping OpenAI API client creation: {e}')
-        openai_client = None
+        except Exception as e:
+            logger.warning(f'Skipping OpenAI API client creation: {e}')
+            openai_client = None
 
-    return tts_client, gtl2_client, gtl3_client, deepl_client, openai_client
+        return tts_client, gtl2_client, gtl3_client, deepl_client, openai_client
+
+    @staticmethod
+    def fukuin_tokenizer() -> SpacyTokenizer:
+
+        try:
+            tokenizer = SpacyTokenizer(user_dic_path=FukuinConfig.user_dic_path)
+        except Exception as e:
+            logger.warning(f'Spacy tokenzier for Fukuin could not be initialized: {e}')
+            raise e  # Needs better handling
+
+        return tokenizer
+
 
 
 class APIRequest:
@@ -104,12 +125,11 @@ class APIRequest:
         on_backoff=log_backoff_retry,
         on_giveup=log_backoff_giveup,
         on_success=log_backoff_success)
-    
     def deepl(
             text: typing.Union[str, list[str]],
             source_lang: str,
             target_lang: str,
-            api_client: typing.Union[DeepLTranslator,None] = None) -> typing.Union[TextResult, list[TextResult]]:
+            api_client: typing.Union[DeepLTranslator, None] = None) -> typing.Union[TextResult, list[TextResult]]:
         """
         Returns a TextResult object as defined by the deepl python client
         TextResult.text = <<Translated Text>>
@@ -162,7 +182,6 @@ class APIRequest:
         on_backoff=log_backoff_retry,
         on_giveup=log_backoff_giveup,
         on_success=log_backoff_success)
-    
     def google_translate_v2(
             text: typing.Union[str, list[str]],
             source_lang: str,
@@ -206,7 +225,8 @@ class APIRequest:
 
 
 class Transmute:
-    tts_client, gtl2_client, gtl3_client, deepl_client, openai_client = create_api_clients()
+    tts_client, gtl2_client, gtl3_client, deepl_client, openai_client = Initialize.api_clients()
+    fukuin_tokenizer = Initialize.fukuin_tokenizer()
 
     # Jisho web scrape and parse
     @staticmethod
@@ -347,7 +367,7 @@ class Transmute:
             response = [response]
 
         db_interface = DeepLDBM()
-        
+
         for input_text, result in zip(input_data, response):
             translated_text = result.text
             db_interface.insert(raw_line=input_text, transmuted_data=translated_text, unix_timestamp=timestamp)
@@ -482,6 +502,15 @@ class Transmute:
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict) -> str:
         preprocessed_text, _, _ = Kairyou.preprocess(input_string, input_replacements_dict)
+        return preprocessed_text
+
+    @staticmethod
+    def preprocess_with_fukuin(text: typing.Union[str, list], path_to_replacements_table: str) -> str:
+        preprocessed_text = Fukuin.run_nlp_mtl_preprocessor(
+            input_string=text,
+            path_to_replacements_table=path_to_replacements_table,
+            verbose=False
+        )
         return preprocessed_text
 
     @staticmethod

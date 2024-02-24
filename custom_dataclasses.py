@@ -10,6 +10,7 @@ from loguru import logger
 import nlp_modules.basic_nlp as BasicNLP
 import nlp_modules.japanese_nlp as JNLP
 from appconfig import AppConfig, RunConfig
+from custom_modules.custom_exceptions import AppConfigError
 from dataclasses import dataclass, field
 from transmutors import Transmute
 from db_management import DBM
@@ -332,11 +333,23 @@ class RekaiText(RekaiTextCommon):
 
     def preprocess(self, input_string: str):
         # Need to take file operations outside of this function into utilities
-        path_to_replacements_json = AppConfig.path_to_replacements_json
+        path_to_replacements_json = AppConfig.path_to_fukuin_replacements_json
 
-        with open(path_to_replacements_json, 'r', encoding='utf-8') as file:
-            replacements_dict = json.load(file)
+        if AppConfig.default_preprocessor == 'fukuin':
+            preprocessed_text = Transmute.preprocess_with_fukuin(
+                text=input_string,
+                path_to_replacements_table=path_to_replacements_json
+            )
+            return preprocessed_text
 
-        preprocessed_text = Transmute.preprocess_with_kairyou(
-            input_string=input_string, input_replacements_dict=replacements_dict)
-        return preprocessed_text
+        elif AppConfig.default_preprocessor == 'kairyou':
+
+            with open(path_to_replacements_json, 'r', encoding='utf-8') as file:
+                replacements_dict = json.load(file)
+
+            preprocessed_text = Transmute.preprocess_with_kairyou(
+                input_string=input_string, input_replacements_dict=replacements_dict)
+            return preprocessed_text
+
+        else:
+            raise AppConfigError('the default_preprocessor parameter was not configured correctly')

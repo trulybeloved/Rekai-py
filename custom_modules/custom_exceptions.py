@@ -14,3 +14,8 @@ class TransmuterNotAvailable(Exception):
         
 class WebPageLoadError(Exception):
     pass
+
+class AppConfigError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

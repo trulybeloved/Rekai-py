@@ -53,7 +53,11 @@ class AppConfig:
     dictionary_directory: str = os.path.join(current_working_directory, 'dictionaries')
 
     # path to replacement json
-    path_to_replacements_json: str = os.path.join(dictionary_directory, 'replacements.json')
+    path_to_kairyou_replacements_json: str = os.path.join(dictionary_directory, 'preprocessor_replacement_tables', 'kairyou_rezero_replacements.json')
+    path_to_fukuin_replacements_json: str = os.path.join(dictionary_directory, 'preprocessor_replacement_tables', 'fukuin_rezero_replacements.json')
+
+    # default preprocessor
+    default_preprocessor: str = 'fukuin'  # Can be 'kairyou'
 
     # paths pertaining to databases
     datastores_directory: str = os.path.join(current_working_directory, 'datastores')
@@ -143,6 +147,17 @@ class AppConfig:
         top_p: int = 1
         n: int = 1
         stream: bool = False
+
+class FukuinConfig:
+
+    cwd = AppConfig.current_working_directory
+
+    tokenizer = "spacy"  # "spacy" / "sudachi" / "fugashi"
+    tag_potential_proper_nouns = True
+    use_user_dict = True  # SHOULD ALWAYS BE TRUE
+    user_dic_path = os.path.join(cwd, 'nlp_modules', 'kroatoanjp_fukuin', 'data', 'dictionaries', 'rezero-sudachi.dic')
+    use_single_kanji_filter = True  # SHOULD BE TRUE UNLESS REPLACING SINGLE KANJI NAMES
+    katakana_words_file_path = os.path.join(cwd, 'nlp_modules', 'kroatoanjp_fukuin', 'data', 'katakana_words.txt')
 
 
 @dataclass

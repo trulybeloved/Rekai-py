@@ -1,4 +1,5 @@
 ## built-in libraries
+import os.path
 import typing
 
 ## third-party libraries
@@ -57,12 +58,26 @@ class DBM:
         self._main_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._main_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
         self._archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
 
+        self.ensure_db_existance()
+
         self.db_connection = sqlite3.connect(self._db_path)
         self.db_connection.execute('PRAGMA journal_mode=wal')  # allows for simultaneous writes to db.
         self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
+
+    def ensure_db_existance(self):
+
+        if not os.path.exists(self._db_path):
+            os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
+            with open(self._db_path, 'w'):
+                pass
+            logger.warning(f'{self._database_name} was not found at the specified path: {self._db_path} | Hence a blank database was created')
+        else:
+            if AppConfig.deep_log_databases:
+                logger.info(f'{self._database_name} was found in the provided path')
+
 
     def check_db_structure(self) -> bool:
         cursor = self.db_connection.cursor()

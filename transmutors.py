@@ -509,6 +509,7 @@ class Transmute:
         preprocessed_text = Fukuin.run_nlp_mtl_preprocessor(
             input_string=text,
             path_to_replacements_table=path_to_replacements_table,
+            tokenizer=Transmute.fukuin_tokenizer,
             verbose=False
         )
         return preprocessed_text

@@ -36,7 +36,7 @@ class Regex:
 
     # JNLP.TextSplitter.regex_split
     pattern_for_line = r'([^。！？]*[。！？"」』]+)'
-    pattern_for_clause = r'([^。！？、…]*[。！？、…"」』]+)'
+    pattern_for_clause = r'([^。！？、…―]*[。！？、…"」』―]+)'
 
 
 class Charsets:

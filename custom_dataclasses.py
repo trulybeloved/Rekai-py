@@ -55,7 +55,28 @@ class RekaiTextCommon:
 
         return output_string
 
+    def preprocess(self, input_string: str):
+        # Need to take file operations outside of this function into utilities
+        path_to_replacements_json = AppConfig.path_to_fukuin_replacements_json
 
+        if AppConfig.default_preprocessor == 'fukuin':
+            preprocessed_text = Transmute.preprocess_with_fukuin(
+                text=input_string,
+                path_to_replacements_table=path_to_replacements_json
+            )
+            return preprocessed_text
+
+        elif AppConfig.default_preprocessor == 'kairyou':
+
+            with open(path_to_replacements_json, 'r', encoding='utf-8') as file:
+                replacements_dict = json.load(file)
+
+            preprocessed_text = Transmute.preprocess_with_kairyou(
+                input_string=input_string, input_replacements_dict=replacements_dict)
+            return preprocessed_text
+
+        else:
+            raise AppConfigError('the default_preprocessor parameter was not configured correctly')
 
 @dataclass
 class Clause(RekaiTextCommon):
@@ -92,6 +113,7 @@ class Line(RekaiTextCommon):
     original_raw_text: str
     preprocessed_text: str
     original_preprocessed_text: str # to store the text that was received during instance creation, free from post processing
+    preprocessor_made_replacements: bool
     # tl_google: str
     # tl_deepl: str
     # gpt4_analysis: str
@@ -116,13 +138,21 @@ class Line(RekaiTextCommon):
         if input_prepro_line:
             self.preprocessed_text = input_prepro_line
             self.original_preprocessed_text = input_prepro_line
+            self.preprocessor_made_replacements = False if self.preprocessed_text == self.raw_text else True
+            if run_config.preprocessed_provided:
+                # If cleaning is enabled and para is not single line neither a dialogue
+                if run_config.clean_post_split and (not para_info.is_single_line) and para_info.is_dialogue:
+                    self.preprocessed_text = self.clean_post_split(self.preprocessed_text)
 
-            # If cleaning is enabled and para is not single line neither a dialogue
-            if run_config.clean_post_split and (not para_info.is_single_line) and para_info.is_dialogue:
-                self.preprocessed_text = self.clean_post_split(self.preprocessed_text)
-
-            list_of_preprocessed_lines = JNLP.TextSplitter.regex_split_to_clauses(self.original_preprocessed_text)
-            self.generate_child_objects(Clause, string_list=self.list_of_clauses, prepro_string_list=list_of_preprocessed_lines)
+                list_of_preprocessed_lines = JNLP.TextSplitter.regex_split_to_clauses(self.original_preprocessed_text)
+                self.generate_child_objects(Clause, string_list=self.list_of_clauses, prepro_string_list=list_of_preprocessed_lines)
+            else:
+                list_of_raw_clauses = JNLP.TextSplitter.regex_split_to_clauses(self.raw_text)
+                if self.preprocessor_made_replacements:
+                    list_of_preprocessed_clauses = [self.preprocess(clause) for clause in list_of_raw_clauses]
+                    self.generate_child_objects(Clause, string_list=list_of_raw_clauses, prepro_string_list=list_of_preprocessed_clauses)
+                else:
+                    self.generate_child_objects(Clause, string_list=list_of_raw_clauses, prepro_string_list=list_of_raw_clauses)
         else:
             self.generate_child_objects(Clause, self.list_of_clauses, None)
             self.preprocessed_text = ''
@@ -241,6 +271,7 @@ class RekaiText(RekaiTextCommon):
     raw_text: str
     preprocessed_text: Union[str, None]
     preprocessed_available: bool
+    preprocessed_provided: bool
     paragraph_count: int
     numbered_paragraph_objects: list[tuple[int, Paragraph]]
     numbered_parsable_paragraph_objects: list[tuple[int, Paragraph]]
@@ -276,8 +307,8 @@ class RekaiText(RekaiTextCommon):
 
         # Preprocessed text handling
         if self.config_preprocess:
-
             if input_preprocessed_text:
+                run_config_object.preprocessed_provided = True
                 prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
                     input_preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
                 # check if the number of elements in prepro matches that in raw para list
@@ -331,25 +362,4 @@ class RekaiText(RekaiTextCommon):
             self.numbered_paragraph_objects = [(index + 1, child_class(string, None, run_config)) for index, string in
                                                enumerate(string_list)]
 
-    def preprocess(self, input_string: str):
-        # Need to take file operations outside of this function into utilities
-        path_to_replacements_json = AppConfig.path_to_fukuin_replacements_json
 
-        if AppConfig.default_preprocessor == 'fukuin':
-            preprocessed_text = Transmute.preprocess_with_fukuin(
-                text=input_string,
-                path_to_replacements_table=path_to_replacements_json
-            )
-            return preprocessed_text
-
-        elif AppConfig.default_preprocessor == 'kairyou':
-
-            with open(path_to_replacements_json, 'r', encoding='utf-8') as file:
-                replacements_dict = json.load(file)
-
-            preprocessed_text = Transmute.preprocess_with_kairyou(
-                input_string=input_string, input_replacements_dict=replacements_dict)
-            return preprocessed_text
-
-        else:
-            raise AppConfigError('the default_preprocessor parameter was not configured correctly')

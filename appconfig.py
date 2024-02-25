@@ -191,6 +191,9 @@ class RunConfig:
 
     output_single_file: bool
 
+    # parameters used internally
+    preprocessed_provided = False
+
     def __init__(self,
                  unix_timestamp: int,
 

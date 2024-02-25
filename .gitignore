@@ -120,3 +120,11 @@ datastores/je_text_to_speech.db
 datastores/jisho_parse.db
 
 experiments/
+datastores/deepl_tl.db-shm
+datastores/deepl_tl.db-wal
+datastores/google_tl.db-shm
+datastores/google_tl.db-wal
+datastores/je_text_to_speech.db-shm
+datastores/je_text_to_speech.db-wal
+datastores/jisho_parse.db-shm
+datastores/jisho_parse.db-wal

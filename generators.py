@@ -14,8 +14,7 @@ import minify_html
 ## custom modules
 from custom_dataclasses import RekaiText, Paragraph, Line, Clause
 from appconfig import AppConfig, RunConfig
-from fetchers import Fetch
-from custom_modules.utilities import zip_directory
+from custom_modules.utilities import zip_directory, decode_bytes_from_base64_string
 
 
 class HtmlUtilities:
@@ -71,9 +70,9 @@ class GenerateHtml:
     class FileOutput:
 
         @staticmethod
-        def tts(line_id: str, line_raw: str, output_directory: str) -> str:
+        def tts(line_id: str, line_tts_b64_str: str, output_directory: str) -> str:
             tts_file_extension = AppConfig.tts_file_extension
-            tts_bytes = Fetch.tts_bytes(raw_line=line_raw)
+            tts_bytes = decode_bytes_from_base64_string(line_tts_b64_str)
             tts_file_name = f'{line_id}_tts.{tts_file_extension}'
             tts_save_path = os.path.join(output_directory, tts_file_name)
             with open(tts_save_path, 'wb') as tts_output_file:
@@ -115,6 +114,7 @@ class GenerateHtml:
         def __init__(self, run_config_object: RunConfig, single_file_mode: bool):
             self.set_config(run_config_object=run_config_object)
             self.single_file_mode = single_file_mode
+            self.rekai_text_object = None
 
         def set_config(self, run_config_object: RunConfig):
 
@@ -146,18 +146,16 @@ class GenerateHtml:
                                                     and run_config_object.google_tl_clauses)
 
         # Inner Elements ===========================================
-        def audio_button(self, line_id: str, line_raw: str, output_directory: str) -> str:
+        def audio_button(self, line_id: str, line_tts_b64_str: str, output_directory: str) -> str:
 
             tts_file_output_folder_name = AppConfig.tts_output_folder_name
             tts_file_output_directory_path = os.path.join(output_directory, tts_file_output_folder_name)
-            tts_file_name = GenerateHtml.FileOutput.tts(line_id=line_id, line_raw=line_raw,
+            tts_file_name = GenerateHtml.FileOutput.tts(line_id=line_id, line_tts_b64_str=line_tts_b64_str,
                                                         output_directory=tts_file_output_directory_path)
             line_tts_relative_path = f'{tts_file_output_folder_name}/{tts_file_name}'
 
-            tts_bytes = Fetch.tts_bytes(raw_line=line_raw)
-
             if self.single_file_mode:
-                base64ogg = base64.b64encode(tts_bytes).decode('utf-8')
+                base64ogg = line_tts_b64_str
 
                 output_html = f'''
                 <audioButton id="{line_id}-tts-button" class="audioButton audioButton-play">{GenerateHtml.CommonElements.audio_button_content}
@@ -253,11 +251,11 @@ class GenerateHtml:
                 output_html += f'''<div id="{clause_id}-input" class="clause-subcard subcard-contents-preprocessed copy-on-click">{clause_raw}</div>'''
 
             if self.config_include_clause_deepl_tl:
-                clause_deepl_tl = Fetch.deepl_tl(raw_line=clause_key)
+                clause_deepl_tl = clause_object.tl_deepl
                 output_html += f'''<div id="{clause_id}-deepl_tl" class="clause-subcard subcard-contents-deepl copy-on-click">{clause_deepl_tl}</div>'''
 
             if self.config_include_clause_google_tl:
-                clause_google_tl = Fetch.google_tl(raw_line=clause_key)
+                clause_google_tl = clause_object.tl_google
                 output_html += f'''<div id="{clause_id}-google_tl" class="clause-subcard subcard-contents-googletl copy-on-click">{clause_google_tl}</div>'''
 
             # END OF CLAUSE CARD
@@ -275,7 +273,7 @@ class GenerateHtml:
             line_preprocessed = line_object.preprocessed_text
 
             if self.config_include_tts:
-                audio_button_html = self.audio_button(line_id=line_id, line_raw=line_raw,
+                audio_button_html = self.audio_button(line_id=line_id, line_tts_b64_str=line_object.tts_b64_str,
                                                       output_directory=output_directory)
             else:
                 audio_button_html = ''
@@ -312,7 +310,7 @@ class GenerateHtml:
                 '''
 
             if self.config_include_jisho_parse:
-                jisho_parsed_html = Fetch.jisho_parsed_html(raw_line=line_raw)
+                jisho_parsed_html = line_object.jisho_parse_html
                 # CARD SLAVE JISHO PARSE
                 output_html += f'''
                     <div id="{line_id}-jisho-parse" class="card-contents-jisho-parse">
@@ -346,7 +344,7 @@ class GenerateHtml:
                 '''
             # LINE CARD FULL DEEPL TL
             if self.config_include_line_deepl_tl:
-                line_deepl_tl = Fetch.deepl_tl(raw_line=line_key)
+                line_deepl_tl = line_object.tl_deepl
                 output_html += f'''
                 <div class="line-deepl-container">
                     <div class="line-content-label">DeepL</div>
@@ -356,7 +354,7 @@ class GenerateHtml:
 
             # LINE CARD FULL GOOGLE TL
             if self.config_include_line_google_tl:
-                line_google_tl = Fetch.google_tl(raw_line=line_key)
+                line_google_tl = line_object.tl_google
                 output_html += f'''
                 <div class="line-google-tl-container">
                     <div class="line-content-label">Google</div>
@@ -535,6 +533,8 @@ class GenerateHtml:
 
         def html_body_main(self, input_rekai_text_object: RekaiText, output_directory: str) -> str:
 
+            self.rekai_text_object = input_rekai_text_object
+
             output_html = '<div id="card-coloumn" class="card-coloumn">'
 
             for (index, paragraph_object) in input_rekai_text_object.numbered_paragraph_objects:
@@ -690,3 +690,10 @@ class GenerateHtml:
             logger.info('RekaiHTML file generated successfully')
 
             return zip_file_path
+
+
+class GenerateRekaiPortable:
+        @staticmethod
+        def rekai_json(input_rekai_text_object: RekaiText, output_directory: str) -> str:
+            pass
+

@@ -10,7 +10,7 @@ A more detailed Readme will come soon.
 
 This is a side project that I took up on my journey learning to code. And it wouldn't have been possible without the vast number of beautifully written dependances that it's built upon. The open source community is awesome and I'm tremendously grateful to all those who have contibuted to those dependencies. 
 
-I'm also indebted to [Bikatr7](https://github.com/Bikatr7), the author of [Kudasai](https://github.com/Bikatr7/Kudasai) - A Japanese-English preprocessor with automated translation capabilities, for it's "Kairyou" preprocessing module which has been refactored and adapted into Rekai, and their contributions to this project. 
+I'm also indebted to [Bikatr7](https://github.com/Bikatr7), the author of [Kudasai](https://github.com/Bikatr7/Kudasai) - A Japanese-English preprocessor with automated translation capabilities, for it's "Kairyou" preprocessing package which has been incorporated into Rekai, and their contributions to this project; and to [kroatoanjp](https://github.com/kroatoanjp), the author of [Fukuin](https://github.com/kroatoanjp/nlp-mtl-preprocessing-script), another preprocessing script that has been refactored and incorporated into Rekai.
 
 I'm also tremendously greatful to [JanSnoh](https://github.com/JanSnoh) for reviewing the codebase and all the great advice and contributions along the way. 
 

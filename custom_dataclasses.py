@@ -36,6 +36,7 @@ class RekaiTextCommon:
         return result
 
     def clean_post_split(self, input_string):
+        """Removes certain trailing punctuation marks when dialogues lines are split into clauses"""
 
         if not input_string:
             return input_string
@@ -43,15 +44,8 @@ class RekaiTextCommon:
         opening_characters = {"\"", "「"}
         closing_characters = {"\"", "」"}
 
-        if input_string[0] in opening_characters:
-            output_string = input_string[1:]
-        else:
-            output_string = input_string
-
-        if input_string[-1] in closing_characters:
-            output_string = output_string[:-1]
-        else:
-            output_string = output_string
+        output_string = input_string[1:] if input_string[0] in opening_characters else input_string
+        output_string = output_string[:-1] if input_string[-1] in closing_characters else output_string
 
         return output_string
 
@@ -270,16 +264,14 @@ class RekaiText(RekaiTextCommon):
     text_header: str
     raw_text: str
     preprocessed_text: Union[str, None]
-    preprocessed_available: bool
-    preprocessed_provided: bool
+    preprocessed_available: bool  # This should be true only if text has successfully preprocessed, either internally or externally
+    preprocessed_provided: bool  # This should be true even if preprocessed text was provided but rejected
     paragraph_count: int
     numbered_paragraph_objects: list[tuple[int, Paragraph]]
     numbered_parsable_paragraph_objects: list[tuple[int, Paragraph]]
 
     # Run configuration
     config_preprocess: bool
-    config_run_jisho_parse: bool
-    config_run_tts: bool
 
     def __init__(self, input_text: str, run_config_object: RunConfig, text_header: str,
                  input_preprocessed_text: str):
@@ -292,10 +284,6 @@ class RekaiText(RekaiTextCommon):
         # object.
         self.run_config = run_config_object
         self.timestamp = run_config_object.run_timestamp
-        self.config_preprocess = run_config_object.preprocess
-        self.config_run_jisho_parse = run_config_object.run_jisho_parse
-        self.config_run_tts = run_config_object.run_tts
-
         self.text_header = text_header
 
         self.raw_text = input_text
@@ -306,7 +294,8 @@ class RekaiText(RekaiTextCommon):
         self.paragraph_count = len(paragraphs)
 
         # Preprocessed text handling
-        if self.config_preprocess:
+        if self.run_config.preprocess:
+            # If text is provided then check is the number of lines match, if not, preprocess internally
             if input_preprocessed_text:
                 run_config_object.preprocessed_provided = True
                 prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
@@ -316,21 +305,20 @@ class RekaiText(RekaiTextCommon):
                     self.preprocessed_text = input_preprocessed_text
                 else:
                     logger.error(f'Provided preprocessed text failed to match with raw text. Using native preprocessor')
-
                     self.preprocessed_text = self.preprocess(input_string=self.raw_text)
 
                     prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
                         self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
-
+            # Else preprocess internally
             else:
                 logger.error(f'Preprocessed Text was not provided. Using native preprocessor')
-
                 self.preprocessed_text = self.preprocess(input_string=self.raw_text)
 
                 prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
                     self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
-
+            # regardless of how it was done, preprocessed text is now available
             self.preprocessed_available = True
+        # Since the preprocess run config option was set to false, preprocessing need not be done and associated vars are set to None
         else:
             self.preprocessed_text = None
             self.preprocessed_available = False
@@ -363,3 +351,11 @@ class RekaiText(RekaiTextCommon):
                                                enumerate(string_list)]
 
 
+
+@dataclass
+class DataCauldron:
+    def __init__(self, rekai_text_object: RekaiText):
+        self.jisho_parse_data: dict = {}
+        self.deepl_tl_data: dict = {}
+        self.google_tl_data: dict = {}
+        self.tts_data: dict = {}

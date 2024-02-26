@@ -1,4 +1,5 @@
 ## built-in libraries
+import typing
 from collections.abc import Callable
 from typing import Union
 
@@ -179,7 +180,7 @@ class SubProcess:
     @staticmethod
     async def async_transmute_multithreaded(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, int, int], tuple[str, str]],
+            transmutor: Callable[[typing.Union[str, list[str]], int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor) -> tuple:
 
@@ -205,7 +206,7 @@ class SubProcess:
     @staticmethod
     async def async_webscrape(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[str, int, ProgressMonitor, asyncio.Semaphore, int, int, PyppeteerLaunch], tuple[str, str]],
+            transmutor: Callable[[str, int, ProgressMonitor, asyncio.Semaphore, int, int, typing.Union[PyppeteerLaunch, None]], typing.Coroutine[any, any, tuple[str, str]]],
             timestamp: int,
             progress_monitor: ProgressMonitor,
             max_concurrent_coroutines: int) -> tuple:
@@ -234,7 +235,7 @@ class SubProcess:
     @staticmethod
     async def async_transmute_chunks_multithreaded(
             list_of_strings_to_transmute: list,
-            transmutor: Callable[[list, int, ProgressMonitor, int, int], tuple[str, str]],
+            transmutor: Callable[[typing.Union[str, list[str]], int, ProgressMonitor, int, int], tuple[str, str]],
             timestamp: int,
             progress_monitor: ProgressMonitor,
             chunk_size: int = AppConfig.default_transmutor_chunk_size) -> tuple:

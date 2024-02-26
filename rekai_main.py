@@ -133,6 +133,11 @@ def main(japanese_text, preprocessed_text, header):
         logger.critical(f'MANUAL STOP FLAG RAISED. FUNCTION TERMINATED')
         return
 
+    logger.info('Fetching data into RekaiText')
+    rekai_text_object.fetch_data()
+    logger.success('FETCH COMPLETE')
+
+
     if not AppConfig.MANUAL_RUN_STOP:
         zip_file_path = GenerateHtml.RekaiHtml.full_html(
             run_config_object=run_config,

@@ -1,4 +1,5 @@
 ## built-in libraries
+import typing
 from typing import Union
 
 import json
@@ -10,10 +11,10 @@ from loguru import logger
 import nlp_modules.basic_nlp as BasicNLP
 import nlp_modules.japanese_nlp as JNLP
 from appconfig import AppConfig, RunConfig
-from custom_modules.custom_exceptions import AppConfigError
+from custom_modules.custom_exceptions import AppConfigError, EntryNotFound
 from dataclasses import dataclass, field
 from transmutors import Transmute
-from db_management import DBM
+from db_management import DBM, JishoParseDBM, DeepLDBM, GoogleTLDBM, TextToSpeechDBM
 
 @dataclass
 class ParaInfo:
@@ -81,6 +82,9 @@ class Clause(RekaiTextCommon):
     preprocessed_text: str
     original_preprocessed_text: str
 
+    tl_google: str = None
+    tl_deepl: str = None
+
     def __init__(self, input_clause: str, input_preprocessed_clause: Union[str, None], run_config: RunConfig, para_info: ParaInfo):
         self.run_config = run_config
         self.para_info = para_info
@@ -93,6 +97,9 @@ class Clause(RekaiTextCommon):
         if self.run_config.clean_post_split and para_info.is_dialogue:
             self.raw_text = self.clean_post_split(self.raw_text)
             self.preprocessed_text = self.clean_post_split(self.preprocessed_text)
+
+        self.tl_google: typing.Union[str, None] = None
+        self.tl_deepl: typing.Union[str, None] = None
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
@@ -108,9 +115,13 @@ class Line(RekaiTextCommon):
     preprocessed_text: str
     original_preprocessed_text: str # to store the text that was received during instance creation, free from post processing
     preprocessor_made_replacements: bool
-    # tl_google: str
-    # tl_deepl: str
+
+    tts_b64_str: typing.Union[str, None] = field(repr=False)
+    jisho_parse_html: typing.Union[str, None] = field(repr=False)
+    tl_google: typing.Union[str, None]
+    tl_deepl: typing.Union[str, None]
     # gpt4_analysis: str
+
     list_of_clauses: list
     clause_count: int
     numbered_clause_objects: list[tuple[int, Clause]]
@@ -151,6 +162,11 @@ class Line(RekaiTextCommon):
             self.generate_child_objects(Clause, self.list_of_clauses, None)
             self.preprocessed_text = ''
             self.original_preprocessed_text = ''
+
+        self.tts_b64_str: typing.Union[str, None] = None
+        self.jisho_parse_html: typing.Union[str, None] = None
+        self.tl_google: typing.Union[str, None] = None
+        self.tl_deepl: typing.Union[str, None] = None
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
@@ -265,13 +281,9 @@ class RekaiText(RekaiTextCommon):
     raw_text: str
     preprocessed_text: Union[str, None]
     preprocessed_available: bool  # This should be true only if text has successfully preprocessed, either internally or externally
-    preprocessed_provided: bool  # This should be true even if preprocessed text was provided but rejected
     paragraph_count: int
     numbered_paragraph_objects: list[tuple[int, Paragraph]]
     numbered_parsable_paragraph_objects: list[tuple[int, Paragraph]]
-
-    # Run configuration
-    config_preprocess: bool
 
     def __init__(self, input_text: str, run_config_object: RunConfig, text_header: str,
                  input_preprocessed_text: str):
@@ -311,6 +323,7 @@ class RekaiText(RekaiTextCommon):
                         self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
             # Else preprocess internally
             else:
+                run_config_object.preprocessed_provided = False
                 logger.error(f'Preprocessed Text was not provided. Using native preprocessor')
                 self.preprocessed_text = self.preprocess(input_string=self.raw_text)
 
@@ -350,12 +363,61 @@ class RekaiText(RekaiTextCommon):
             self.numbered_paragraph_objects = [(index + 1, child_class(string, None, run_config)) for index, string in
                                                enumerate(string_list)]
 
+    def fetch_data(self):
+        for (_, paragraph_object) in self.numbered_parsable_paragraph_objects:
+            for (_, line_object) in paragraph_object.numbered_line_objects:
+                # Fetch TTS
+                line_object.tts_b64_str = self.fetch_tts_b64_string(line_object.raw_text) if self.run_config.run_tts else None
+                # Fetch JishoParse
+                line_object.jisho_parse_html = self.fetch_jisho_parsed_html(line_object.raw_text)
+                # Decide key line based on if preprocessing was done
+                line = line_object.preprocessed_text if self.run_config.preprocess else line_object.raw_text
+                # Fetch Line DeepL TL
+                line_object.tl_deepl = self.fetch_deepl_tl(line) if self.run_config.deepl_tl_lines else None
+                # Fetch Line Google TL
+                line_object.tl_google = self.fetch_google_tl(line) if self.run_config.google_tl_lines else None
+                # Clause handling
+                if self.run_config.include_clause_analysis and not line_object.is_single_clause():
+                    for (_, clause_object) in line_object.numbered_clause_objects:
+                        # Decide key clause based on if preprocessed was done
+                        clause = clause_object.preprocessed_text if self.run_config.preprocess else clause_object.raw_text
+                        # Fetch Clause DeepL TL
+                        clause_object.tl_deepl = self.fetch_deepl_tl(clause) if self.run_config.deepl_tl_clauses else None
+                        # Fetch Clause Google TL
+                        clause_object.tl_google = self.fetch_google_tl(clause) if self.run_config.google_tl_clauses else None
 
+    def fetch_jisho_parsed_html(self, raw_line: str) -> str:
+        db_interface = JishoParseDBM()
+        try:
+            parsed_html = db_interface.query(raw_line=raw_line)
+            return parsed_html
+        except EntryNotFound as e:
+            logger.exception(e)
+            raise e
 
-@dataclass
-class DataCauldron:
-    def __init__(self, rekai_text_object: RekaiText):
-        self.jisho_parse_data: dict = {}
-        self.deepl_tl_data: dict = {}
-        self.google_tl_data: dict = {}
-        self.tts_data: dict = {}
+    def fetch_tts_b64_string(self, raw_line: str) -> str:
+        db_interface = TextToSpeechDBM()
+        try:
+            base64_string = db_interface.query(raw_line=raw_line)
+            return base64_string
+        except EntryNotFound as e:
+            logger.exception(e)
+            raise e
+
+    def fetch_deepl_tl(self, raw_line: str) -> str:
+        db_interface = DeepLDBM()
+        try:
+            result = db_interface.query(raw_line=raw_line)
+            return result
+        except EntryNotFound as e:
+            logger.exception(e)
+            raise e
+
+    def fetch_google_tl(self, raw_line: str) -> str:
+        db_interface = GoogleTLDBM()
+        try:
+            result = db_interface.query(raw_line=raw_line)
+            return result
+        except EntryNotFound as e:
+            logger.exception(e)
+            raise e

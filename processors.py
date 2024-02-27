@@ -289,14 +289,14 @@ class SubProcess:
         for (_, paragraph) in list_of_paragraph_object_tuples:
             if transmute_paragraphs:
                 append_content(paragraph)
-            else:
-                for (_, line) in paragraph.numbered_line_objects:
-                    if transmute_lines:
-                        append_content(line)
-                    else:
-                        for (_, clause) in line.numbered_clause_objects:
-                            if transmute_clauses:
-                                append_content(clause)
+
+            for (_, line) in paragraph.numbered_line_objects:
+                if transmute_lines:
+                    append_content(line)
+                    
+                for (_, clause) in line.numbered_clause_objects:
+                    if transmute_clauses:
+                        append_content(clause)
 
         # Check if already in database
         list_of_strings_for_transmutation = list(filter(

@@ -134,7 +134,7 @@ def main(japanese_text, preprocessed_text, header):
         return
 
     logger.info('Fetching data into RekaiText')
-    rekai_text_object.fetch_data()
+    asyncio.run(rekai_text_object.fetch_data())
     logger.success('FETCH COMPLETE')
 
 

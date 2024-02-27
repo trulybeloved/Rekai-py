@@ -63,8 +63,10 @@ class DBM:
 
         if mode == 0:
             self.db_connection = sqlite3.connect(self._db_path)
+            self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
+        elif mode == 2:
+            self.db_connection = sqlite3.connect(self._db_path)
 
-        self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 

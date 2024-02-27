@@ -71,6 +71,7 @@ class Preprocessor:
         else:
             raise AppConfigError('the default_preprocessor parameter was not configured correctly')
 
+
 @dataclass
 class ParaInfo:
     is_dialogue: bool
@@ -83,6 +84,7 @@ class ParaInfo:
         self.is_narration = is_narration
         self.is_expression = is_expression
         self.is_single_line = is_single_line
+
 
 class RekaiTextCommon:
 
@@ -103,6 +105,7 @@ class RekaiTextCommon:
         output_string = output_string[:-1] if input_string[-1] in closing_characters else output_string
 
         return output_string
+
 
 @dataclass
 class Clause(RekaiTextCommon):
@@ -172,7 +175,7 @@ class Line(RekaiTextCommon):
         self.raw_text = input_line
         self.original_raw_text = input_line
 
-        if run_config.clean_post_split and (not para_info.is_single_line) and (not para_info.is_dialogue):
+        if run_config.clean_post_split and (not para_info.is_single_line) and (para_info.is_dialogue):
             self.raw_text = self.clean_post_split(self.raw_text)
 
         # It is input line that is sent for splitting as we don't want any cleaning to affect the split
@@ -192,7 +195,7 @@ class Line(RekaiTextCommon):
                 self.generate_child_objects(Clause, string_list=self.list_of_clauses,
                                             prepro_string_list=list_of_preprocessed_clauses)
             else:
-                list_of_raw_clauses = JNLP.TextSplitter.regex_split_to_clauses(self.raw_text)
+                list_of_raw_clauses = JNLP.TextSplitter.regex_split_to_clauses(self.original_raw_text)
                 list_of_preprocessed_clauses = [preprocessor_object.preprocessed_clauses_dict[raw_clause] for raw_clause
                                                 in list_of_raw_clauses]
                 self.generate_child_objects(Clause, string_list=list_of_raw_clauses,
@@ -381,7 +384,7 @@ class RekaiText(RekaiTextCommon):
             # Else preprocess internally
             else:
                 run_config_object.preprocessed_provided = False
-                logger.error(f'Preprocessed Text was not provided. Using native preprocessor')
+                logger.info(f'Preprocessed Text was not provided. Using native preprocessor: {AppConfig.default_preprocessor}')
                 self.preprocessor_object = Preprocessor(raw_text=self.raw_text)
                 self.preprocessed_text = self.preprocessor_object.preprocessed_raw
 
@@ -430,63 +433,63 @@ class RekaiText(RekaiTextCommon):
                                                for index, string in
                                                enumerate(string_list)]
 
-    def fetch_data(self):
+    async def fetch_data(self):
         for (_, paragraph_object) in self.numbered_parsable_paragraph_objects:
             for (_, line_object) in paragraph_object.numbered_line_objects:
                 # Fetch TTS
-                line_object.tts_b64_str = self.fetch_tts_b64_string(
+                line_object.tts_b64_str = await self.fetch_tts_b64_string(
                     line_object.raw_text) if self.run_config.run_tts else None
                 # Fetch JishoParse
-                line_object.jisho_parse_html = self.fetch_jisho_parsed_html(line_object.raw_text)
+                line_object.jisho_parse_html = await self.fetch_jisho_parsed_html(line_object.raw_text)
                 # Decide key line based on if preprocessing was done
                 line = line_object.preprocessed_text if self.run_config.preprocess else line_object.raw_text
                 # Fetch Line DeepL TL
-                line_object.tl_deepl = self.fetch_deepl_tl(line) if self.run_config.deepl_tl_lines else None
+                line_object.tl_deepl = await self.fetch_deepl_tl(line) if self.run_config.deepl_tl_lines else None
                 # Fetch Line Google TL
-                line_object.tl_google = self.fetch_google_tl(line) if self.run_config.google_tl_lines else None
+                line_object.tl_google = await self.fetch_google_tl(line) if self.run_config.google_tl_lines else None
                 # Clause handling
                 if self.run_config.include_clause_analysis and not line_object.is_single_clause():
                     for (_, clause_object) in line_object.numbered_clause_objects:
                         # Decide key clause based on if preprocessed was done
                         clause = clause_object.preprocessed_text if self.run_config.preprocess else clause_object.raw_text
                         # Fetch Clause DeepL TL
-                        clause_object.tl_deepl = self.fetch_deepl_tl(
+                        clause_object.tl_deepl = await self.fetch_deepl_tl(
                             clause) if self.run_config.deepl_tl_clauses else None
                         # Fetch Clause Google TL
-                        clause_object.tl_google = self.fetch_google_tl(
+                        clause_object.tl_google = await self.fetch_google_tl(
                             clause) if self.run_config.google_tl_clauses else None
 
-    def fetch_jisho_parsed_html(self, raw_line: str) -> str:
-        db_interface = JishoParseDBM()
+    async def fetch_jisho_parsed_html(self, raw_line: str) -> str:
+        db_interface = JishoParseDBM(mode=1)
         try:
-            parsed_html = db_interface.query(raw_line=raw_line)
+            parsed_html = await db_interface.async_query(raw_line=raw_line)
             return parsed_html
         except EntryNotFound as e:
             logger.exception(e)
             raise e
 
-    def fetch_tts_b64_string(self, raw_line: str) -> str:
-        db_interface = TextToSpeechDBM()
+    async def fetch_tts_b64_string(self, raw_line: str) -> str:
+        db_interface = TextToSpeechDBM(mode=1)
         try:
-            base64_string = db_interface.query(raw_line=raw_line)
+            base64_string = await db_interface.async_query(raw_line=raw_line)
             return base64_string
         except EntryNotFound as e:
             logger.exception(e)
             raise e
 
-    def fetch_deepl_tl(self, raw_line: str) -> str:
-        db_interface = DeepLDBM()
+    async def fetch_deepl_tl(self, raw_line: str) -> str:
+        db_interface = DeepLDBM(mode=1)
         try:
-            result = db_interface.query(raw_line=raw_line)
+            result = await db_interface.async_query(raw_line=raw_line)
             return result
         except EntryNotFound as e:
             logger.exception(e)
             raise e
 
-    def fetch_google_tl(self, raw_line: str) -> str:
-        db_interface = GoogleTLDBM()
+    async def fetch_google_tl(self, raw_line: str) -> str:
+        db_interface = GoogleTLDBM(mode=1)
         try:
-            result = db_interface.query(raw_line=raw_line)
+            result = await db_interface.async_query(raw_line=raw_line)
             return result
         except EntryNotFound as e:
             logger.exception(e)

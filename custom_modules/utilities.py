@@ -214,10 +214,11 @@ class MetaLogger:
 
     @staticmethod
     def log_backoff_success(details: dict):
-        logger.info(
-            "function {target} was successful after {tries} tries "
-            "for function {target} with args {args} and kwargs "
-            "{kwargs}".format(**details))
+        if AppConfig.deep_log_transmutors:
+            logger.info(
+                "function {target} was successful after {tries} tries "
+                "for function {target} with args {args} and kwargs "
+                "{kwargs}".format(**details))
 
     @staticmethod
     def log_exception(function: str, exception: Exception):

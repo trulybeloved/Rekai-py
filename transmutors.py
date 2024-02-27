@@ -323,9 +323,8 @@ class Transmute:
         jisho_parsed_html_element = jisho_parsed_html_element.replace('class="current"', 'class=""')
         jisho_parsed_html_element = jisho_parsed_html_element.replace('class=""', 'class="jisho-link"')
 
-        db_interface = JishoParseDBM()
-        db_interface.insert(raw_line=input_string, transmuted_data=jisho_parsed_html_element, unix_timestamp=timestamp)
-        db_interface.close_connection()
+        db_interface = JishoParseDBM(mode=1)
+        await db_interface.async_insert(raw_line=input_string, transmuted_data=jisho_parsed_html_element, unix_timestamp=timestamp)
 
         progress_monitor.mark_completion()
 
@@ -366,7 +365,7 @@ class Transmute:
         if isinstance(response, TextResult):
             response = [response]
 
-        db_interface = DeepLDBM()
+        db_interface = DeepLDBM(mode=2)
 
         for input_text, result in zip(input_data, response):
             translated_text = result.text
@@ -408,7 +407,7 @@ class Transmute:
             target_lang=target_lang,
             api_client=Transmute.gtl2_client)
 
-        db_interface = GoogleTLDBM()
+        db_interface = GoogleTLDBM(mode=2)
         for result in response:
             input_text = result['input']
             translated_text = result['translatedText']
@@ -472,7 +471,7 @@ class Transmute:
 
         result = utilities.encode_bytes_to_base64_string(response.audio_content)
 
-        db_interface = TextToSpeechDBM()
+        db_interface = TextToSpeechDBM(mode=2)
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
         db_interface.close_connection()
 

@@ -45,7 +45,7 @@ class AppConfig:
 
     # paths and variables pertaining to logging
     logging_directory: str = os.path.join(current_working_directory, 'logs')
-    deep_log_transmutors: bool = True
+    deep_log_transmutors: bool = False
     deep_log_databases: bool = False
     deep_log_dataclasses: bool = False
 
@@ -65,7 +65,8 @@ class AppConfig:
     deepl_tl_db_path: str = os.path.join(datastores_directory, 'deepl_tl.db')
     google_tl_db_path: str = os.path.join(datastores_directory, 'google_tl.db')
     je_tts_db: str = os.path.join(datastores_directory, 'je_text_to_speech.db')
-    openai_gpt_db_path: str = os.path.join(datastores_directory, 'openai_gpt')
+    openai_gpt_db_path: str = os.path.join(datastores_directory, 'openai_gpt.db')
+    testing_db_path: str = os.path.join(datastores_directory, 'test.db')
 
     # path to the system database
     sys_directory: str = os.path.join(current_working_directory, 'sys')
@@ -115,7 +116,7 @@ class AppConfig:
     # Chunk size for APIs that accept chunks of text - Eg: Google TL v2
     default_transmutor_chunk_size: int = 20
     deepl_transmutor_chunk_size: int = 30
-    google_tl_transmutor_chunk_size: int = 20
+    google_tl_transmutor_chunk_size: int = 30
 
     # text to speech configuration
     tts_file_extension: str = 'opus'
@@ -256,16 +257,12 @@ class RunConfig:
 
 app_config = AppConfig()
 
-
 def config_object_to_dict(config_object):
     return {key: getattr(config_object, key) for key in dir(config_object) if
             not key.startswith('_') and not callable(getattr(config_object, key))}
-
 
 def update_config_from_dict(config_dict, config_object):
     for key, value in config_dict.items():
         setattr(config_object, key, value)
     return config_object
 
-
-print(config_object_to_dict(app_config))

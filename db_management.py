@@ -1,11 +1,11 @@
 ## built-in libraries
 import os.path
 import typing
+import sqlite3
 
 ## third-party libraries
 from loguru import logger
-
-import sqlite3
+import aiosqlite
 
 ## custom modules
 from appconfig import AppConfig
@@ -40,7 +40,10 @@ class DBM:
     def db_path(self):
         return self._db_path
 
-    def __init__(self) -> None:
+    def __init__(self, mode: int = 0) -> None:
+        """
+        SET MODE: int as 1 to prevent opening of a connection if using async functions
+        """
 
         self._db_structure = \
             [
@@ -58,17 +61,19 @@ class DBM:
         self._main_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._main_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
         self._archive_table_create_query = f'CREATE TABLE IF NOT EXISTS {self._archive_table_name} (id INTEGER PRIMARY KEY, {self._key_column_name} TEXT, {self._output_column_name} TEXT, timestamp INTEGER)'
 
-        self.ensure_db_existance()
+        if mode == 0:
+            self.db_connection = sqlite3.connect(self._db_path)
 
-        self.db_connection = sqlite3.connect(self._db_path)
-        self.db_connection.execute('PRAGMA journal_mode=wal')  # allows for simultaneous writes to db.
-        self.initialize_db_structure()
         self.cached_raw_lines_dict = self.update_cached_dict_of_raw_lines()
         if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 
-    def ensure_db_existance(self):
+    def check_and_initialize(self):
+        self.ensure_db_existence()
+        self.initialize_db_structure()
+        self.db_connection.execute('PRAGMA journal_mode=wal')  # allows for simultaneous writes to db.
 
+    def ensure_db_existence(self):
         if not os.path.exists(self._db_path):
             os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
             with open(self._db_path, 'w'):
@@ -77,7 +82,6 @@ class DBM:
         else:
             if AppConfig.deep_log_databases:
                 logger.info(f'{self._database_name} was found in the provided path')
-
 
     def check_db_structure(self) -> bool:
         cursor = self.db_connection.cursor()
@@ -227,6 +231,135 @@ class DBM:
         else:
             return self.cached_raw_lines_dict
 
+    ## ASYNC FUNCTIONS
+
+    async def async_connect_to_db(self):
+        db_connection = await aiosqlite.connect(self._db_path)
+        return db_connection
+
+    async def async_ensure_database_integrity(self):
+        self.ensure_db_existence()
+
+        async with aiosqlite.connect(self._db_path) as db:
+            # Enable WAL mode allowing for concurrent writes
+            await db.execute('PRAGMA journal_mode=wal')
+
+            # Database Structure Test
+            structure_test: bool
+            try:
+                for [table_name, columns] in self._db_structure:
+                    cursor = await db.execute(f'PRAGMA table_info({table_name})')
+                    existing_columns = [column[1] for column in await cursor.fetchall()]
+                    if set(columns) != set(existing_columns):
+                        structure_test = False
+                    else:
+                        structure_test = True
+            except Exception as e:
+                logger.error(f'{self._database_name}:An Exception:{e} was raised')
+                structure_test = False
+
+            # Initialize Database Stucture if structure test fails
+            if structure_test is True:
+                if self.deep_log:
+                    logger.info(f'{self._database_name} is already initialized and has the correct structure.')
+            else:
+                try:
+                    await db.execute(self._main_table_create_query)
+                    await db.execute(self._archive_table_create_query)
+                    if self.deep_log:
+                        logger.info(
+                            f'{self._database_name}:{self._main_table_name} created. {self._archive_table_name} created. DB initialized')
+                    await db.commit()
+                    self.db_updated = True
+                except Exception as e:
+                    logger.error(f'{self._database_name}:An Exception:{e} was raised')
+
+    async def async_query(self, raw_line: str, column_name:typing.Union[str, None] = None) -> typing.Union[str, bytes]:
+
+        if column_name is None:
+            column_name = self._output_column_name
+
+        db = await self.async_connect_to_db()
+        cursor = await db.cursor()
+        query_query = f'SELECT {column_name} FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+        await cursor.execute(query_query, (raw_line,))
+        query_results = await cursor.fetchone()
+        await db.close()
+        if query_results:
+            result = query_results[0]
+            if self.deep_log:
+                logger.info(f'{self._database_name}:{self._database_name} Query for {raw_line} successful')
+            return result
+        else:
+            if self.deep_log:
+                logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
+            raise EntryNotFound
+
+
+    async def async_insert(self, raw_line: str, transmuted_data: typing.Union[str, bytes], unix_timestamp: int,
+                           column_name:typing.Union[str,None] = None) -> None:
+
+        db = await self.async_connect_to_db()
+        cursor = await db.cursor()
+
+        if isinstance(transmuted_data, bytes):
+            transmuted_data = sqlite3.Binary(transmuted_data)
+
+        if column_name is None:
+            column_name = self._output_column_name
+        # Check if raw_line already exists in the table
+        # COUNT FUNCTION returns an integer with the total number of matching rows
+        check_query = f'SELECT COUNT(*) FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+        await cursor.execute(check_query, (raw_line,))
+        count = await cursor.fetchone()
+        if count[0] == 0:
+            # raw_line doesn't exist, so perform the insertion
+            insert_query = f'INSERT INTO {self._main_table_name} ({self._key_column_name}, {column_name}, timestamp) VALUES (?, ?, ?)'
+            await cursor.execute(insert_query, (raw_line, transmuted_data, unix_timestamp))
+            await db.commit()
+            await db.close()
+            self.db_updated = True
+            if self.deep_log:
+                logger.info(
+                    f'{self._database_name}:Insert of {column_name} for line {raw_line} in {self._main_table_name} was successful')
+        else:
+            await self.async_archive(raw_line=raw_line)
+            await self.async_insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name,
+                                    unix_timestamp=unix_timestamp)
+            if self.deep_log:
+                logger.info(
+                    f'{self._database_name}:Insert of {column_name} into {self._main_table_name} was completed with archival of previously existing line')
+
+    async def async_archive(self, raw_line: str) -> None:
+        db = await self.async_connect_to_db()
+        cursor = await db.cursor()
+        check_query = f'SELECT COUNT(*) FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+        await cursor.execute(check_query, (raw_line,))
+        count = await cursor.fetchone()
+        if count[0] != 0:
+            archival_query = f'INSERT INTO {self._archive_table_name} ({self._key_column_name}, {self._output_column_name}) SELECT {self._key_column_name}, {self._output_column_name} FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+            await cursor.execute(archival_query, (raw_line,))
+            delete_query = f'DELETE FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+            await cursor.execute(delete_query, (raw_line,))
+            await db.commit()
+            await db.close()
+            if self.deep_log:
+                logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
+            self.db_updated = True
+        else:
+            if self.deep_log:
+                logger.info(f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. '
+                            f'No such entry exists. Archive function is not applicable')
+
+    async def async_update_cached_dict_of_raw_lines(self) -> dict:
+        db = await self.async_connect_to_db()
+        cursor = await db.cursor()
+        list_query = f'SELECT {self._key_column_name} FROM {self._main_table_name}'
+        await cursor.execute(list_query)
+        list_of_raw_lines_in_db = [row[0] for row in await cursor.fetchall()]
+        dict_of_raw_lines_in_db = {key: None for key in list_of_raw_lines_in_db}
+        await db.close()
+        return dict_of_raw_lines_in_db
 
 class JishoParseDBM(DBM):
     # intrinsic settings

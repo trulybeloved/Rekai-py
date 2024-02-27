@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, DeepLDBM, GoogleTLDBM, TextToSpeechDBM
 
+
 @dataclass
 class ParaInfo:
     is_dialogue: bool
@@ -28,6 +29,7 @@ class ParaInfo:
         self.is_narration = is_narration
         self.is_expression = is_expression
         self.is_single_line = is_single_line
+
 
 class RekaiTextCommon:
     """UNDER CONSTRUCTON"""
@@ -49,6 +51,38 @@ class RekaiTextCommon:
         output_string = output_string[:-1] if input_string[-1] in closing_characters else output_string
 
         return output_string
+
+
+class Preprocessor:
+    run_config = None
+    raw_text = None
+    preprocessed_raw = None
+    preprocessed_para_list = None
+    preprocessed_clauses_dict = None
+
+    def __init__(self, raw_text: str):
+
+        self.raw_text = raw_text
+        self.preprocessed_raw = self.preprocess(raw_text)
+        self.preprocessed_clauses_dict = self.build_preprocessed_clauses_dict()
+
+    def build_preprocessed_clauses_dict(self):
+        # Split text into paragraphs
+        paragraphs = BasicNLP.TextSplitter.splitlines_to_list(self.raw_text)
+        # Flatten paragraphs into lines
+        lines = [line for para in paragraphs for line in JNLP.TextSplitter.regex_split_to_lines(para)]
+        # Flatten lines into clauses
+        clauses = [clause for line in lines for clause in JNLP.TextSplitter.regex_split_to_clauses(line)]
+        # Remove duplicates
+        unique_clauses = set(clauses)
+        # Join unique clauses into a single string
+        string_of_clauses = '\n\n'.join(unique_clauses)
+        # Preprocess the string
+        preprocessed_string = self.preprocess(string_of_clauses)
+        # Split preprocessed string into unique preprocessed clauses
+        unique_preprocessed_clauses = BasicNLP.TextSplitter.splitlines_to_list(preprocessed_string)
+        # Create a dictionary mapping raw clauses to preprocessed clauses
+        return dict(zip(unique_clauses, unique_preprocessed_clauses))
 
     def preprocess(self, input_string: str):
         # Need to take file operations outside of this function into utilities
@@ -73,6 +107,7 @@ class RekaiTextCommon:
         else:
             raise AppConfigError('the default_preprocessor parameter was not configured correctly')
 
+
 @dataclass
 class Clause(RekaiTextCommon):
     # Instance Variables
@@ -85,7 +120,8 @@ class Clause(RekaiTextCommon):
     tl_google: str = None
     tl_deepl: str = None
 
-    def __init__(self, input_clause: str, input_preprocessed_clause: Union[str, None], run_config: RunConfig, para_info: ParaInfo):
+    def __init__(self, input_clause: str, input_preprocessed_clause: Union[str, None], run_config: RunConfig,
+                 para_info: ParaInfo):
         self.run_config = run_config
         self.para_info = para_info
 
@@ -113,7 +149,7 @@ class Line(RekaiTextCommon):
     raw_text: str
     original_raw_text: str
     preprocessed_text: str
-    original_preprocessed_text: str # to store the text that was received during instance creation, free from post processing
+    original_preprocessed_text: str  # to store the text that was received during instance creation, free from post processing
     preprocessor_made_replacements: bool
 
     tts_b64_str: typing.Union[str, None] = field(repr=False)
@@ -126,7 +162,14 @@ class Line(RekaiTextCommon):
     clause_count: int
     numbered_clause_objects: list[tuple[int, Clause]]
 
-    def __init__(self, input_line: str, input_prepro_line: Union[str, None], run_config: RunConfig, para_info: ParaInfo):
+    def __init__(
+            self,
+            input_line: str,
+            input_prepro_line: Union[str, None],
+            run_config: RunConfig,
+            para_info: ParaInfo,
+            preprocessor_object: Preprocessor):
+
         self.run_config = run_config
         self.para_info = para_info
 
@@ -149,15 +192,16 @@ class Line(RekaiTextCommon):
                 if run_config.clean_post_split and (not para_info.is_single_line) and para_info.is_dialogue:
                     self.preprocessed_text = self.clean_post_split(self.preprocessed_text)
 
-                list_of_preprocessed_lines = JNLP.TextSplitter.regex_split_to_clauses(self.original_preprocessed_text)
-                self.generate_child_objects(Clause, string_list=self.list_of_clauses, prepro_string_list=list_of_preprocessed_lines)
+                list_of_preprocessed_clauses = JNLP.TextSplitter.regex_split_to_clauses(self.original_preprocessed_text)
+                self.generate_child_objects(Clause, string_list=self.list_of_clauses,
+                                            prepro_string_list=list_of_preprocessed_clauses)
             else:
                 list_of_raw_clauses = JNLP.TextSplitter.regex_split_to_clauses(self.raw_text)
-                if self.preprocessor_made_replacements:
-                    list_of_preprocessed_clauses = [self.preprocess(clause) for clause in list_of_raw_clauses]
-                    self.generate_child_objects(Clause, string_list=list_of_raw_clauses, prepro_string_list=list_of_preprocessed_clauses)
-                else:
-                    self.generate_child_objects(Clause, string_list=list_of_raw_clauses, prepro_string_list=list_of_raw_clauses)
+                list_of_preprocessed_clauses = [preprocessor_object.preprocessed_clauses_dict[raw_clause] for raw_clause
+                                                in list_of_raw_clauses]
+                self.generate_child_objects(Clause, string_list=list_of_raw_clauses,
+                                            prepro_string_list=list_of_preprocessed_clauses)
+
         else:
             self.generate_child_objects(Clause, self.list_of_clauses, None)
             self.preprocessed_text = ''
@@ -175,14 +219,16 @@ class Line(RekaiTextCommon):
         """Checks if line has only one clause"""
         return not self.clause_count > 1
 
-    def generate_child_objects(self, child_class: type[Clause], string_list: list, prepro_string_list: Union[list, None]):
+    def generate_child_objects(self, child_class: type[Clause], string_list: list,
+                               prepro_string_list: Union[list, None]):
         if prepro_string_list:
-            self.numbered_clause_objects = [(index + 1, child_class(string, prepro_string, self.run_config, self.para_info)) for
-                                            index, (string, prepro_string)
-                                            in enumerate(zip(string_list, prepro_string_list))]
+            self.numbered_clause_objects = [
+                (index + 1, child_class(string, prepro_string, self.run_config, self.para_info)) for
+                index, (string, prepro_string)
+                in enumerate(zip(string_list, prepro_string_list))]
         else:
-            self.numbered_clause_objects = [(index + 1, child_class(string, None, self.run_config, self.para_info)) for index, string in enumerate(string_list)]
-
+            self.numbered_clause_objects = [(index + 1, child_class(string, None, self.run_config, self.para_info)) for
+                                            index, string in enumerate(string_list)]
 
 
 @dataclass
@@ -205,8 +251,12 @@ class Paragraph(RekaiTextCommon):
     is_narration: bool = False
     is_expression: bool = False
 
-
-    def __init__(self, input_paragraph: str, input_prepro_para: Union[str, None], run_config: RunConfig):
+    def __init__(
+            self,
+            input_paragraph: str,
+            input_prepro_para: Union[str, None],
+            run_config: RunConfig,
+            preprocessor_object: Preprocessor):
         # assert "\n" not in input_paragraph
 
         self.run_config = run_config
@@ -245,9 +295,10 @@ class Paragraph(RekaiTextCommon):
             if input_prepro_para:
                 self.preprocessed_text = input_prepro_para
                 list_of_preprocessed_lines = JNLP.TextSplitter.regex_split_to_lines(self.preprocessed_text)
-                self.generate_child_objects(Line, self.list_of_raw_lines, list_of_preprocessed_lines)
+                self.generate_child_objects(Line, self.list_of_raw_lines, list_of_preprocessed_lines,
+                                            preprocessor_object)
             else:
-                self.generate_child_objects(Line, self.list_of_raw_lines, None)
+                self.generate_child_objects(Line, self.list_of_raw_lines, None, None)
 
         else:
             self.preprocessed_text = ''
@@ -261,18 +312,26 @@ class Paragraph(RekaiTextCommon):
         """Checks if paragraph has only one line"""
         return not self.line_count > 1
 
-    def generate_child_objects(self, child_object: type[Line], string_list: list, prepro_string_list: Union[list, None]):
+    def generate_child_objects(
+            self, child_object: type[Line],
+            string_list: list,
+            prepro_string_list: Union[list, None],
+            preprocessor_object: Union[Preprocessor, None]):
         if prepro_string_list:
-            self.numbered_line_objects = [(index + 1, child_object(string, prepro_string, self.run_config, self.para_info)) for
-                                               index, (string, prepro_string)
-                                               in enumerate(zip(string_list, prepro_string_list))]
+            self.numbered_line_objects = [
+                (index + 1, child_object(string, prepro_string, self.run_config, self.para_info, preprocessor_object))
+                for
+                index, (string, prepro_string)
+                in enumerate(zip(string_list, prepro_string_list))]
         else:
-            self.numbered_line_objects = [(index + 1, child_object(string, None, self.run_config, self.para_info)) for index, string in
-                                               enumerate(string_list)]
+            self.numbered_line_objects = [
+                (index + 1, child_object(string, None, self.run_config, self.para_info, preprocessor_object)) for
+                index, string in
+                enumerate(string_list)]
+
 
 @dataclass
 class RekaiText(RekaiTextCommon):
-
     run_config: RunConfig = field(repr=False)
     timestamp: int
 
@@ -304,6 +363,7 @@ class RekaiText(RekaiTextCommon):
             self.raw_text, keepends=False, strip_each_line=True, trim_list=True)
 
         self.paragraph_count = len(paragraphs)
+        self.clauses_dict = None
 
         # Preprocessed text handling
         if self.run_config.preprocess:
@@ -317,7 +377,8 @@ class RekaiText(RekaiTextCommon):
                     self.preprocessed_text = input_preprocessed_text
                 else:
                     logger.error(f'Provided preprocessed text failed to match with raw text. Using native preprocessor')
-                    self.preprocessed_text = self.preprocess(input_string=self.raw_text)
+                    self.preprocessor_object = Preprocessor(raw_text=self.raw_text)
+                    self.preprocessed_text = self.preprocessor_object.preprocessed_raw
 
                     prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
                         self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
@@ -325,7 +386,8 @@ class RekaiText(RekaiTextCommon):
             else:
                 run_config_object.preprocessed_provided = False
                 logger.error(f'Preprocessed Text was not provided. Using native preprocessor')
-                self.preprocessed_text = self.preprocess(input_string=self.raw_text)
+                self.preprocessor_object = Preprocessor(raw_text=self.raw_text)
+                self.preprocessed_text = self.preprocessor_object.preprocessed_raw
 
                 prepro_paragraphs = BasicNLP.TextSplitter.splitlines_to_list(
                     self.preprocessed_text, keepends=False, strip_each_line=True, trim_list=True)
@@ -338,13 +400,12 @@ class RekaiText(RekaiTextCommon):
             prepro_paragraphs = None
 
         # method below will set None to the propro arguments for all paragraph objects is prepro_lines is None
-        self.generate_child_objects(Paragraph, paragraphs, prepro_paragraphs, self.run_config)
+        self.generate_child_objects(Paragraph, paragraphs, prepro_paragraphs, self.run_config, self.preprocessor_object)
 
         self.numbered_parsable_paragraph_objects = self.get_parsable_paragraphs()
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
-
 
     def get_raw_paragraphs(self) -> list[str]:
         """Returns List of the raw text of all lines"""
@@ -354,20 +415,30 @@ class RekaiText(RekaiTextCommon):
         """Returns Numbered List of all lines that are parsable"""
         return list(filter(lambda e: not e[1].unparsable, self.numbered_paragraph_objects))
 
-    def generate_child_objects(self, child_class: type[Paragraph], string_list: list, prepro_string_list: Union[list, None], run_config: RunConfig):
+    def generate_child_objects(
+            self,
+            child_class: type[Paragraph],
+            string_list: list,
+            prepro_string_list: Union[list, None],
+            run_config: RunConfig,
+            preprocessor_object: Union[Preprocessor, None]):
+
         if prepro_string_list:
-            self.numbered_paragraph_objects = [(index + 1, child_class(string, prepro_string, run_config)) for
-                                               index, (string, prepro_string)
-                                               in enumerate(zip(string_list, prepro_string_list))]
+            self.numbered_paragraph_objects = [
+                (index + 1, child_class(string, prepro_string, run_config, preprocessor_object)) for
+                index, (string, prepro_string)
+                in enumerate(zip(string_list, prepro_string_list))]
         else:
-            self.numbered_paragraph_objects = [(index + 1, child_class(string, None, run_config)) for index, string in
+            self.numbered_paragraph_objects = [(index + 1, child_class(string, None, run_config, preprocessor_object))
+                                               for index, string in
                                                enumerate(string_list)]
 
     def fetch_data(self):
         for (_, paragraph_object) in self.numbered_parsable_paragraph_objects:
             for (_, line_object) in paragraph_object.numbered_line_objects:
                 # Fetch TTS
-                line_object.tts_b64_str = self.fetch_tts_b64_string(line_object.raw_text) if self.run_config.run_tts else None
+                line_object.tts_b64_str = self.fetch_tts_b64_string(
+                    line_object.raw_text) if self.run_config.run_tts else None
                 # Fetch JishoParse
                 line_object.jisho_parse_html = self.fetch_jisho_parsed_html(line_object.raw_text)
                 # Decide key line based on if preprocessing was done
@@ -382,9 +453,11 @@ class RekaiText(RekaiTextCommon):
                         # Decide key clause based on if preprocessed was done
                         clause = clause_object.preprocessed_text if self.run_config.preprocess else clause_object.raw_text
                         # Fetch Clause DeepL TL
-                        clause_object.tl_deepl = self.fetch_deepl_tl(clause) if self.run_config.deepl_tl_clauses else None
+                        clause_object.tl_deepl = self.fetch_deepl_tl(
+                            clause) if self.run_config.deepl_tl_clauses else None
                         # Fetch Clause Google TL
-                        clause_object.tl_google = self.fetch_google_tl(clause) if self.run_config.google_tl_clauses else None
+                        clause_object.tl_google = self.fetch_google_tl(
+                            clause) if self.run_config.google_tl_clauses else None
 
     def fetch_jisho_parsed_html(self, raw_line: str) -> str:
         db_interface = JishoParseDBM()

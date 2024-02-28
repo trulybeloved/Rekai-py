@@ -14,7 +14,7 @@ from pyppeteer import launch as PyppeteerLaunch
 
 ## custom modules
 from appconfig import AppConfig
-from custom_dataclasses import RekaiText, Paragraph
+from custom_dataclasses import RekaiText, Paragraph, Line, Clause
 from transmutors import Transmute
 from db_management import DBM, JishoParseDBM, TextToSpeechDBM, DeepLDBM, GoogleTLDBM
 from custom_modules.utilities import ProgressMonitor
@@ -272,7 +272,6 @@ class SubProcess:
                      transmute_lines: bool = True,
                      transmute_clauses: bool = False) -> list[str]:
 
-
         dict_of_keystrings_in_db = db_interface.get_dict_of_keystrings_in_db()
 
         list_of_strings_for_transmutation = []
@@ -281,51 +280,28 @@ class SubProcess:
         list_of_paragraph_object_tuples: list[
             tuple[int, Paragraph]] = rekai_text_object.numbered_parsable_paragraph_objects
 
-        # Conditionals for level of transmutation and check if already in database
-        if transmute_paragraphs:
-            for (_, paragraph_object) in list_of_paragraph_object_tuples:
-                if preprocess:
-                    if paragraph_object.preprocessed_text in dict_of_keystrings_in_db:
-                        continue
-                    else:
-                        list_of_strings_for_transmutation.append(paragraph_object.preprocessed_text)
-                else:
-                    if paragraph_object.raw_text in dict_of_keystrings_in_db:
-                        continue
-                    else:
-                        list_of_strings_for_transmutation.append(paragraph_object.raw_text)
+        # Helper function to make loop below clearer
+        def append_content(TextObject: Union[Paragraph, Line, Clause]):
+            content = TextObject.preprocessed_text if preprocess else TextObject.raw_text
+            list_of_strings_for_transmutation.append(content)
 
-        if transmute_lines:
-            for (_, paragraph_object) in list_of_paragraph_object_tuples:
-                list_of_line_objects_in_para = paragraph_object.numbered_line_objects
-                for (_, line_object) in list_of_line_objects_in_para:
-                    if preprocess:
-                        if line_object.preprocessed_text in dict_of_keystrings_in_db:
-                            continue
-                        else:
-                            list_of_strings_for_transmutation.append(line_object.preprocessed_text)
-                    else:
-                        if line_object.raw_text in dict_of_keystrings_in_db:
-                            continue
-                        else:
-                            list_of_strings_for_transmutation.append(line_object.raw_text)
+        # Conditionals for level of transmutation
+        for (_, paragraph) in list_of_paragraph_object_tuples:
+            if transmute_paragraphs:
+                append_content(paragraph)
 
-        if transmute_clauses:
-            for (_, paragraph_object) in list_of_paragraph_object_tuples:
-                list_of_line_objects_in_para = paragraph_object.numbered_line_objects
-                for (_, line_object) in list_of_line_objects_in_para:
-                    list_of_clause_objects_in_line = line_object.numbered_clause_objects
-                    for (_, clause_object) in list_of_clause_objects_in_line:
-                        if preprocess:
-                            if clause_object.preprocessed_text in dict_of_keystrings_in_db:
-                                continue
-                            else:
-                                list_of_strings_for_transmutation.append(clause_object.preprocessed_text)
-                        else:
-                            if clause_object.raw_text in dict_of_keystrings_in_db:
-                                continue
-                            else:
-                                list_of_strings_for_transmutation.append(clause_object.raw_text)
+            for (_, line) in paragraph.numbered_line_objects:
+                if transmute_lines:
+                    append_content(line)
+                    
+                for (_, clause) in line.numbered_clause_objects:
+                    if transmute_clauses:
+                        append_content(clause)
+
+        # Check if already in database
+        list_of_strings_for_transmutation = list(filter(
+            lambda string: not string in dict_of_keystrings_in_db,
+            list_of_strings_for_transmutation))
 
         # As single clause lines and single line paragraphs being included can possibly result in duplicates
         list_of_unique_strings_for_transmutation = list(set(list_of_strings_for_transmutation))
@@ -334,6 +310,7 @@ class SubProcess:
             return []
 
         return list_of_unique_strings_for_transmutation
+
 
     @staticmethod
     def query_database(key: str, db_interface: DBM, column_name: Union[str, None] = None) -> Union[str, bytes]:

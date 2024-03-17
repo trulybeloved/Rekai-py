@@ -1,4 +1,5 @@
 ## built-in libraries
+import json
 from typing import Union
 
 import base64
@@ -693,7 +694,57 @@ class GenerateHtml:
 
 
 class GenerateRekaiPortable:
-        @staticmethod
-        def rekai_json(input_rekai_text_object: RekaiText, output_directory: str) -> str:
-            pass
+    @staticmethod
+    def rekai_json(input_rekai_text_object: RekaiText):
+
+        rekai_output_dict = dict()
+        rekai_output_dict['rekai_header'] = input_rekai_text_object.text_header
+        rekai_output_dict['preprocessed_available'] = input_rekai_text_object.preprocessed_available
+        rekai_output_dict['total_paragraph_count'] = input_rekai_text_object.paragraph_count
+
+        rekai_output_dict['paragraphs'] = list()
+
+        for (index, paragraph_object) in input_rekai_text_object.numbered_paragraph_objects:
+            paragraph_dict = dict()
+            paragraph_dict['paragraph_number'] = index
+            paragraph_dict['paragraph_id'] = f'P{index}'
+            paragraph_dict['paragraph_type'] = paragraph_object.paragraph_type
+            paragraph_dict['paragraph_raw'] = paragraph_object.raw_text
+            paragraph_dict['paragraph_prepro'] = paragraph_object.preprocessed_text
+            paragraph_dict['line_count'] = paragraph_object.line_count
+            paragraph_dict['lines'] = list()
+
+            for (line_number, line_object) in paragraph_object.numbered_line_objects:
+                line_dict = dict()
+                line_dict['line_number'] = line_number
+                line_dict['line_id'] = f'P{index}_L{line_number}'
+                line_dict['line_raw'] = line_object.raw_text
+                line_dict['line_prepro'] = line_object.preprocessed_text
+                line_dict['jisho_parse_html'] = line_object.jisho_parse_html
+                line_dict['line_tl_deepl'] = line_object.tl_deepl
+                line_dict['line_tl_google'] = line_object.tl_google
+                line_dict['is_single_clause'] = line_object.is_single_clause()
+                line_dict['clauses'] = list() if not line_object.is_single_clause() else None
+
+                if not line_object.is_single_clause():
+                    for (clause_number, clause_object) in line_object.numbered_clause_objects:
+                        clause_dict = dict()
+                        clause_dict['clause_id'] = f'P{index}_L{line_number}_C{clause_number}'
+                        clause_dict['clause_raw'] = clause_object.raw_text
+                        clause_dict['clause_prepro'] = clause_object.preprocessed_text
+                        clause_dict['clause_tl_deepl'] = clause_object.tl_deepl
+                        clause_dict['clause_tl_google'] = clause_object.tl_google
+                        line_dict['clauses'].append(clause_dict)
+
+                paragraph_dict['lines'].append(line_dict)
+
+            rekai_output_dict['paragraphs'].append(paragraph_dict)
+
+        output_json_string = json.dumps(rekai_output_dict, indent=4, ensure_ascii=False)
+
+        with open('rekai_json.json', 'w', encoding='utf-8') as json_file:
+            json_file.write(output_json_string)
+
+
+
 

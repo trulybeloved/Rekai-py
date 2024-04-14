@@ -122,3 +122,4 @@ datastores/je_text_to_speech.db
 datastores/jisho_parse.db
 
 experiments/
+/sys/

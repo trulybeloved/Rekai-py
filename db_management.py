@@ -6,6 +6,8 @@ import sqlite3
 ## third-party libraries
 from loguru import logger
 import aiosqlite
+import cryptography
+from cryptography.fernet import Fernet
 
 ## custom modules
 from appconfig import AppConfig
@@ -474,31 +476,143 @@ class SystemDBM:
     _instance = []
     _db_path = AppConfig.system_db_path
 
+    deep_log: bool = AppConfig.deep_log_databases
+
     _db_structure = \
         [
             ['app_state',
                 [
-                'id',
-                'first_run',
-                'deepl_api_available',
-                'google_auth_configured'
+                'id INTEGER PRIMARY KEY',
+                'first_run INTEGER',
+                'deepl_api_available INTEGER',
+                'google_auth_configured INTEGER'
                 ]
             ],
-            ['app_config', ['id', 'app_config_dict', 'timestamp']],
-            ['run_config', ['id', 'run_config_dict', 'timestamp']],
-            ['api_crypt', ['id', 'api_name', 'encrypted_api_key']],
+            ['app_config', ['id INTEGER PRIMARY KEY', 'app_config_json TEXT', 'timestamp INTEGER']],
+            ['run_config', ['id INTEGER PRIMARY KEY', 'run_config_json TEXT', 'timestamp INTEGER']],
+            ['api_crypt', ['id INTEGER PRIMARY KEY', 'api_name TEXT', 'encrypted_api_key TEXT']],
+            ['url_crypt', ['id INTEGER PRIMARY KEY', 'service_name TEXT', 'encrypted_url TEXT']]
         ]
 
     @property
     def db_path(self):
         return self._db_path
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(SystemDBM, cls).__new__(cls)
-        return cls._instance
-
     def __init__(self):
+        try:
+            self.db_connection = sqlite3.connect(self._db_path)
+        except:
+            self.check_connect_initialize()
+
+        self.secrets_dir = AppConfig.secrets_dir
+        self.key_file = os.path.join(self.secrets_dir, 'system_db.key')
+        self.key = None
+
+        self.generate_key()
+        self.load_key()
+
+    def check_connect_initialize(self):
+        self.ensure_db_existence()
+        self.db_connection = sqlite3.connect(self._db_path)
+        self.initialize_db_structure()
+        self.db_connection.execute('PRAGMA journal_mode=wal')  # allows for simultaneous writes to db.
+
+    def ensure_db_existence(self):
+        if not os.path.exists(self._db_path):
+            os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
+            with open(self._db_path, 'w'):
+                pass
+            logger.warning(f'{self._database_name} was not found at the specified path: {self._db_path} | Hence a blank database was created')
+        else:
+            if AppConfig.deep_log_databases:
+                logger.info(f'{self._database_name} was found in the provided path')
+
+    def check_db_structure(self) -> bool:
+        cursor = self.db_connection.cursor()
+        try:
+            for [table_name, columns] in self._db_structure:
+                cursor.execute(f'PRAGMA table_info({table_name})')
+                existing_columns = [column[1] for column in cursor.fetchall()]
+                if set(columns) != set(existing_columns):
+                    return False
+            return True
+        except Exception as e:
+            logger.error(f'{self._database_name}:An Exception:{e} was raised')
+            return False
+
+    def initialize_db_structure(self) -> None:
+        structure_test = self.check_db_structure()
+        if structure_test is True:
+            if self.deep_log:
+                logger.info(f'{self._database_name} is already initialized and has the correct structure.')
+        else:
+            try:
+                cursor = self.db_connection.cursor()
+                for table in self._db_structure:
+                    table_name = table[0]
+                    columns = table[1]
+                    coloumns_sql_substring = ','.join(columns)
+                    table_create_query = f'CREATE TABLE IF NOT EXISTS {table_name} ({coloumns_sql_substring})'
+                    cursor.execute(table_create_query)
+
+                self.db_connection.commit()
+                self.db_updated = True
+
+                if self.deep_log:
+                    logger.info(
+                        f'{self._database_name}: Tables created. DB initialized')
+
+            except Exception as e:
+                logger.error(f'{self._database_name}:An Exception:{e} was raised')
+
+    def generate_key(self):
+        if not os.path.exists(self.key_file):
+            key = Fernet.generate_key()
+            with open(self.key_file, 'wb') as kf:
+                kf.write(key)
+
+    def load_key(self):
+        with open(self.key_file, 'rb') as kf:
+            self.key = kf.read()
+
+    def encrypt(self, data):
+        cipher = Fernet(self.key)
+        return cipher.encrypt(data.encode())
+
+    def decrypt(self, encrypted_data):
+        cipher = Fernet(self.key)
+        return cipher.decrypt(encrypted_data).decode()
+
+    def close_connection(self) -> None:
+        self.db_connection.close()
+
+    def reconnect(self) -> None:
         self.db_connection = sqlite3.connect(self._db_path)
 
+    def execute(self, query, params=None):
+        if not self.db_connection:
+            self.reconnect()
+        cursor = self.db_connection.cursor()
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        self.db_connection.commit()
+        return cursor
 
+    def create_table(self, table_name, columns):
+        column_defs = ", ".join(columns)
+        query = f"CREATE TABLE IF NOT EXISTS {table_name} ({column_defs})"
+        self.execute(query)
+
+    def insert(self, table_name, data):
+        columns = ', '.join(data.keys())
+        placeholders = ', '.join(['?' for _ in data])
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        params = tuple(data.values())
+        self.execute(query, params)
+
+    def fetch_all(self, table_name):
+        query = f"SELECT * FROM {table_name}"
+        result = self.execute(query).fetchall()
+        return result

@@ -175,7 +175,7 @@ class Line(RekaiTextCommon):
         self.raw_text = input_line
         self.original_raw_text = input_line
 
-        if run_config.clean_post_split and (not para_info.is_single_line) and (para_info.is_dialogue):
+        if run_config.clean_post_split and (not para_info.is_single_line) and (para_info.is_dialogue) and (not input_prepro_line):
             self.raw_text = self.clean_post_split(self.raw_text)
 
         # It is input line that is sent for splitting as we don't want any cleaning to affect the split
@@ -406,6 +406,10 @@ class RekaiText(RekaiTextCommon):
 
         if AppConfig.deep_log_dataclasses:
             logger.info(f'A new instance of {self.__class__.__name__} was initialized: {self.__class__.__repr__(self)}')
+
+        logger.success('RekaiText object created sucessfully')
+        logger.info(f'Total number of characters: {len(self.raw_text)}')
+        logger.info(f'Total number of paragraphs: {self.paragraph_count}')
 
     def get_raw_paragraphs(self) -> list[str]:
         """Returns List of the raw text of all lines"""

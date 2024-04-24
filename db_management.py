@@ -72,6 +72,41 @@ class DBM:
         if self.deep_log:
             logger.info(f'An instance of {self._database_name} was initialized')
 
+    # GENERIC METHODS
+    def execute_sql_query(self, query: str, params: tuple = None):
+        cursor = self.db_connection.cursor()
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        return cursor
+
+    def insert_data(self, table_name: str, data: dict) -> int:
+        cursor = self.db_connection.cursor()
+        columns = ", ".join(data.keys())
+        placeholders = ", ".join("?" * len(data))
+        sql_query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        cursor.execute(sql_query, tuple(data.values()))
+        self.db_connection.commit()
+        return cursor.lastrowid
+
+    def update_data(self, table_name: str, data: dict, condition: str) -> int:
+        cursor = self.db_connection.cursor()
+        set_clause = ", ".join([f"{column} = ?" for column in data])
+        sql_query = f"UPDATE {table_name} SET {set_clause} WHERE {condition}"
+        cursor.execute(sql_query, tuple(data.values()))
+        self.db_connection.commit()
+        return cursor.rowcount
+
+    def delete_data(self, table_name, condition) -> int:
+        cursor = self.db_connection.cursor()
+        sql_query = f"DELETE FROM {table_name} WHERE {condition}"
+        cursor.execute(sql_query)
+        self.db_connection.commit()
+        return cursor.rowcount
+
+    # SPECIFIC SYNC FUNCTIONS
+
     def check_and_initialize(self):
         self.ensure_db_existence()
         self.initialize_db_structure()
@@ -82,7 +117,8 @@ class DBM:
             os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
             with open(self._db_path, 'w'):
                 pass
-            logger.warning(f'{self._database_name} was not found at the specified path: {self._db_path} | Hence a blank database was created')
+            logger.warning(
+                f'{self._database_name} was not found at the specified path: {self._db_path} | Hence a blank database was created')
         else:
             if AppConfig.deep_log_databases:
                 logger.info(f'{self._database_name} was found in the provided path')
@@ -118,7 +154,7 @@ class DBM:
             except Exception as e:
                 logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
-    def query(self, raw_line: str, column_name:typing.Union[str, None] = None) -> typing.Union[str, bytes]:
+    def query(self, raw_line: str, column_name: typing.Union[str, None] = None) -> typing.Union[str, bytes]:
 
         if column_name is None:
             column_name = self._output_column_name
@@ -138,8 +174,8 @@ class DBM:
             raise EntryNotFound
 
     def insert(self, raw_line: str, transmuted_data: typing.Union[str, bytes], unix_timestamp: int,
-               column_name:typing.Union[str,None] = None) -> None:
-        
+               column_name: typing.Union[str, None] = None) -> None:
+
         cursor = self.db_connection.cursor()
 
         if isinstance(transmuted_data, bytes):
@@ -278,7 +314,7 @@ class DBM:
                 except Exception as e:
                     logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
-    async def async_query(self, raw_line: str, column_name:typing.Union[str, None] = None) -> typing.Union[str, bytes]:
+    async def async_query(self, raw_line: str, column_name: typing.Union[str, None] = None) -> typing.Union[str, bytes]:
 
         if column_name is None:
             column_name = self._output_column_name
@@ -299,9 +335,8 @@ class DBM:
                 logger.info(f'{self._database_name}:{raw_line} was not found in the {self._database_name} database')
             raise EntryNotFound
 
-
     async def async_insert(self, raw_line: str, transmuted_data: typing.Union[str, bytes], unix_timestamp: int,
-                           column_name:typing.Union[str,None] = None) -> None:
+                           column_name: typing.Union[str, None] = None) -> None:
 
         db = await self.async_connect_to_db()
         cursor = await db.cursor()
@@ -365,6 +400,7 @@ class DBM:
         await db.close()
         return dict_of_raw_lines_in_db
 
+
 class JishoParseDBM(DBM):
     # intrinsic settings
     _database_name = 'jisho_parse_db'
@@ -379,11 +415,6 @@ class JishoParseDBM(DBM):
 
     # operational flags
     db_updated = False
-
-    # def __new__(cls, *args, **kwargs):
-    #     if cls._instance is None:
-    #         cls._instance = super(JishoParseDBM, cls).__new__(cls)
-    #     return cls._instance
 
 
 class TextToSpeechDBM(DBM):
@@ -401,11 +432,6 @@ class TextToSpeechDBM(DBM):
     # operational flags
     db_updated = False
 
-    # def __new__(cls, *args, **kwargs):
-    #     if cls._instance is None:
-    #         cls._instance = super(TextToSpeechDBM, cls).__new__(cls)
-    #     return cls._instance
-
 
 class DeepLDBM(DBM):
     # intrinsic settings
@@ -421,11 +447,6 @@ class DeepLDBM(DBM):
 
     # operational flags
     db_updated = False
-
-    # def __new__(cls, *args, **kwargs):
-    #     if cls._instance is None:
-    #         cls._instance = super(DeepLDBM, cls).__new__(cls)
-    #     return cls._instance
 
 
 class GoogleTLDBM(DBM):
@@ -443,11 +464,6 @@ class GoogleTLDBM(DBM):
     # operational flags
     db_updated = False
 
-    # def __new__(cls, *args, **kwargs):
-    #     if cls._instance is None:
-    #         cls._instance = super(GoogleTLDBM, cls).__new__(cls)
-    #     return cls._instance
-
 
 class OpenAIGPTDBM(DBM):
     # intrinsic settings
@@ -464,14 +480,25 @@ class OpenAIGPTDBM(DBM):
     # operational flags
     db_updated = False
 
-    # def __new__(cls, *args, **kwargs):
-    #     if cls._instance is None:
-    #         cls._instance = super(GoogleTLDBM, cls).__new__(cls)
-    #     return cls._instance
+
+class GeminiGPTDBM(DBM):
+    # intrinsic settings
+    _database_name = 'gemini_gpt_infer'
+    _instance = None
+    _db_path = AppConfig.gemini_gpt_db_path
+
+    _main_table_name = 'gpt_infer'
+    _archive_table_name = 'gpt_infer_archive'
+
+    _key_column_name = 'key'  # the column in which the unique string that was transmuted is stored
+    _output_column_name = 'value'
+
+    # operational flags
+    db_updated = False
+
 
 
 class SystemDBM:
-
     _database_name = 'system_db'
     _instance = []
     _db_path = AppConfig.system_db_path
@@ -481,48 +508,50 @@ class SystemDBM:
     _db_structure = \
         [
             ['app_state',
-                [
-                'id INTEGER PRIMARY KEY',
-                'first_run INTEGER',
-                'deepl_api_available INTEGER',
-                'google_auth_configured INTEGER'
-                ]
-            ],
+             [
+                 'id INTEGER PRIMARY KEY',
+                 'first_run INTEGER',
+                 'deepl_api_available INTEGER',
+                 'google_auth_configured INTEGER'
+             ]
+             ],
             ['app_config', ['id INTEGER PRIMARY KEY', 'app_config_json TEXT', 'timestamp INTEGER']],
             ['run_config', ['id INTEGER PRIMARY KEY', 'run_config_json TEXT', 'timestamp INTEGER']],
             ['api_crypt', ['id INTEGER PRIMARY KEY', 'api_name TEXT', 'encrypted_api_key TEXT']],
-            ['url_crypt', ['id INTEGER PRIMARY KEY', 'service_name TEXT', 'encrypted_url TEXT']]
+            ['url_crypt', ['id INTEGER PRIMARY KEY', 'service_name TEXT', 'encrypted_url TEXT']],
+            ['kv_store', ['id INTEGER PRIMARY KEY', 'key TEXT', 'value TEXT']]
         ]
 
     @property
     def db_path(self):
         return self._db_path
 
-    def __init__(self):
-        try:
-            self.db_connection = sqlite3.connect(self._db_path)
-        except:
-            self.check_connect_initialize()
+    def __init__(self, mode: int = 1):
+
+        self.db_connection = sqlite3.connect(self._db_path)
 
         self.secrets_dir = AppConfig.secrets_dir
         self.key_file = os.path.join(self.secrets_dir, 'system_db.key')
         self.key = None
 
-        self.generate_key()
-        self.load_key()
+        if mode == 1:
+            self.load_key()
+            self.validate_key()
 
-    def check_connect_initialize(self):
+    def check_and_initialize(self):
         self.ensure_db_existence()
         self.db_connection = sqlite3.connect(self._db_path)
         self.initialize_db_structure()
-        self.db_connection.execute('PRAGMA journal_mode=wal')  # allows for simultaneous writes to db.
+        self.db_connection.execute('PRAGMA journal_mode=wal') # allows for simultaneous writes to db.
+        self.generate_key()
 
     def ensure_db_existence(self):
         if not os.path.exists(self._db_path):
             os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
             with open(self._db_path, 'w'):
                 pass
-            logger.warning(f'{self._database_name} was not found at the specified path: {self._db_path} | Hence a blank database was created')
+            logger.warning(
+                f'{self._database_name} was not found at the specified path: {self._db_path} | Hence a blank database was created')
         else:
             if AppConfig.deep_log_databases:
                 logger.info(f'{self._database_name} was found in the provided path')
@@ -565,15 +594,58 @@ class SystemDBM:
             except Exception as e:
                 logger.error(f'{self._database_name}:An Exception:{e} was raised')
 
-    def generate_key(self):
-        if not os.path.exists(self.key_file):
+    def generate_key(self, force: bool = False):
+        if not os.path.exists(self.key_file) or force:
             key = Fernet.generate_key()
             with open(self.key_file, 'wb') as kf:
                 kf.write(key)
+            self.load_key()
+            self.update_fernet_key_decryption_test()
+
+    def update_fernet_key_decryption_test(self):
+        test_phrase = 'KEY_DECRYPT_CHECK'
+        encrypted_text_phrase = self.encrypt(test_phrase)
+
+        table_name = 'kv_store'
+        column_name = 'key'
+        column_value = 'key_decrypt_check_phrase'
+        column_to_update = 'value'
+        cursor = self.db_connection.cursor()
+
+        cursor.execute(f"SELECT * FROM {table_name} WHERE {column_name}=?", (column_value,))
+        existing_row = cursor.fetchone()
+
+        try:
+            if existing_row:
+                # If the column value exists, update the row
+                cursor.execute(f"UPDATE {table_name} SET {column_to_update}=? WHERE {column_name}=?",
+                               (encrypted_text_phrase, column_value))
+            else:
+                # If the column value doesn't exist, insert a new row
+                cursor.execute(f"INSERT INTO {table_name} ({column_name}, {column_to_update}) VALUES (?, ?)",
+                               (column_value, encrypted_text_phrase))
+            self.db_connection.commit()
+            logger.success('The decryption test phrase has been successfully encrypted using the present keyfile')
+        except Exception as e:
+            logger.warning(f'An exception was raised during the update operation for the decryption test value ')
 
     def load_key(self):
         with open(self.key_file, 'rb') as kf:
             self.key = kf.read()
+
+    def validate_key(self):
+        encrypted_check_phrase = self.fetch_value(table_name='kv_store', key='key_decrypt_check_phrase')
+        try:
+            decrypted_check_phrase = self.decrypt(encrypted_check_phrase)
+            if decrypted_check_phrase == 'KEY_DECRYPT_CHECK':
+                logger.success('Encryption Keyfile is valid')
+                return True
+            else:
+                logger.error(
+                    'Local Keyfile could not decrypt check phrase. Please ensure that keyfile is valid. Else reset the database')
+                return False
+        except Exception as e:
+            logger.critical(f'Decryption check raised as exception: {e}')
 
     def encrypt(self, data):
         cipher = Fernet(self.key)
@@ -604,6 +676,14 @@ class SystemDBM:
         column_defs = ", ".join(columns)
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ({column_defs})"
         self.execute(query)
+
+    def fetch_value(self, table_name, key, key_column_name: str = 'key', value_coloum_name: str = 'value'):
+        cursor = self.db_connection.cursor()
+        fetch_query = f'SELECT {value_coloum_name} FROM {table_name} WHERE {key_column_name} = ?'
+        cursor.execute(fetch_query, (key,))
+        result_list = cursor.fetchone()
+        result = result_list[0]
+        return result
 
     def insert(self, table_name, data):
         columns = ', '.join(data.keys())

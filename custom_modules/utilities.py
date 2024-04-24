@@ -11,6 +11,7 @@ import time
 ## third-party modules
 from loguru import logger
 import pandas as pd
+import tiktoken
 
 ## custom modules
 from appconfig import AppConfig
@@ -97,6 +98,13 @@ def encode_bytes_to_base64_string(input_bytes: bytes) -> str:
 def decode_bytes_from_base64_string(input_base64: str) -> bytes:
     decoded_data = base64.b64decode(input_base64)
     return decoded_data
+
+#OpenAI Tokenizer
+def tiktoken_get_tokens_in_string(string: str, encoding_name: str = 'cl100k_base') -> int:
+    """Returns the number of tokens in a text string."""
+    encoding = tiktoken.get_encoding(encoding_name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
 
 
 class ProgressMonitor:

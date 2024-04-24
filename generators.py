@@ -1,5 +1,6 @@
 ## built-in libraries
 import json
+import gzip
 from typing import Union
 
 import base64
@@ -698,6 +699,7 @@ class GenerateRekaiPortable:
     def rekai_json(input_rekai_text_object: RekaiText):
 
         rekai_output_dict = dict()
+        rekai_tts_output_list = list()
         rekai_output_dict['rekai_header'] = input_rekai_text_object.text_header
         rekai_output_dict['preprocessed_available'] = input_rekai_text_object.preprocessed_available
         rekai_output_dict['total_paragraph_count'] = input_rekai_text_object.paragraph_count
@@ -709,6 +711,7 @@ class GenerateRekaiPortable:
             paragraph_dict['paragraph_number'] = index
             paragraph_dict['paragraph_id'] = f'P{index}'
             paragraph_dict['paragraph_type'] = paragraph_object.paragraph_type
+            paragraph_dict['is_unparsable'] = paragraph_object.unparsable
             paragraph_dict['paragraph_raw'] = paragraph_object.raw_text
             paragraph_dict['paragraph_prepro'] = paragraph_object.preprocessed_text
             paragraph_dict['line_count'] = paragraph_object.line_count
@@ -724,6 +727,7 @@ class GenerateRekaiPortable:
                 line_dict['line_tl_deepl'] = line_object.tl_deepl
                 line_dict['line_tl_google'] = line_object.tl_google
                 line_dict['is_single_clause'] = line_object.is_single_clause()
+                rekai_tts_output_list.append({line_object.raw_text: line_object.tts_b64_str})
                 line_dict['clauses'] = list() if not line_object.is_single_clause() else None
 
                 if not line_object.is_single_clause():
@@ -740,10 +744,10 @@ class GenerateRekaiPortable:
 
             rekai_output_dict['paragraphs'].append(paragraph_dict)
 
-        output_json_string = json.dumps(rekai_output_dict, indent=4, ensure_ascii=False)
+        output_json_string = json.dumps(rekai_output_dict, ensure_ascii=False)
+        output_tts_json_string = json.dumps(rekai_tts_output_list, ensure_ascii=False)
 
-        with open('rekai_json.json', 'w', encoding='utf-8') as json_file:
-            json_file.write(output_json_string)
+        return output_json_string, output_tts_json_string
 
 
 

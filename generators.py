@@ -1,6 +1,5 @@
 ## built-in libraries
 import json
-import gzip
 from typing import Union
 
 import base64

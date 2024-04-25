@@ -1,5 +1,6 @@
 ## built-in libraries
 import os.path
+import time
 import typing
 import sqlite3
 
@@ -174,7 +175,7 @@ class DBM:
             raise EntryNotFound
 
     def insert(self, raw_line: str, transmuted_data: typing.Union[str, bytes], unix_timestamp: int,
-               column_name: typing.Union[str, None] = None) -> None:
+               column_name: typing.Union[str, None] = None, retry_count: int = 0) -> None:
 
         cursor = self.db_connection.cursor()
 
@@ -189,14 +190,25 @@ class DBM:
         cursor.execute(check_query, (raw_line,))
         count = cursor.fetchone()[0]
         if count == 0:
-            # raw_line doesn't exist, so perform the insertion
-            insert_query = f'INSERT INTO {self._main_table_name} ({self._key_column_name}, {column_name}, timestamp) VALUES (?, ?, ?)'
-            cursor.execute(insert_query, (raw_line, transmuted_data, unix_timestamp))
-            self.db_connection.commit()
-            self.db_updated = True
-            if self.deep_log:
-                logger.info(
-                    f'{self._database_name}:Insert of {column_name} for line {raw_line} in {self._main_table_name} was successful')
+            try:
+                # raw_line doesn't exist, so perform the insertion
+                insert_query = f'INSERT INTO {self._main_table_name} ({self._key_column_name}, {column_name}, timestamp) VALUES (?, ?, ?)'
+                cursor.execute(insert_query, (raw_line, transmuted_data, unix_timestamp))
+                self.db_connection.commit()
+                self.db_updated = True
+                if self.deep_log:
+                    logger.info(
+                        f'{self._database_name}:Insert of {column_name} for line {raw_line} in {self._main_table_name} was successful')
+
+            except Exception as e:
+                logger.error(f'And exception was encounted during an insert operation in to {self._database_name}: e')
+                if retry_count < 3:
+                    time.sleep(max(0.2, retry_count * 0.2))
+                    logger.error(f'Retrying insert into {self._database_name} for key: {raw_line}')
+                    self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name, unix_timestamp=unix_timestamp, retry_count=retry_count+1)
+                else:
+                    raise e
+
         else:
             self.archive(raw_line=raw_line)
             self.insert(raw_line=raw_line, transmuted_data=transmuted_data, column_name=column_name,
@@ -205,21 +217,32 @@ class DBM:
                 logger.info(
                     f'{self._database_name}:Insert of {column_name} into {self._main_table_name} was completed with archival of previously existing line')
 
-    def archive(self, raw_line: str) -> None:
+    def archive(self, raw_line: str, retry_count: int = 0) -> None:
         cursor = self.db_connection.cursor()
         check_query = f'SELECT COUNT(*) FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
         cursor.execute(check_query, (raw_line,))
         count = cursor.fetchone()[0]
         if count != 0:
-            archival_query = f'INSERT INTO {self._archive_table_name} ({self._key_column_name}, {self._output_column_name}) '
-            f'SELECT {self._key_column_name}, {self._output_column_name} FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
-            cursor.execute(archival_query, (raw_line,))
-            delete_query = f'DELETE FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
-            cursor.execute(delete_query, (raw_line,))
-            self.db_connection.commit()
-            if self.deep_log:
-                logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
-            self.db_updated = True
+            try:
+                archival_query = f'INSERT INTO {self._archive_table_name} ({self._key_column_name}, {self._output_column_name}) '
+                f'SELECT {self._key_column_name}, {self._output_column_name} FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+                cursor.execute(archival_query, (raw_line,))
+                delete_query = f'DELETE FROM {self._main_table_name} WHERE {self._key_column_name} = ?'
+                cursor.execute(delete_query, (raw_line,))
+                self.db_connection.commit()
+                if self.deep_log:
+                    logger.info(f'{self._database_name}:{raw_line} archived from {self._main_table_name}')
+                self.db_updated = True
+
+            except Exception as e:
+                logger.error(f'And exception was encounted during an insert operation in to {self._database_name}: e')
+                if retry_count < 3:
+                    time.sleep(max(0.2, retry_count * 0.2))
+                    logger.error(f'Retrying insert into {self._database_name} for key: {raw_line}')
+                    self.archive(raw_line=raw_line, retry_count=retry_count+1)
+                else:
+                    raise e
+
         else:
             if self.deep_log:
                 logger.info(f'{self._database_name}:CHECK QUERY for {raw_line} in {self._database_name} failed. '

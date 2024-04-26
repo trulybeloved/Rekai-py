@@ -105,8 +105,8 @@ def transmute(japanese_text, preprocessed_text, chapter_id):
         await asyncio.gather(*tasks)
 
     if not AppConfig.MANUAL_RUN_STOP:
-        # asyncio.run(async_transmute())
-        logger.success('TRANSMUTORS CODE REACHED')
+        asyncio.run(async_transmute())
+        logger.success('TRANSMUTE COMPLETE')
     else:
         logger.critical(f'MANUAL STOP FLAG RAISED. FUNCTION TERMINATED')
         return False

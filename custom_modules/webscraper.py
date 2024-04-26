@@ -56,7 +56,6 @@ async def async_pyppeteer_webscrape(
         if not browser:
             try:
                 browser = await PyppeteerLaunch(
-                    headless=False,
                     handleSIGINT=False,
                     handleSIGTERM=False,
                     handleSIGHUP=False)
@@ -78,11 +77,12 @@ async def async_pyppeteer_webscrape(
             # Ensure webpage is fully loaded
             sub_tasks = []
             for query_selector in query_selectors:
-                sub_tasks.append(page.waitForSelector(query_selector))
+                sub_tasks.append(page.waitForSelector(query_selector, timeout=0))
             await asyncio.gather(*sub_tasks)
 
         except (NetworkError, TimeoutError, PageError) as e:
-            logger.error(f'There was an error while loading the page for {url}')
+            logger.error(f'There was an error while loading the page for {url}: {e}')
+            await browser.close()
             raise WebPageLoadError()
 
         for query_selector in query_selectors:
@@ -100,12 +100,13 @@ async def async_pyppeteer_webscrape(
 
     return results
 
-# Example usage
-url = "https://ncode.syosetu.com/n2267be/663/"
-html = asyncio.run(async_pyppeteer_webscrape(url, ['.novel_subtitle', '#novel_honbun']))
+# url = "https://ncode.syosetu.com/n2267be/?p=7"
+# html = asyncio.run(async_pyppeteer_webscrape(url, '.index_box'))
+#
 
-chapter_html = html['scrape_results']['#novel_honbun']
 
-with open('chapter_html.html', 'w', encoding='utf-8') as html_file:
-    html_file.write(chapter_html)
-
+# print(html)
+#
+# with open('chapter_html.html', 'w', encoding='utf-8') as html_file:
+#     html_file.write(html['scrape_results']['.index_box'])
+#

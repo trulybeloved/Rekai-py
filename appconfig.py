@@ -68,6 +68,7 @@ class AppConfig:
     openai_gpt_db_path: str = os.path.join(datastores_directory, 'openai_gpt.db')
     gemini_gpt_db_path: str = os.path.join(datastores_directory, 'gemini_gpt.db')
     testing_db_path: str = os.path.join(datastores_directory, 'test.db')
+    autorun_db_path: str = os.path.join(datastores_directory, 'autorun.db')
 
     # path to the system database
     sys_directory: str = os.path.join(current_working_directory, 'sys')

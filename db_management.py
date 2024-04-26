@@ -519,7 +519,20 @@ class GeminiGPTDBM(DBM):
     # operational flags
     db_updated = False
 
+class AutorunDBM(DBM):
 
+    _database_name = 'autorun_dbm'
+    _instance = None
+    _db_path = AppConfig.autorun_db_path
+
+    _main_table_name = 'processed_links'
+    _archive_table_name = 'processing'
+
+    _key_column_name = 'key'  # the column in which the unique string that was transmuted is stored
+    _output_column_name = 'value'
+
+    # operational flags
+    db_updated = False
 
 class SystemDBM:
     _database_name = 'system_db'

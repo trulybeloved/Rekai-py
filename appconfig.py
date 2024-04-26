@@ -66,6 +66,7 @@ class AppConfig:
     google_tl_db_path: str = os.path.join(datastores_directory, 'google_tl.db')
     je_tts_db: str = os.path.join(datastores_directory, 'je_text_to_speech.db')
     openai_gpt_db_path: str = os.path.join(datastores_directory, 'openai_gpt.db')
+    gemini_gpt_db_path: str = os.path.join(datastores_directory, 'gemini_gpt.db')
     testing_db_path: str = os.path.join(datastores_directory, 'test.db')
 
     # path to the system database
@@ -84,6 +85,7 @@ class AppConfig:
     
     deepl_api_key_path = os.path.join(secrets_dir, "deepl_api_key.txt")
     openai_api_key_path = os.path.join(secrets_dir,'openai_api_key.txt')
+    gemini_api_key_path = os.path.join(secrets_dir, 'gemini_api_key.txt')
 
     ##=========== Path Creation =============##
 
@@ -143,11 +145,20 @@ class AppConfig:
     # Selenium Webdriver configuration
 
     class OpenAIConfig:
-        model: str = 'gpt-3.5-turbo-0125'
+        model: str = 'gpt-3.5-turbo'
         temperature: float = 1
         top_p: int = 1
         n: int = 1
         stream: bool = False
+
+    class GeminiConfig:
+        model: str = 'gemini-1.5-pro-latest'
+        # model: str = 'gemini-pro'
+        temperature: float = 0.5
+        top_p: float = 0.95
+        top_k: int = 1
+        stream: bool = False
+
 
 class FukuinConfig:
 
@@ -201,7 +212,7 @@ class RunConfig:
                  preprocess=True,
                  use_preprocessed_for_paragraphs=True,
                  run_jisho_parse=True,
-                 run_tts=True,
+                 run_tts=False,
                  run_deepl_tl=True,
                  run_google_tl=True,
                  run_gpt4_analysis=False,
@@ -253,7 +264,6 @@ class RunConfig:
     @classmethod
     def get_all_instances(cls):
         return cls._instances
-
 
 app_config = AppConfig()
 

@@ -15,7 +15,7 @@ import minify_html
 ## custom modules
 from custom_dataclasses import RekaiText, Paragraph, Line, Clause
 from appconfig import AppConfig, RunConfig
-from custom_modules.utilities import zip_directory, decode_bytes_from_base64_string
+from custom_modules.utilities import FileManagement, decode_bytes_from_base64_string
 
 
 class HtmlUtilities:
@@ -684,7 +684,7 @@ class GenerateHtml:
 
             # Zip file export
             zip_file_name = f'Rekai_HTML_{run_config_object.run_timestamp}_{html_title}'
-            zip_file_path = zip_directory(output_directory, zip_file_name, AppConfig.output_directory)
+            zip_file_path = FileManagement.zip_directory(output_directory, zip_file_name, AppConfig.output_directory)
 
             os.startfile(output_html_file_path)
 

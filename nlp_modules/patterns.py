@@ -35,7 +35,7 @@ class Regex:
     jisho_punctuation_symbols = r'([\u2000-\u206F\u3000-\u303F\uFF01-\uFF0F\uFF1A-\uFF20\uFF3B-\uFF40\uFF5B-\uFF65]+)'
 
     # JNLP.TextSplitter.regex_split
-    pattern_for_line = r'([^。！？]*[。！？"」』]+)'
+    pattern_for_line = r'([^。！？]*[。！？"」』、]+)'
     pattern_for_clause = r'([^。！？、…―]*[。！？、…"」』―]+)'
 
 

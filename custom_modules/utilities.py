@@ -61,35 +61,37 @@ def log_execution_time(func):
 
     return wrapper
 
+class FileManagement:
+    @staticmethod
+    def zip_directory(directory_to_zip, zip_file_name: str, zip_save_directory: str):
+        """
+        Zip all contents in a directory and return the zip file path.
 
-def zip_directory(directory_to_zip, zip_file_name: str, zip_save_directory: str):
-    """
-    Zip all contents in a directory and return the zip file path.
+        Parameters:
+        - directory_path: The path of the directory to be zipped.
+        - zip_file_name: The name of the zip file to be created.
 
-    Parameters:
-    - directory_path: The path of the directory to be zipped.
-    - zip_file_name: The name of the zip file to be created.
+        Returns:
+        - The path of the created zip file.
+        """
 
-    Returns:
-    - The path of the created zip file.
-    """
+        if not os.path.exists(directory_to_zip):
+            raise FileNotFoundError(f"The directory '{directory_to_zip}' does not exist.")
 
-    if not os.path.exists(directory_to_zip):
-        raise FileNotFoundError(f"The directory '{directory_to_zip}' does not exist.")
+        if not os.path.isdir(directory_to_zip):
+            raise NotADirectoryError(f"'{directory_to_zip}' is not a directory.")
 
-    if not os.path.isdir(directory_to_zip):
-        raise NotADirectoryError(f"'{directory_to_zip}' is not a directory.")
+        zip_file_path = os.path.join(zip_save_directory, zip_file_name + ".zip")
 
-    zip_file_path = os.path.join(zip_save_directory, zip_file_name + ".zip")
+        with zipfile.ZipFile(zip_file_path, 'w') as zip_file:
 
-    with zipfile.ZipFile(zip_file_path, 'w') as zip_file:
+            for root, _, files in os.walk(directory_to_zip):
+                for file in files:
+                    file_path = str(os.path.join(root, file))
+                    zip_file.write(file_path, os.path.relpath(file_path, directory_to_zip))
 
-        for root, _, files in os.walk(directory_to_zip):
-            for file in files:
-                file_path = os.path.join(root, file)
-                zip_file.write(file_path, os.path.relpath(file_path, directory_to_zip))
+        return zip_file_path
 
-    return zip_file_path
 
 def encode_bytes_to_base64_string(input_bytes: bytes) -> str:
     encoded_data = base64.b64encode(input_bytes).decode('utf-8')
@@ -105,7 +107,6 @@ def tiktoken_get_tokens_in_string(string: str, encoding_name: str = 'cl100k_base
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
     return num_tokens
-
 
 class ProgressMonitor:
 

@@ -1,7 +1,10 @@
 ## built-in libraries
+import json
+import time
 import typing
 import asyncio
-import inspect
+import aiohttp
+import requests
 
 ## third-party libraries
 import backoff
@@ -24,6 +27,7 @@ from google.api_core import exceptions as GCloudExceptions
 from openai import AsyncOpenAI
 
 from kairyou import Kairyou
+from easytl import EasyTL
 
 ## custom modules
 from appconfig import AppConfig, FukuinConfig
@@ -31,7 +35,7 @@ from custom_modules import custom_exceptions
 from custom_modules import utilities
 from custom_modules.utilities import MetaLogger
 from custom_modules.custom_exceptions import WebPageLoadError
-from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM
+from db_management import JishoParseDBM, DeepLDBM, TextToSpeechDBM, GoogleTLDBM, GeminiGPTDBM, OpenAIGPTDBM
 from nlp_modules.kroatoanjp_fukuin.preprocess import preprocessor as Fukuin
 from nlp_modules.kroatoanjp_fukuin.preprocess.tokenizer.spacy_tokenizer import SpacyTokenizer
 
@@ -57,6 +61,12 @@ def get_deepl_api_key() -> str:
 
 def get_openai_api_key() -> str:
     with open(AppConfig.openai_api_key_path, 'r') as file:
+        api_key = file.read().strip()
+
+    return api_key
+
+def get_gemini_api_key() -> str:
+    with open(AppConfig.gemini_api_key_path, 'r') as file:
         api_key = file.read().strip()
 
     return api_key
@@ -111,8 +121,6 @@ class Initialize:
             raise e  # Needs better handling
 
         return tokenizer
-
-
 
 class APIRequest:
 
@@ -253,7 +261,6 @@ class Transmute:
                 if not _browser:
                     try:
                         _browser = await PyppeteerLaunch(
-
                             handleSIGINT=False,
                             handleSIGTERM=False,
                             handleSIGHUP=False)
@@ -271,7 +278,7 @@ class Transmute:
                 try:
                     await page.goto(_url)
                     # Check if the webpage has actually loaded by locating the search bar
-                    _ = await page.querySelector('#search_main')
+                    _ = await page.querySelector('#main_results')
                 except (NetworkError, TimeoutError, PageError) as e:
                     logger.error(f'There was an error while loading the page for {_url}')
                     raise WebPageLoadError()
@@ -475,6 +482,19 @@ class Transmute:
         db_interface.insert(raw_line=input_string, transmuted_data=result, unix_timestamp=timestamp)
         db_interface.close_connection()
 
+        # cf_tts_dbm_url = 'https://rekai-tts-dbm.toshiroakari.workers.dev/dbinsert'
+        #
+        # tts_entry = {'raw_line': input_string, 'line_tts': result,
+        #              'upload_timestamp': 1}
+        #
+        # try:
+        #     response = requests.put(url=cf_tts_dbm_url, json=tts_entry, headers=None)
+        #     time.sleep(0.1)
+        #     response.raise_for_status()
+        #     logger.info(f"TTS entry into CF TTS D1 Database was successful for line: {input_string}")
+        # except requests.exceptions.RequestException as e:
+        #     logger.error(f"Error sending request to CF TTS D1 DB: {e}")
+
         progress_monitor.mark_completion()
 
         _ = "success"
@@ -482,21 +502,63 @@ class Transmute:
         return (input_string, _)
 
     @staticmethod
-    async def infer_openai_gpt(db_key_string: str, system_message: str, prompt: str):
+    async def infer_openai_gpt(system_message: str, prompt: typing.Union[str, list]):
 
-        if Transmute.openai_client is None:
-            raise custom_exceptions.TransmuterNotAvailable("OpenAI API client is not available.")
+        # if Transmute.openai_client is None:
+        #     raise custom_exceptions.TransmuterNotAvailable("OpenAI API client is not available.")
 
-        inference = await Transmute.openai_client.chat.completions.create(
+        # inference = await Transmute.openai_client.chat.completions.create(
+        #     model=AppConfig.OpenAIConfig.model,
+        #     messages=[
+        #         {"role": "system", "content": system_message},
+        #         {"role": "user", "content": prompt}],
+        #     temperature=AppConfig.OpenAIConfig.temperature,
+        #     top_p=AppConfig.OpenAIConfig.top_p,
+        #     n=AppConfig.OpenAIConfig.n,
+        #     stream=AppConfig.OpenAIConfig.stream
+        # )
+
+        EasyTL.set_api_key(api_type='openai', api_key=get_openai_api_key())
+        inference = await EasyTL.openai_translate_async(
+            text=prompt,
+            translation_instructions=system_message,
+            override_previous_settings=True,
+            decorator=None,
             model=AppConfig.OpenAIConfig.model,
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": prompt}],
             temperature=AppConfig.OpenAIConfig.temperature,
             top_p=AppConfig.OpenAIConfig.top_p,
-            n=AppConfig.OpenAIConfig.n,
-            stream=AppConfig.OpenAIConfig.stream
+            stop=None,
+            max_tokens=None,
+            presence_penalty=0.0,
+            frequency_penalty=0.0
         )
+
+    @staticmethod
+    def infer_gemini_gpt(system_message: str, prompt: typing.Union[str, list]):
+
+        EasyTL.set_api_key(api_type='gemini', api_key=get_gemini_api_key())
+
+        inference = EasyTL.gemini_translate(
+            text=prompt,
+            translation_instructions=system_message,
+            override_previous_settings=True,
+            decorator=None,
+            model=AppConfig.GeminiConfig.model,
+            temperature=AppConfig.GeminiConfig.temperature,
+            top_p=AppConfig.GeminiConfig.top_p,
+            top_k=AppConfig.GeminiConfig.top_k,
+            response_type='json'
+            # semaphore=1
+        )
+
+        print(inference)
+        timestamp = 0
+
+        # db_interface = GeminiGPTDBM(mode=2)
+        # db_interface.insert(raw_line=prompt, transmuted_data=inference, unix_timestamp=timestamp)
+        # db_interface.close_connection()
+
+        return inference
 
     @staticmethod
     def preprocess_with_kairyou(input_string: str, input_replacements_dict: dict) -> str:
